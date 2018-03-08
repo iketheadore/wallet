@@ -1,0 +1,474 @@
+{
+	"info": {
+		"name": "Wallet",
+		"_postman_id": "ebf88441-92d2-4b9e-b1dd-77a6f8064a4b",
+		"description": "Endpoints of where the Kitties are stored.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Wallets",
+			"description": null,
+			"item": [
+				{
+					"name": "Refresh",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{domain}}/api/wallets/refresh",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"wallets",
+								"refresh"
+							]
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{domain}}/api/wallets/list",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"wallets",
+								"list"
+							]
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "New",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "label",
+									"value": "test_wallet4",
+									"description": "Label that the new wallet should have.",
+									"type": "text"
+								},
+								{
+									"key": "seed",
+									"value": "secure seed",
+									"description": "Wallet seed.",
+									"type": "text"
+								},
+								{
+									"key": "aCount",
+									"value": "1",
+									"description": "Number of addresses to generate.",
+									"type": "text"
+								},
+								{
+									"key": "encrypted",
+									"value": "false",
+									"description": "Whether wallet should be encrypted.",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "securepass",
+									"description": "Password to encrypt wallet with (only needed if encrypted == true).",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{domain}}/api/wallets/new",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"wallets",
+								"new"
+							]
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "label",
+									"value": "test_wallet4",
+									"description": "Label of wallet of delete.",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{domain}}/api/wallets/delete",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"wallets",
+								"delete"
+							]
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Get",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "label",
+									"value": "test_wallet",
+									"description": "Label of wallet to get.",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "",
+									"description": "Password of wallet (if wallet is encrypted and locked).",
+									"type": "text"
+								},
+								{
+									"key": "aCount",
+									"value": "20",
+									"description": "number of addresses to show (at least).",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{domain}}/api/wallets/get",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"wallets",
+								"get"
+							]
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Seed",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{domain}}/api/wallets/seed",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"wallets",
+								"seed"
+							]
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "ce346f9c-7818-4eab-96b0-5a9c2d45d4f7",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "b768603e-ca7d-4d88-a686-2534511d3b8a",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "IKO",
+			"description": "",
+			"item": [
+				{
+					"name": "Get Kitty",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{domain}}/api/iko/kitty/{{$randomInt}}?type=json",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"iko",
+								"kitty",
+								"{{$randomInt}}"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "json",
+									"equals": true,
+									"description": "Type of output. \"json\" or \"enc\""
+								}
+							]
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Get Address",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{domain}}/api/iko/address/2fzr9thfdgHCWe8Hp9btr3nNEVTaAmkDk7?type=json",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"iko",
+								"address",
+								"2fzr9thfdgHCWe8Hp9btr3nNEVTaAmkDk7"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "json",
+									"equals": true,
+									"description": "Type of output. \"json\" or \"enc\""
+								}
+							]
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Get Tx",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{domain}}/api/iko/tx/0?type=json&request=seq",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"iko",
+								"tx",
+								"0"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "json",
+									"equals": true,
+									"description": "Type of output. \"json\" or \"enc\""
+								},
+								{
+									"key": "request",
+									"value": "seq",
+									"equals": true,
+									"description": "Type of request. \"hash\" or \"seq\""
+								}
+							]
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Get Head Tx",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{domain}}/api/iko/head_tx?type=json",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"iko",
+								"head_tx"
+							],
+							"query": [
+								{
+									"key": "type",
+									"value": "json",
+									"equals": true,
+									"description": "Type of output. \"json\" or \"enc\""
+								}
+							]
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Get Txs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{domain}}/api/iko/txs?current_page=2&per_page=10",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"iko",
+								"txs"
+							],
+							"query": [
+								{
+									"key": "current_page",
+									"value": "2",
+									"equals": true,
+									"description": "Current page index."
+								},
+								{
+									"key": "per_page",
+									"value": "10",
+									"equals": true,
+									"description": "Number of items per page."
+								}
+							]
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Inject Tx",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"hex\": \"8c9a7b5e9b578110388399b275fd010a8906e9637ac082e9cdeb1339f333319414000000000000001e43ab6754ea18151400000000000000000427fcd0f0b9461c5c516cd66a4b5ac413978272000427fcd0f0b9461c5c516cd66a4b5ac4139782725d743acc0b8b40b0be6466d6b84a5a980e64358f153b7af4e676708e95c79d3628ae9a1111c0aaa040aac5e054f81a45588bafac6dee2cdae05457475498301a01\"\n}"
+						},
+						"url": {
+							"raw": "{{domain}}/api/iko/inject_tx",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"iko",
+								"inject_tx"
+							]
+						},
+						"description": ""
+					},
+					"response": []
+				},
+				{
+					"name": "Get Balance",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{domain}}/api/iko/balance?addrs=2fzr9thfdgHCWe8Hp9btr3nNEVTaAmkDk7",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"iko",
+								"balance"
+							],
+							"query": [
+								{
+									"key": "addrs",
+									"value": "2fzr9thfdgHCWe8Hp9btr3nNEVTaAmkDk7",
+									"equals": true
+								}
+							]
+						},
+						"description": ""
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
