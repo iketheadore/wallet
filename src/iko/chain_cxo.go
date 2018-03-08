@@ -454,9 +454,9 @@ func (c *CXOChain) GetTxsOfSeqRange(startSeq uint64, pageSize uint64) ([]TxWrapp
 	if startSeq >= cLen {
 		return txWraps, fmt.Errorf("invalid startSeq: %d", startSeq)
 	}
-	if startSeq + pageSize > cLen {
+	if startSeq+pageSize > cLen {
 		diff := startSeq + pageSize - cLen
-		if pageSize - diff <= 0 {
+		if pageSize-diff <= 0 {
 			return []TxWrapper{}, nil
 		}
 		pageSize -= diff

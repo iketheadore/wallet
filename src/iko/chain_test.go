@@ -20,6 +20,39 @@ var (
 	GenPK, GenSK   = cipher.GenerateDeterministicKeyPair([]byte(MasterGenSeed))
 )
 
+func newChainDB(
+	t *testing.T,
+	dir string,
+	master bool,
+	doInit bool,
+	addr string,
+	dAddrs []string,
+) (ChainDB, error) {
+	chainDB, err := NewCXOChain(&CXOChainConfig{
+		Public:             true,
+		Memory:             dir == "",
+		MessengerAddresses: dAddrs,
+		CXOAddress:         addr,
+		MasterRooter:       master,
+		MasterRootPK:       RootPK,
+		MasterRootSK:       RootSK,
+		MasterRootNonce:    MasterRootNonce,
+	})
+	if err != nil {
+		return nil, err
+	}
+	if doInit {
+		if err := chainDB.MasterInitChain(); err != nil {
+			return nil, err
+		}
+	}
+	return chainDB, nil
+}
+
+/*
+	<<< TESTS BEGIN >>>
+*/
+
 func testChainDBPagination(t *testing.T, chainDB ChainDB, pageSize uint64) {
 	t.Run("testChainDBPagination", func(t *testing.T) {
 		// demonstrating the pagination flow
@@ -244,18 +277,9 @@ func runChainDBTest(t *testing.T, chainDB ChainDB) {
 
 func TestChainDB_CXOChain(t *testing.T) {
 
-	chainDB, e := NewCXOChain(&CXOChainConfig{
-		Public:          true,
-		Memory:          true,
-		MasterRooter:    true,
-		MasterRootPK:    RootPK,
-		MasterRootSK:    RootSK,
-		MasterRootNonce: MasterRootNonce,
-	})
-	require.NoError(t, e,
-		"failed to create cxo chain db")
+	chainDB, err := newChainDB(t,
+		"", true, true,":7999", nil)
 
-	err := chainDB.MasterInitChain()
 	require.NoError(t, err,
 		"master root should init with no problem")
 
