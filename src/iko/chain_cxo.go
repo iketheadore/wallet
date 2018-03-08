@@ -58,6 +58,11 @@ func (c *CXOChainConfig) Process(log *logrus.Logger) error {
 			return errors.New("public and secret keys do not match")
 		}
 	}
+
+	if c.Memory {
+		c.Dir = ""
+	}
+
 	return nil
 }
 
@@ -88,7 +93,7 @@ func NewCXOChain(config *CXOChainConfig) (*CXOChain, error) {
 		c:        config,
 		l:        log,
 		received: make(chan *TxWrapper),
-		accepted: make(chan *TxWrapper),
+		accepted: make(chan *TxWrapper, 10),
 	}
 
 	if e := prepareNode(chain); e != nil {
@@ -267,6 +272,7 @@ func (c *CXOChain) RunTxService(txChecker TxChecker) error {
 
 				} else {
 					c.len.Inc()
+					c.l.Info("adding to accepted chan")
 					c.accepted <- txWrapper
 				}
 			}
@@ -447,6 +453,13 @@ func (c *CXOChain) GetTxsOfSeqRange(startSeq uint64, pageSize uint64) ([]TxWrapp
 	cLen := uint64(c.len.Val())
 	if startSeq >= cLen {
 		return txWraps, fmt.Errorf("invalid startSeq: %d", startSeq)
+	}
+	if startSeq + pageSize > cLen {
+		diff := startSeq + pageSize - cLen
+		if pageSize - diff <= 0 {
+			return []TxWrapper{}, nil
+		}
+		pageSize -= diff
 	}
 	store, _, p, e := c.getStore(gsRead)
 	if e != nil {

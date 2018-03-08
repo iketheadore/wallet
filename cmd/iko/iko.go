@@ -194,7 +194,7 @@ func action(ctx *cli.Context) error {
 		tlsCert     = ctx.String(TLSCert)
 		tlsKey      = ctx.String(TLSKey)
 
-		rpcAddress = ctx.String(RPCAddress)
+		rpcAddress  = ctx.String(RPCAddress)
 		remoteClose = ctx.Bool(RemoteClose)
 	)
 
@@ -307,7 +307,7 @@ func action(ctx *cli.Context) error {
 	// Prepare rpc server.
 	rpcServer, e := rpc.NewServer(
 		&rpc.ServerConfig{
-			Address: rpcAddress,
+			Address:          rpcAddress,
 			EnableRemoteQuit: remoteClose,
 		},
 		&rpc.Gateway{

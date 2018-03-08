@@ -6,6 +6,18 @@ import (
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/stretchr/testify/require"
 	"testing"
+	"time"
+)
+
+const (
+	MasterRootNonce = 12345
+	MasterRootSeed  = "root seed"
+	MasterGenSeed   = "gen seed"
+)
+
+var (
+	RootPK, RootSK = cipher.GenerateDeterministicKeyPair([]byte(MasterRootSeed))
+	GenPK, GenSK   = cipher.GenerateDeterministicKeyPair([]byte(MasterGenSeed))
 )
 
 func testChainDBPagination(t *testing.T, chainDB ChainDB, pageSize uint64) {
@@ -35,7 +47,7 @@ func testChainDBPagination(t *testing.T, chainDB ChainDB, pageSize uint64) {
 
 			if currentPage == (pageCount - 1) {
 				require.Lenf(t, transactions, int(finalPageCount),
-					"The last page should have%d items", finalPageCount)
+					"The last page should have %d items", finalPageCount)
 			} else {
 				require.Lenf(t, transactions, int(pageSize),
 					"A normal page should have %d items", pageSize)
@@ -81,70 +93,60 @@ func runChainDBTest(t *testing.T, chainDB ChainDB) {
 	})
 
 	t.Run("withTransactions", func(t *testing.T) {
-		kittyID := KittyID(5)
+		var (
+			kittyID = KittyID(5)
+			_, sk2  = cipher.GenerateDeterministicKeyPair([]byte("2nd tx seed"))
+			addr2   = cipher.AddressFromSecKey(sk2)
+		)
 
-		firstSecKey := cipher.SecKey([32]byte{
-			3, 4, 5, 6,
-			3, 4, 5, 6,
-			3, 4, 5, 6,
-			3, 4, 5, 6,
-			3, 4, 5, 6,
-			3, 4, 5, 6,
-			3, 4, 5, 6,
-			3, 4, 5, 6,
-		})
-		firstOwnerAddress := cipher.AddressFromSecKey(firstSecKey)
-
-		secondSecKey := cipher.SecKey(
-			cipher.SecKey([32]byte{
-				7, 8, 9, 10,
-				7, 8, 9, 10,
-				7, 8, 9, 10,
-				7, 8, 9, 10,
-
-				7, 8, 9, 10,
-				7, 8, 9, 10,
-				7, 8, 9, 10,
-				7, 8, 9, 10,
-			}))
-
-		secondOwnerAddress := cipher.AddressFromSecKey(secondSecKey)
-
-		firstTransaction := NewGenTx(nil, kittyID, firstSecKey)
+		firstTxWrap := TxWrapper{
+			Tx: *NewGenTx(kittyID, GenSK),
+			Meta: TxMeta{
+				Seq: 0,
+				TS:  time.Now().UnixNano(),
+			},
+		}
 
 		t.Run("AddTx_Failure", func(t *testing.T) {
-			err := chainDB.AddTx(*firstTransaction, addTxAlwaysReject)
-			require.NotNil(t, err, "This shouldn't succeed")
+			err := chainDB.AddTx(firstTxWrap, addTxAlwaysReject)
+			require.Error(t, err, "This shouldn't succeed")
 		})
 
-		err := chainDB.AddTx(*firstTransaction, addTxAlwaysApprove)
-
-		require.Nil(t, err,
+		err := chainDB.AddTx(firstTxWrap, addTxAlwaysApprove)
+		require.NoError(t, err,
 			"We should be able to successfully add our first transaction")
 
 		t.Run("Head_Success_01", func(t *testing.T) {
-			transaction, err := chainDB.Head()
+			txWrap, err := chainDB.Head()
 
-			require.Nil(t, err, "Should not give us an error")
-			require.Equal(t, transaction, *firstTransaction,
+			require.NoError(t, err, "Should not give us an error")
+			require.Equal(t, txWrap, firstTxWrap,
 				"Should correctly return the first transaction")
 		})
 
-		secondTransaction := NewTransferTx(
-			firstTransaction, kittyID, secondOwnerAddress, firstSecKey)
+		secondTx, err := NewTransferTx(
+			&firstTxWrap.Tx, addr2, GenSK)
+		require.NoError(t, err, "should create second tx with no error")
 
-		err = chainDB.AddTx(*secondTransaction, addTxAlwaysApprove)
+		var secondTxWrap = TxWrapper{
+			Tx: *secondTx,
+			Meta: TxMeta{
+				Seq: 1,
+				TS:  time.Now().UnixNano(),
+			},
+		}
 
-		require.Nil(t, err,
+		err = chainDB.AddTx(secondTxWrap, addTxAlwaysApprove)
+		require.NoError(t, err,
 			"We should be able to successfully add our second transaction")
 
-		transactions := []Transaction{*firstTransaction, *secondTransaction}
+		txWraps := []TxWrapper{firstTxWrap, secondTxWrap}
 
 		t.Run("Head_Success_02", func(t *testing.T) {
-			transaction, err := chainDB.Head()
-
-			require.Nil(t, err, "Should not give us an error")
-			require.Equal(t, transaction, *secondTransaction,
+			txWrap, err := chainDB.Head()
+			require.NoError(t, err,
+				"Should not give us an error")
+			require.Equal(t, txWrap, secondTxWrap,
 				"Should correctly return the second transaction")
 		})
 
@@ -156,63 +158,68 @@ func runChainDBTest(t *testing.T, chainDB ChainDB) {
 		t.Run("GetTxOfHash_NonexistentHash_02", func(t *testing.T) {
 			_, err := chainDB.GetTxOfHash(nonexistentHash)
 
-			require.NotNil(t, err,
+			require.Error(t, err,
 				"Should still give us an error because there are no transactions by that hash")
 		})
 
-		for idx, transaction := range transactions {
+		for idx, txWrap := range txWraps {
 			// our test label is GetTxOfHash_Success_XX, where 01 is
 			// firstTransaction, 02 is secondTransaction, etc
 			testLabel := fmt.Sprintf("GetTxOfHash_Success_%2.2d", idx+1)
 
 			t.Run(testLabel, func(t *testing.T) {
-				reqTransaction, err := chainDB.GetTxOfHash(transaction.Hash())
+				reqTxWrap, err := chainDB.GetTxOfHash(txWrap.Tx.Hash())
 
-				require.Nil(t, err, "Shouldn't return an error for a valid hash")
-				require.Equal(t, transaction, reqTransaction,
+				require.NoError(t, err,
+					"Shouldn't return an error for a valid hash")
+				require.Equal(t, txWrap, reqTxWrap,
 					"Should correctly return the right transaction")
 			})
 		}
 
-		for idx, transaction := range transactions {
+		for idx, txWrap := range txWraps {
 			// same as above
 			testLabel := fmt.Sprintf("GetTxOfSeq_Success_%2.2d", idx+1)
 
 			t.Run(testLabel, func(t *testing.T) {
-				reqTransaction, err := chainDB.GetTxOfSeq(transaction.Seq)
+				reqTxWrap, err := chainDB.GetTxOfSeq(txWrap.Meta.Seq)
 
-				require.Nil(t, err,
+				require.NoError(t, err,
 					"Shouldn't return an error for a valid sequence index")
-				require.Equal(t, transaction, reqTransaction,
+				require.Equal(t, txWrap, reqTxWrap,
 					"Should correctly return the right transaction")
 			})
 		}
 
-		t.Run("HeadSeq", func(t *testing.T) {
-			require.Equal(t, chainDB.Len()-1, chainDB.HeadSeq(),
-				"HeadSeq() should be Len() - 1")
-		})
-
-		t.Run("TxChan", func(t *testing.T) {
-			txChan := chainDB.TxChan()
-
-			require.NotNil(t, txChan,
-				"Should return a valid receiving channel for transactions")
-
-			for _, transaction := range transactions {
-				channelTransaction := <-txChan
-				require.Equal(t, *channelTransaction, transaction,
-					"Should return our transactions through the TxChan() channel in order they were added")
-			}
-		})
+		//t.Run("TxChan", func(t *testing.T) {
+		//	txChan := chainDB.TxChan()
+		//
+		//	require.NotNil(t, txChan,
+		//		"Should return a valid receiving channel for transactions")
+		//
+		//	for _, txWrap := range txWraps {
+		//		require.Equal(t, *<-txChan, txWrap,
+		//			"Should return our transactions through the TxChan() channel in order they were added")
+		//	}
+		//})
 
 		// adding a third transaction for an odd number of transactions
-		thirdTransaction := NewTransferTx(
-			secondTransaction, kittyID, firstOwnerAddress, secondSecKey)
+		thirdTx, err := NewTransferTx(
+			secondTx, cipher.AddressFromPubKey(GenPK), sk2)
 
-		err = chainDB.AddTx(*thirdTransaction, addTxAlwaysApprove)
+		require.NoError(t, err, "should create second tx with no error")
 
-		require.Nil(t, err, "We should be able to successfully transfer the kitty back to the original owner")
+		var thirdTxWrap = TxWrapper{
+			Tx: *thirdTx,
+			Meta: TxMeta{
+				Seq: 2,
+				TS:  time.Now().UnixNano(),
+			},
+		}
+
+		err = chainDB.AddTx(thirdTxWrap, addTxAlwaysApprove)
+		require.NoError(t, err,
+			"We should be able to successfully transfer the kitty back to the original owner")
 
 		t.Run("GetTxsOfSeqRange_BadPageSize", func(t *testing.T) {
 			transactions, err := chainDB.GetTxsOfSeqRange(0, 0)
@@ -235,10 +242,22 @@ func runChainDBTest(t *testing.T, chainDB ChainDB) {
 	})
 }
 
-func TestChainDB_MemoryChain(t *testing.T) {
-	chainDB := NewMemoryChain(0)
+func TestChainDB_CXOChain(t *testing.T) {
 
-	require.NotNil(t, chainDB, "We should be able to create an empty MemoryChain")
+	chainDB, e := NewCXOChain(&CXOChainConfig{
+		Public:          true,
+		Memory:          true,
+		MasterRooter:    true,
+		MasterRootPK:    RootPK,
+		MasterRootSK:    RootSK,
+		MasterRootNonce: MasterRootNonce,
+	})
+	require.NoError(t, e,
+		"failed to create cxo chain db")
+
+	err := chainDB.MasterInitChain()
+	require.NoError(t, err,
+		"master root should init with no problem")
 
 	runChainDBTest(t, chainDB)
 }

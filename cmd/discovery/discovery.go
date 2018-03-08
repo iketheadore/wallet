@@ -1,11 +1,11 @@
 package main
 
 import (
-	"gopkg.in/urfave/cli.v1"
+	"github.com/skycoin/net/skycoin-messenger/factory"
 	"gopkg.in/sirupsen/logrus.v1"
+	"gopkg.in/urfave/cli.v1"
 	"os"
 	"os/signal"
-	"github.com/skycoin/net/skycoin-messenger/factory"
 )
 
 const (
@@ -30,7 +30,7 @@ func init() {
 	app.Description = "discovery node"
 	app.Flags = cli.FlagsByName{
 		cli.StringFlag{
-			Name: Flag(AddressFlag, "a"),
+			Name:  Flag(AddressFlag, "a"),
 			Usage: "address to serve discovery node on",
 			Value: ":8080",
 		},
