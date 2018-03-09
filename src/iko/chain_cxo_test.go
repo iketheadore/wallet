@@ -175,4 +175,10 @@ func TestNewCXOChain(t *testing.T) {
 			}
 		})
 	})
+
+	// TODO (evanlinjin): Write these tests >>>
+	//		- Run master/slave nodes, writing to disks.
+	//			- Close slave, inject txs, re-open slave -> test sync.
+	//			- Close master, reopen master, inject txs -> test sync.
+	//			- Close discovery, reopen discovery, inject txs -> test sync.
 }
