@@ -5,6 +5,8 @@ import (
 	"github.com/skycoin/net/skycoin-messenger/factory"
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/stretchr/testify/require"
+	"io/ioutil"
+	"os"
 	"testing"
 	"time"
 )
@@ -17,6 +19,7 @@ func newCXOChainDB(
 	dAddrs []string,
 ) (*CXOChain, error) {
 	chainDB, err := NewCXOChain(&CXOChainConfig{
+		Dir:                dir,
 		Public:             true,
 		Memory:             dir == "",
 		MessengerAddresses: dAddrs,
@@ -44,6 +47,19 @@ func newDiscoveryServer(addr string) (func(), error) {
 	return func() {
 		f.Close()
 	}, f.Listen(addr)
+}
+
+func genTxWraps(count, start int) []TxWrapper {
+	var (
+		out = make([]TxWrapper, count)
+	)
+	for i := range out {
+		out[i] = TxWrapper{
+			Tx:   *NewGenTx(KittyID(i+start), GenSK),
+			Meta: genTxMeta(uint64(i + start)),
+		}
+	}
+	return out
 }
 
 func genTxMeta(seq uint64) TxMeta {
@@ -89,20 +105,9 @@ func TestNewCXOChain(t *testing.T) {
 			"creation of slave should succeed")
 		defer slave.Close()
 
-		txWraps := []TxWrapper{
-			{
-				Tx:   *NewGenTx(KittyID(0), GenSK),
-				Meta: genTxMeta(0),
-			},
-			{
-				Tx:   *NewGenTx(KittyID(1), GenSK),
-				Meta: genTxMeta(1),
-			},
-			{
-				Tx:   *NewGenTx(KittyID(2), GenSK),
-				Meta: genTxMeta(2),
-			},
-		}
+		var (
+			txWraps = genTxWraps(3, 0)
+		)
 
 		for i, txWrap := range txWraps {
 			t.Run(fmt.Sprintf("ReceiveTx_%d", i), func(t *testing.T) {
@@ -135,7 +140,7 @@ func TestNewCXOChain(t *testing.T) {
 				"should generate transfer tx successfully")
 
 			txWrap := TxWrapper{
-				Tx: *tx,
+				Tx:   *tx,
 				Meta: genTxMeta(uint64(i)),
 			}
 
@@ -176,9 +181,148 @@ func TestNewCXOChain(t *testing.T) {
 		})
 	})
 
+	t.Run("Master_RecoverOnRestart", func(t *testing.T) {
+
+		// Create temporary directory.
+		temp, err := ioutil.TempDir("", "kc_chain_cxo_test_Master_RecoverOnRestart")
+		require.NoError(t, err, "creation of temp dir should succeed")
+		defer os.RemoveAll(temp)
+
+		var (
+			txWraps = genTxWraps(10, 0)
+		)
+
+		t.Run("Master_InjectTxsAndClose", func(t *testing.T) {
+			master, err := newCXOChainDB(
+				temp, true, true, MasterAddr, []string{DiscoveryAddr})
+			require.NoError(t, err,
+				"creation of master should succeed")
+			defer master.Close()
+
+			for _, txWrap := range txWraps {
+				err := master.AddTx(txWrap, func(_ *Transaction) error {
+					return nil
+				})
+				require.NoError(t, err, "inject tx should succeed")
+			}
+		})
+
+		t.Run("Master_ReopenAndCheckTxs", func(t *testing.T) {
+			master, err := newCXOChainDB(
+				temp, true, false, MasterAddr, []string{DiscoveryAddr})
+			require.NoError(t, err,
+				"creation of master should succeed")
+			defer master.Close()
+
+			// Loop txs and check.
+			for i, txWrap := range txWraps {
+				gotTxWrap, err := master.GetTxOfSeq(uint64(i))
+				require.NoError(t, err,
+					"should successfully obtain tx")
+				require.Equal(t, gotTxWrap, txWrap,
+					"obtained tx should be the same as injected tx")
+			}
+		})
+	})
+
 	// TODO (evanlinjin): Write these tests >>>
 	//		- Run master/slave nodes, writing to disks.
 	//			- Close slave, inject txs, re-open slave -> test sync.
 	//			- Close master, reopen master, inject txs -> test sync.
 	//			- Close discovery, reopen discovery, inject txs -> test sync.
+
+	t.Run("MasterSlave_ReconnectAfterRestart", func(t *testing.T) {
+
+		// Create temporary directories.
+
+		masterDir, err := ioutil.TempDir("", "kc_test_masterCXODir")
+		require.NoError(t, err)
+		//defer os.RemoveAll(masterDir)
+
+		slaveDir, err := ioutil.TempDir("", "kc_test_slaveCXODir")
+		require.NoError(t, err)
+		//defer os.RemoveAll(slaveDir)
+
+		// Start master and initiate chain.
+
+		master, err := newCXOChainDB(
+			masterDir, true, true, MasterAddr, []string{DiscoveryAddr})
+		require.NoError(t, err)
+
+		// Inject some txs.
+
+		var (
+			count, start = 5, 0
+			txWraps      = genTxWraps(count, start)
+		)
+		for _, txWrap := range txWraps {
+			require.NoError(t, master.AddTx(txWrap, func(_ *Transaction) error {
+				return nil
+			}))
+		}
+
+		// Start slave.
+
+		slave, err := newCXOChainDB(
+			slaveDir, false, false, SlaveAddr, []string{DiscoveryAddr})
+		require.NoError(t, err)
+
+		// Inject more txs, waiting for slave to receive.
+
+		t.Run("InjectTxs", func(t *testing.T) {
+
+			start += count
+			txWraps = append(txWraps, genTxWraps(count, start)...)
+
+			for i := start; i < start+count; i++ {
+				// Inject.
+				require.NoError(t, master.AddTx(txWraps[i], func(_ *Transaction) error {
+					return nil
+				}))
+				// Wait for slave to receive.
+				select {
+				case _, ok := <-slave.TxChan():
+					require.True(t, ok, "slave txChan shouldn't close")
+				case <-time.After(time.Second * 2):
+					require.Fail(t, "slave tx receive timed out")
+				}
+			}
+		})
+
+		// Restart master.
+
+		master.Close()
+		time.Sleep(time.Second * 2)
+
+		master, err = newCXOChainDB(
+			masterDir, true, false, MasterAddr, []string{DiscoveryAddr})
+		require.NoError(t, err)
+
+		time.Sleep(time.Second * 10)
+
+		// Inject more txs, waiting for slave to receive.
+
+		t.Run("InjectTxsAfterMasterRestart", func(t *testing.T) {
+
+			start += count
+			txWraps = append(txWraps, genTxWraps(count, start)...)
+
+			for i := start; i < start+count; i++ {
+				// Inject.
+				require.NoError(t, master.AddTx(txWraps[i], func(_ *Transaction) error {
+					return nil
+				}))
+				// Wait.
+				select {
+				case _, ok := <-slave.TxChan():
+					require.True(t, ok, "slave txChan shouldn't close")
+				case <-time.After(time.Second * 2):
+					require.Fail(t, "slave tx receive timed out")
+				}
+			}
+		})
+
+		master.Close()
+		slave.Close()
+	})
 }

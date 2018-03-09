@@ -93,7 +93,7 @@ func NewCXOChain(config *CXOChainConfig) (*CXOChain, error) {
 		c:        config,
 		l:        log,
 		received: make(chan *TxWrapper),
-		accepted: make(chan *TxWrapper, 10),
+		accepted: make(chan *TxWrapper),
 	}
 
 	if e := prepareNode(chain); e != nil {
@@ -108,9 +108,12 @@ func NewCXOChain(config *CXOChainConfig) (*CXOChain, error) {
 }
 
 func (c *CXOChain) Close() {
+	defer c.lock()()
+
 	close(c.received)
-	close(c.accepted)
 	c.wg.Wait()
+	close(c.accepted)
+
 	if e := c.node.Close(); e != nil {
 		c.l.WithError(e).
 			Error("error on cxo node close")
@@ -125,6 +128,13 @@ func (c *CXOChain) Close() {
 func (c *CXOChain) lock() func() {
 	c.mux.Lock()
 	return c.mux.Unlock
+}
+
+func (c *CXOChain) attemptPushAccepted(txWrap *TxWrapper) {
+	select {
+	case c.accepted <- txWrap:
+	default:
+	}
 }
 
 func prepareNode(chain *CXOChain) error {
@@ -220,12 +230,7 @@ func prepareNode(chain *CXOChain) error {
 					WithField("tx_seq", i).
 					Info("received new transaction")
 
-				select {
-				case c.received <- wrapper:
-				default:
-					return errors.New(
-						"received chan is not being processed, 'RunTxService' is probably not called")
-				}
+				c.received <- wrapper
 			}
 
 			chain.l.Info("blockchain synced")
@@ -240,11 +245,15 @@ func prepareNode(chain *CXOChain) error {
 	}
 
 	nc.OnConnect = func(c *node.Conn) error {
+		defer chain.lock()()
+
 		// TODO: implement.
 		return nil
 	}
 
 	nc.OnDisconnect = func(c *node.Conn, reason error) {
+		defer chain.lock()()
+
 		// TODO: implement.
 	}
 
@@ -262,9 +271,10 @@ func prepareNode(chain *CXOChain) error {
 
 func (c *CXOChain) RunTxService(txChecker TxChecker) error {
 	c.wg.Add(1)
-	defer c.wg.Done()
 
 	go func() {
+		defer c.wg.Done()
+
 		for {
 			select {
 			case txWrapper, ok := <-c.received:
@@ -276,8 +286,7 @@ func (c *CXOChain) RunTxService(txChecker TxChecker) error {
 
 				} else {
 					c.len.Inc()
-					c.l.Info("adding to accepted chan")
-					c.accepted <- txWrapper
+					c.attemptPushAccepted(txWrapper)
 				}
 			}
 		}
@@ -348,6 +357,7 @@ func (c *CXOChain) MasterInitChain() error {
 
 func (c *CXOChain) Head() (TxWrapper, error) {
 	defer c.lock()()
+
 	var (
 		txWrap TxWrapper
 		cLen   = c.len.Val()
@@ -376,6 +386,7 @@ func (c *CXOChain) Len() uint64 {
 }
 
 func (c *CXOChain) AddTx(txWrap TxWrapper, check TxChecker) error {
+
 	if c.c.MasterRooter == false {
 		return errors.New("not master node")
 	}
@@ -405,14 +416,7 @@ func (c *CXOChain) AddTx(txWrap TxWrapper, check TxChecker) error {
 	}
 	c.node.Publish(r)
 	c.len.Set(cLen + 1)
-
-	select {
-	case c.accepted <- &txWrap:
-	default:
-		go func() {
-			c.accepted <- &txWrap
-		}()
-	}
+	c.attemptPushAccepted(&txWrap)
 	return nil
 }
 
