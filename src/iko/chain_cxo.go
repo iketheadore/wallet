@@ -401,6 +401,14 @@ func (c *CXOChain) AddTx(txWrap TxWrapper, check TxChecker) error {
 	}
 	c.node.Publish(r)
 	c.len.Set(cLen + 1)
+
+	select {
+	case c.accepted <- &txWrap:
+	default:
+		go func() {
+			c.accepted <- &txWrap
+		}()
+	}
 	return nil
 }
 
