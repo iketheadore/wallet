@@ -20,35 +20,6 @@ var (
 	GenPK, GenSK   = cipher.GenerateDeterministicKeyPair([]byte(MasterGenSeed))
 )
 
-func newChainDB(
-	t *testing.T,
-	dir string,
-	master bool,
-	doInit bool,
-	addr string,
-	dAddrs []string,
-) (ChainDB, error) {
-	chainDB, err := NewCXOChain(&CXOChainConfig{
-		Public:             true,
-		Memory:             dir == "",
-		MessengerAddresses: dAddrs,
-		CXOAddress:         addr,
-		MasterRooter:       master,
-		MasterRootPK:       RootPK,
-		MasterRootSK:       RootSK,
-		MasterRootNonce:    MasterRootNonce,
-	})
-	if err != nil {
-		return nil, err
-	}
-	if doInit {
-		if err := chainDB.MasterInitChain(); err != nil {
-			return nil, err
-		}
-	}
-	return chainDB, nil
-}
-
 /*
 	<<< TESTS BEGIN >>>
 */
@@ -283,7 +254,7 @@ func runChainDBTest(t *testing.T, chainDB ChainDB) {
 
 func TestChainDB_CXOChain(t *testing.T) {
 
-	chainDB, err := newChainDB(t,
+	chainDB, err := newCXOChainDB(
 		"", true, true,":7999", nil)
 
 	require.NoError(t, err,

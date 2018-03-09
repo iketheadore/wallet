@@ -139,9 +139,7 @@ func prepareNode(chain *CXOChain) error {
 	if len(chain.c.MessengerAddresses) > 0 {
 		nc.TCP.Discovery = node.Addresses(chain.c.MessengerAddresses)
 	}
-	if chain.c.CXORPCAddress != "" {
-		nc.RPC = chain.c.CXORPCAddress
-	}
+	nc.RPC = chain.c.CXORPCAddress
 
 	nc.OnRootReceived = func(c *node.Conn, r *registry.Root) error {
 		defer chain.lock()()
@@ -221,7 +219,13 @@ func prepareNode(chain *CXOChain) error {
 					WithField("tx_hash", txHash.Hex()).
 					WithField("tx_seq", i).
 					Info("received new transaction")
-				c.received <- wrapper
+
+				select {
+				case c.received <- wrapper:
+				default:
+					return errors.New(
+						"received chan is not being processed, 'RunTxService' is probably not called")
+				}
 			}
 
 			chain.l.Info("blockchain synced")
