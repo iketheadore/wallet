@@ -128,15 +128,51 @@ func TestNewCXOChain(t *testing.T) {
 			addr0  = cipher.AddressFromSecKey(sk0)
 		)
 
-		// Add more transactions.
+		// Add transfer transactions.
 		for i := len(txWraps); i < 5; i++ {
-			NewTransferTx(&txWraps[0].Tx, addr0, GenSK)
+			tx, err := NewTransferTx(&txWraps[0].Tx, addr0, GenSK)
+			require.NoError(t, err,
+				"should generate transfer tx successfully")
+
+			txWrap := TxWrapper{
+				Tx: *tx,
+				Meta: genTxMeta(uint64(i)),
+			}
+
+			txWraps = append(txWraps, txWrap)
+
+			// Inject in master.
+			err = master.AddTx(txWrap, func(tx *Transaction) error {
+				return nil
+			})
+			require.NoError(t, err,
+				"should successfully inject transfer tx in master")
+			select {
+			case recTxWrap := <-slave.TxChan():
+				require.Equal(t, *recTxWrap, txWrap,
+					"received tx is different from sent")
+
+			case tm := <-time.After(time.Second * 5):
+				require.Fail(t, "receive tx timed out", tm)
+			}
 		}
 
-		//txWraps := append(txWraps, []TxWrapper{
-		//	{
-		//		Tx:
-		//	},
-		//}...)
+		// Manually check txs in slave.
+		t.Run("SlaveReceivedTxsCheck", func(t *testing.T) {
+			sTxWraps, err := slave.GetTxsOfSeqRange(0, uint64(len(txWraps)))
+
+			require.NoError(t, err,
+				"should successfully obtain txs of seq range")
+
+			require.Equal(t, len(sTxWraps), len(txWraps),
+				"should obtain same number of txs as that injected")
+
+			for i, txWrap := range sTxWraps {
+				t.Run(fmt.Sprintf("%d", i), func(t *testing.T) {
+					require.Equal(t, txWrap, txWraps[i],
+						"injected and received txs should be the same")
+				})
+			}
+		})
 	})
 }
