@@ -206,7 +206,7 @@ func runChainDBTest(t *testing.T, chainDB ChainDB) {
 				case tm := <-time.After(time.Second * 2):
 					t.Errorf("timed out waiting for txChan (%v)", tm)
 
-				case chanTxWrap := <- txChan:
+				case chanTxWrap := <-txChan:
 					require.Equal(t, *chanTxWrap, txWrap,
 						"Should return our transactions through the TxChan() channel in order they were added")
 				}
@@ -255,7 +255,7 @@ func runChainDBTest(t *testing.T, chainDB ChainDB) {
 func TestChainDB_CXOChain(t *testing.T) {
 
 	chainDB, err := newCXOChainDB(
-		"", true, true,":7999", nil)
+		"", true, true, ":7999", nil)
 
 	require.NoError(t, err,
 		"master root should init with no problem")

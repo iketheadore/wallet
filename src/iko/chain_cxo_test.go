@@ -1,11 +1,12 @@
 package iko
 
 import (
-	"testing"
-	"github.com/skycoin/net/skycoin-messenger/factory"
-	"github.com/stretchr/testify/require"
-	"time"
 	"fmt"
+	"github.com/skycoin/net/skycoin-messenger/factory"
+	"github.com/skycoin/skycoin/src/cipher"
+	"github.com/stretchr/testify/require"
+	"testing"
+	"time"
 )
 
 func newCXOChainDB(
@@ -38,15 +39,17 @@ func newCXOChainDB(
 	})
 }
 
-func newDiscoveryServer(addr string) (*factory.MessengerFactory, error) {
+func newDiscoveryServer(addr string) (func(), error) {
 	f := factory.NewMessengerFactory()
-	return f, f.Listen(addr)
+	return func() {
+		f.Close()
+	}, f.Listen(addr)
 }
 
 func genTxMeta(seq uint64) TxMeta {
 	return TxMeta{
 		Seq: seq,
-		TS: time.Now().UnixNano(),
+		TS:  time.Now().UnixNano(),
 	}
 }
 
@@ -63,10 +66,10 @@ func TestNewCXOChain(t *testing.T) {
 	)
 
 	// Start discovery node.
-	f, err := newDiscoveryServer(DiscoveryAddr)
+	fClose, err := newDiscoveryServer(DiscoveryAddr)
 	require.NoError(t, err,
 		"discovery server should start")
-	defer f.Close()
+	defer fClose()
 
 	time.Sleep(time.Second * 2)
 
@@ -88,15 +91,15 @@ func TestNewCXOChain(t *testing.T) {
 
 		txWraps := []TxWrapper{
 			{
-				Tx: *NewGenTx(KittyID(0), GenSK),
+				Tx:   *NewGenTx(KittyID(0), GenSK),
 				Meta: genTxMeta(0),
 			},
 			{
-				Tx: *NewGenTx(KittyID(1), GenSK),
+				Tx:   *NewGenTx(KittyID(1), GenSK),
 				Meta: genTxMeta(1),
 			},
 			{
-				Tx: *NewGenTx(KittyID(2), GenSK),
+				Tx:   *NewGenTx(KittyID(2), GenSK),
 				Meta: genTxMeta(2),
 			},
 		}
@@ -119,5 +122,21 @@ func TestNewCXOChain(t *testing.T) {
 				}
 			})
 		}
+
+		var (
+			_, sk0 = cipher.GenerateDeterministicKeyPair([]byte("user 0"))
+			addr0  = cipher.AddressFromSecKey(sk0)
+		)
+
+		// Add more transactions.
+		for i := len(txWraps); i < 5; i++ {
+			NewTransferTx(&txWraps[0].Tx, addr0, GenSK)
+		}
+
+		//txWraps := append(txWraps, []TxWrapper{
+		//	{
+		//		Tx:
+		//	},
+		//}...)
 	})
 }
