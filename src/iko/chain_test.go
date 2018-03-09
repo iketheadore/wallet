@@ -20,6 +20,10 @@ var (
 	GenPK, GenSK   = cipher.GenerateDeterministicKeyPair([]byte(MasterGenSeed))
 )
 
+/*
+	<<< TESTS BEGIN >>>
+*/
+
 func testChainDBPagination(t *testing.T, chainDB ChainDB, pageSize uint64) {
 	t.Run("testChainDBPagination", func(t *testing.T) {
 		// demonstrating the pagination flow
@@ -191,17 +195,23 @@ func runChainDBTest(t *testing.T, chainDB ChainDB) {
 			})
 		}
 
-		//t.Run("TxChan", func(t *testing.T) {
-		//	txChan := chainDB.TxChan()
-		//
-		//	require.NotNil(t, txChan,
-		//		"Should return a valid receiving channel for transactions")
-		//
-		//	for _, txWrap := range txWraps {
-		//		require.Equal(t, *<-txChan, txWrap,
-		//			"Should return our transactions through the TxChan() channel in order they were added")
-		//	}
-		//})
+		t.Run("TxChan", func(t *testing.T) {
+			txChan := chainDB.TxChan()
+
+			require.NotNil(t, txChan,
+				"Should return a valid receiving channel for transactions")
+
+			for _, txWrap := range txWraps {
+				select {
+				case tm := <-time.After(time.Second * 2):
+					t.Errorf("timed out waiting for txChan (%v)", tm)
+
+				case chanTxWrap := <-txChan:
+					require.Equal(t, *chanTxWrap, txWrap,
+						"Should return our transactions through the TxChan() channel in order they were added")
+				}
+			}
+		})
 
 		// adding a third transaction for an odd number of transactions
 		thirdTx, err := NewTransferTx(
@@ -244,18 +254,9 @@ func runChainDBTest(t *testing.T, chainDB ChainDB) {
 
 func TestChainDB_CXOChain(t *testing.T) {
 
-	chainDB, e := NewCXOChain(&CXOChainConfig{
-		Public:          true,
-		Memory:          true,
-		MasterRooter:    true,
-		MasterRootPK:    RootPK,
-		MasterRootSK:    RootSK,
-		MasterRootNonce: MasterRootNonce,
-	})
-	require.NoError(t, e,
-		"failed to create cxo chain db")
+	chainDB, err := newCXOChainDB(
+		"", true, true, ":7999", nil)
 
-	err := chainDB.MasterInitChain()
 	require.NoError(t, err,
 		"master root should init with no problem")
 
