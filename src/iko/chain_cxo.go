@@ -78,7 +78,7 @@ type CXOChain struct {
 	len util.SafeInt
 }
 
-func NewCXOChain(config *CXOChainConfig) (*CXOChain, error) {
+func NewCXOChain(config *CXOChainConfig, modifyNC ...NodeConfigModifier) (*CXOChain, error) {
 	log := &logrus.Logger{
 		Out:       os.Stderr,
 		Formatter: new(logrus.TextFormatter),
@@ -96,12 +96,21 @@ func NewCXOChain(config *CXOChainConfig) (*CXOChain, error) {
 		accepted: make(chan *TxWrapper),
 	}
 
-	if e := prepareNode(chain); e != nil {
+	var modify NodeConfigModifier
+	if len(modifyNC) > 0 {
+		modify = modifyNC[0]
+	}
+
+	if e := prepareNode(chain, modify); e != nil {
 		return nil, e
 	}
 
 	if e := initChain(chain); e != nil {
-		log.WithError(e).Info("blockchain not downloaded")
+		log.WithError(e).
+			Info("no blockchain yet")
+	} else {
+		log.WithField("height", chain.len.Val()).
+			Info("blockchain re-initialized")
 	}
 
 	return chain, nil
@@ -137,9 +146,13 @@ func (c *CXOChain) attemptPushAccepted(txWrap *TxWrapper) {
 	}
 }
 
-func prepareNode(chain *CXOChain) error {
+type NodeConfigModifier func(nc *node.Config) error
+
+func prepareNode(chain *CXOChain, modifier NodeConfigModifier) error {
 
 	nc := node.NewConfig()
+
+	nc.Logger.Prefix = "klsjenrkjlnrk"
 
 	nc.DataDir = chain.c.Dir
 	nc.Public = chain.c.Public
@@ -255,6 +268,12 @@ func prepareNode(chain *CXOChain) error {
 		defer chain.lock()()
 
 		// TODO: implement.
+	}
+
+	if modifier != nil {
+		if e := modifier(nc); e != nil {
+			return e
+		}
 	}
 
 	var e error

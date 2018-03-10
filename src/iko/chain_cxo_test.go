@@ -2,6 +2,7 @@ package iko
 
 import (
 	"fmt"
+	"github.com/skycoin/cxo/node"
 	"github.com/skycoin/net/skycoin-messenger/factory"
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/stretchr/testify/require"
@@ -17,18 +18,27 @@ func newCXOChainDB(
 	doInit bool,
 	addr string,
 	dAddrs []string,
+	logPrefix ...string,
 ) (*CXOChain, error) {
-	chainDB, err := NewCXOChain(&CXOChainConfig{
-		Dir:                dir,
-		Public:             true,
-		Memory:             dir == "",
-		MessengerAddresses: dAddrs,
-		CXOAddress:         addr,
-		MasterRooter:       master,
-		MasterRootPK:       RootPK,
-		MasterRootSK:       RootSK,
-		MasterRootNonce:    MasterRootNonce,
-	})
+	chainDB, err := NewCXOChain(
+		&CXOChainConfig{
+			Dir:                dir,
+			Public:             true,
+			Memory:             dir == "",
+			MessengerAddresses: dAddrs,
+			CXOAddress:         addr,
+			MasterRooter:       master,
+			MasterRootPK:       RootPK,
+			MasterRootSK:       RootSK,
+			MasterRootNonce:    MasterRootNonce,
+		},
+		func(nc *node.Config) error {
+			if len(logPrefix) > 0 {
+				nc.Logger.Prefix = logPrefix[0] + " "
+			}
+			return nil
+		},
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -246,7 +256,7 @@ func TestNewCXOChain(t *testing.T) {
 		// Start master and initiate chain.
 
 		master, err := newCXOChainDB(
-			masterDir, true, true, MasterAddr, []string{DiscoveryAddr})
+			masterDir, true, true, MasterAddr, []string{DiscoveryAddr}, "MASTER")
 		require.NoError(t, err)
 
 		// Inject some txs.
@@ -264,7 +274,7 @@ func TestNewCXOChain(t *testing.T) {
 		// Start slave.
 
 		slave, err := newCXOChainDB(
-			slaveDir, false, false, SlaveAddr, []string{DiscoveryAddr})
+			slaveDir, false, false, SlaveAddr, []string{DiscoveryAddr}, "SLAVE")
 		require.NoError(t, err)
 
 		// Inject more txs, waiting for slave to receive.
@@ -282,7 +292,7 @@ func TestNewCXOChain(t *testing.T) {
 				// Wait for slave to receive.
 				select {
 				case _, ok := <-slave.TxChan():
-					require.True(t, ok, "slave txChan shouldn't close")
+					require.True(t, ok)
 				case <-time.After(time.Second * 2):
 					require.Fail(t, "slave tx receive timed out")
 				}
@@ -292,13 +302,11 @@ func TestNewCXOChain(t *testing.T) {
 		// Restart master.
 
 		master.Close()
-		time.Sleep(time.Second * 2)
 
 		master, err = newCXOChainDB(
-			masterDir, true, false, MasterAddr, []string{DiscoveryAddr})
+			masterDir, true, false, MasterAddr, []string{DiscoveryAddr}, "MASTER")
 		require.NoError(t, err)
 
-		time.Sleep(time.Second * 10)
 
 		// Inject more txs, waiting for slave to receive.
 
@@ -315,12 +323,68 @@ func TestNewCXOChain(t *testing.T) {
 				// Wait.
 				select {
 				case _, ok := <-slave.TxChan():
-					require.True(t, ok, "slave txChan shouldn't close")
+					require.True(t, ok)
 				case <-time.After(time.Second * 2):
 					require.Fail(t, "slave tx receive timed out")
 				}
 			}
+
+			// Check txs stored in master and slave nodes.
+			for i, txWrap := range txWraps {
+
+				masterTxWrap, err := master.GetTxOfSeq(uint64(i))
+				require.NoError(t, err)
+				require.Equal(t, masterTxWrap, txWrap)
+
+				slaveTxWrap, err := slave.GetTxOfSeq(uint64(i))
+				require.NoError(t, err)
+				require.Equal(t, slaveTxWrap, txWrap)
+			}
 		})
+
+		// Restart master.
+
+		master.Close()
+
+		master, err = newCXOChainDB(
+			masterDir, true, false, MasterAddr, []string{DiscoveryAddr}, "MASTER")
+		require.NoError(t, err)
+
+		// Check again.
+
+		// Check txs stored in master and slave nodes.
+		for i, txWrap := range txWraps {
+
+			masterTxWrap, err := master.GetTxOfSeq(uint64(i))
+			require.NoError(t, err)
+			require.Equal(t, masterTxWrap, txWrap)
+
+			slaveTxWrap, err := slave.GetTxOfSeq(uint64(i))
+			require.NoError(t, err)
+			require.Equal(t, slaveTxWrap, txWrap)
+		}
+
+		// Restart slave.
+
+		slave.Close()
+
+		slave, err = newCXOChainDB(
+			slaveDir, false, false, SlaveAddr, []string{DiscoveryAddr}, "SLAVE")
+		require.NoError(t, err)
+
+		// Check again.
+
+		// Check txs stored in master and slave nodes.
+		for i, txWrap := range txWraps {
+
+			masterTxWrap, err := master.GetTxOfSeq(uint64(i))
+			require.NoError(t, err)
+			require.Equal(t, masterTxWrap, txWrap)
+
+			slaveTxWrap, err := slave.GetTxOfSeq(uint64(i))
+			require.NoError(t, err)
+			require.Equal(t, slaveTxWrap, txWrap)
+		}
 
 		master.Close()
 		slave.Close()
