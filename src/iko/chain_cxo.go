@@ -78,7 +78,7 @@ type CXOChain struct {
 	len util.SafeInt
 }
 
-func NewCXOChain(config *CXOChainConfig) (*CXOChain, error) {
+func NewCXOChain(config *CXOChainConfig, modifyNC ...NodeConfigModifier) (*CXOChain, error) {
 	log := &logrus.Logger{
 		Out:       os.Stderr,
 		Formatter: new(logrus.TextFormatter),
@@ -93,24 +93,36 @@ func NewCXOChain(config *CXOChainConfig) (*CXOChain, error) {
 		c:        config,
 		l:        log,
 		received: make(chan *TxWrapper),
-		accepted: make(chan *TxWrapper, 10),
+		accepted: make(chan *TxWrapper),
 	}
 
-	if e := prepareNode(chain); e != nil {
+	var modify NodeConfigModifier
+	if len(modifyNC) > 0 {
+		modify = modifyNC[0]
+	}
+
+	if e := prepareNode(chain, modify); e != nil {
 		return nil, e
 	}
 
 	if e := initChain(chain); e != nil {
-		log.WithError(e).Info("blockchain not downloaded")
+		log.WithError(e).
+			Info("no blockchain yet")
+	} else {
+		log.WithField("height", chain.len.Val()).
+			Info("blockchain re-initialized")
 	}
 
 	return chain, nil
 }
 
 func (c *CXOChain) Close() {
+	defer c.lock()()
+
 	close(c.received)
-	close(c.accepted)
 	c.wg.Wait()
+	close(c.accepted)
+
 	if e := c.node.Close(); e != nil {
 		c.l.WithError(e).
 			Error("error on cxo node close")
@@ -127,9 +139,20 @@ func (c *CXOChain) lock() func() {
 	return c.mux.Unlock
 }
 
-func prepareNode(chain *CXOChain) error {
+func (c *CXOChain) attemptPushAccepted(txWrap *TxWrapper) {
+	select {
+	case c.accepted <- txWrap:
+	default:
+	}
+}
+
+type NodeConfigModifier func(nc *node.Config) error
+
+func prepareNode(chain *CXOChain, modifier NodeConfigModifier) error {
 
 	nc := node.NewConfig()
+
+	nc.Logger.Prefix = "klsjenrkjlnrk"
 
 	nc.DataDir = chain.c.Dir
 	nc.Public = chain.c.Public
@@ -220,12 +243,7 @@ func prepareNode(chain *CXOChain) error {
 					WithField("tx_seq", i).
 					Info("received new transaction")
 
-				select {
-				case c.received <- wrapper:
-				default:
-					return errors.New(
-						"received chan is not being processed, 'RunTxService' is probably not called")
-				}
+				c.received <- wrapper
 			}
 
 			chain.l.Info("blockchain synced")
@@ -240,12 +258,22 @@ func prepareNode(chain *CXOChain) error {
 	}
 
 	nc.OnConnect = func(c *node.Conn) error {
+		defer chain.lock()()
+
 		// TODO: implement.
 		return nil
 	}
 
 	nc.OnDisconnect = func(c *node.Conn, reason error) {
+		defer chain.lock()()
+
 		// TODO: implement.
+	}
+
+	if modifier != nil {
+		if e := modifier(nc); e != nil {
+			return e
+		}
 	}
 
 	var e error
@@ -262,9 +290,10 @@ func prepareNode(chain *CXOChain) error {
 
 func (c *CXOChain) RunTxService(txChecker TxChecker) error {
 	c.wg.Add(1)
-	defer c.wg.Done()
 
 	go func() {
+		defer c.wg.Done()
+
 		for {
 			select {
 			case txWrapper, ok := <-c.received:
@@ -276,8 +305,7 @@ func (c *CXOChain) RunTxService(txChecker TxChecker) error {
 
 				} else {
 					c.len.Inc()
-					c.l.Info("adding to accepted chan")
-					c.accepted <- txWrapper
+					c.attemptPushAccepted(txWrapper)
 				}
 			}
 		}
@@ -348,6 +376,7 @@ func (c *CXOChain) MasterInitChain() error {
 
 func (c *CXOChain) Head() (TxWrapper, error) {
 	defer c.lock()()
+
 	var (
 		txWrap TxWrapper
 		cLen   = c.len.Val()
@@ -376,6 +405,7 @@ func (c *CXOChain) Len() uint64 {
 }
 
 func (c *CXOChain) AddTx(txWrap TxWrapper, check TxChecker) error {
+
 	if c.c.MasterRooter == false {
 		return errors.New("not master node")
 	}
@@ -405,14 +435,7 @@ func (c *CXOChain) AddTx(txWrap TxWrapper, check TxChecker) error {
 	}
 	c.node.Publish(r)
 	c.len.Set(cLen + 1)
-
-	select {
-	case c.accepted <- &txWrap:
-	default:
-		go func() {
-			c.accepted <- &txWrap
-		}()
-	}
+	c.attemptPushAccepted(&txWrap)
 	return nil
 }
 

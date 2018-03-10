@@ -195,24 +195,6 @@ func runChainDBTest(t *testing.T, chainDB ChainDB) {
 			})
 		}
 
-		t.Run("TxChan", func(t *testing.T) {
-			txChan := chainDB.TxChan()
-
-			require.NotNil(t, txChan,
-				"Should return a valid receiving channel for transactions")
-
-			for _, txWrap := range txWraps {
-				select {
-				case tm := <-time.After(time.Second * 2):
-					t.Errorf("timed out waiting for txChan (%v)", tm)
-
-				case chanTxWrap := <-txChan:
-					require.Equal(t, *chanTxWrap, txWrap,
-						"Should return our transactions through the TxChan() channel in order they were added")
-				}
-			}
-		})
-
 		// adding a third transaction for an odd number of transactions
 		thirdTx, err := NewTransferTx(
 			secondTx, cipher.AddressFromPubKey(GenPK), sk2)
