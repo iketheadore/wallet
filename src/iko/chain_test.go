@@ -3,10 +3,11 @@ package iko
 import (
 	"errors"
 	"fmt"
-	"github.com/skycoin/skycoin/src/cipher"
-	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
+
+	"github.com/skycoin/skycoin/src/cipher"
+	"github.com/stretchr/testify/require"
 )
 
 const (

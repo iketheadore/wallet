@@ -2,8 +2,10 @@ package rpc
 
 import (
 	"errors"
-	"github.com/kittycash/wallet/src/iko"
+
 	"github.com/skycoin/skycoin/src/cipher"
+
+	"github.com/kittycash/wallet/src/iko"
 )
 
 const (

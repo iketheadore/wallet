@@ -4,13 +4,15 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/kittycash/wallet/src/iko"
-	"github.com/skycoin/skycoin/src/cipher"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/skycoin/skycoin/src/cipher"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
+
+	"github.com/kittycash/wallet/src/iko"
 )
 
 func ikoGateway(m *http.ServeMux, g *iko.BlockChain) error {

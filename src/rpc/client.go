@@ -1,8 +1,9 @@
 package rpc
 
 import (
-	"gopkg.in/sirupsen/logrus.v1"
 	"net/rpc"
+
+	"gopkg.in/sirupsen/logrus.v1"
 )
 
 type ClientConfig struct {

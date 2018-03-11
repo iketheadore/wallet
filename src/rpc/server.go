@@ -1,10 +1,11 @@
 package rpc
 
 import (
-	"gopkg.in/sirupsen/logrus.v1"
 	"net"
 	"net/rpc"
 	"sync"
+
+	"gopkg.in/sirupsen/logrus.v1"
 )
 
 type ServerConfig struct {

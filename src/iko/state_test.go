@@ -1,9 +1,10 @@
 package iko
 
 import (
+	"testing"
+
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 func runStateDBTest(t *testing.T, stateDB StateDB) {
