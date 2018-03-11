@@ -2,7 +2,6 @@ package iko
 
 import (
 	"errors"
-	"fmt"
 	"github.com/skycoin/skycoin/src/cipher"
 	"gopkg.in/sirupsen/logrus.v1"
 	"os"
@@ -170,16 +169,6 @@ func (bc *BlockChain) InjectTx(tx *Transaction) (*TxMeta, error) {
 
 func MakeTxChecker(bc *BlockChain) TxChecker {
 	return func(tx *Transaction) error {
-
-		bc.log.Info("tx_checker: start")
-
-		// Check duplicate.
-		if _, e := bc.chain.GetTxOfHash(tx.Hash()); e == nil {
-			return fmt.Errorf("tx of hash '%s' is a duplicate",
-				tx.Hash().Hex())
-		}
-
-		bc.log.Info("tx_checker: not duplicate")
 
 		var unspent *Transaction
 		if tempHash, ok := bc.state.GetKittyUnspentTx(tx.KittyID); ok {
