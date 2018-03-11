@@ -152,8 +152,6 @@ func prepareNode(chain *CXOChain, modifier NodeConfigModifier) error {
 
 	nc := node.NewConfig()
 
-	nc.Logger.Prefix = "klsjenrkjlnrk"
-
 	nc.DataDir = chain.c.Dir
 	nc.Public = chain.c.Public
 	nc.InMemoryDB = chain.c.Memory
