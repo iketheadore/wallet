@@ -2,9 +2,10 @@ package http
 
 import (
 	"fmt"
-	"github.com/kittycash/wallet/src/wallet"
 	"net/http"
 	"strconv"
+
+	"github.com/kittycash/wallet/src/wallet"
 )
 
 func walletGateway(m *http.ServeMux, g *wallet.Manager) error {
