@@ -1,14 +1,16 @@
 package main
 
 import (
-	"github.com/kittycash/wallet/src/iko"
-	"github.com/kittycash/wallet/src/rpc"
-	"github.com/kittycash/wallet/src/util"
+	"io/ioutil"
+	"os"
+
 	"github.com/skycoin/skycoin/src/cipher"
 	"gopkg.in/sirupsen/logrus.v1"
 	"gopkg.in/urfave/cli.v1"
-	"io/ioutil"
-	"os"
+
+	"github.com/kittycash/wallet/src/iko"
+	"github.com/kittycash/wallet/src/rpc"
+	"github.com/kittycash/wallet/src/util"
 )
 
 const (

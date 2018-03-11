@@ -3,13 +3,15 @@ package http
 import (
 	_ "errors"
 	"fmt"
-	_ "github.com/kittycash/wallet/src/iko"
-	"github.com/kittycash/wallet/src/wallet"
-	"github.com/skycoin/skycoin/src/cipher"
-	_ "github.com/stretchr/testify/require"
 	"net/http"
 	_ "sync"
 	"testing"
+
+	"github.com/skycoin/skycoin/src/cipher"
+	_ "github.com/stretchr/testify/require"
+
+	_ "github.com/kittycash/wallet/src/iko"
+	"github.com/kittycash/wallet/src/wallet"
 )
 
 func runWalletGatewayTest(t *testing.T, wallet *wallet.Manager) {

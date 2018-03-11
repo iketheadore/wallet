@@ -3,15 +3,17 @@ package iko
 import (
 	"errors"
 	"fmt"
-	"github.com/kittycash/wallet/src/util"
+	"os"
+	"sync"
+
 	"github.com/skycoin/cxo/node"
 	"github.com/skycoin/cxo/skyobject"
 	"github.com/skycoin/cxo/skyobject/registry"
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"gopkg.in/sirupsen/logrus.v1"
-	"os"
-	"sync"
+
+	"github.com/kittycash/wallet/src/util"
 )
 
 type MeasureChain func() uint64
