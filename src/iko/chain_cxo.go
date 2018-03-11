@@ -152,8 +152,6 @@ func prepareNode(chain *CXOChain, modifier NodeConfigModifier) error {
 
 	nc := node.NewConfig()
 
-	nc.Logger.Prefix = "klsjenrkjlnrk"
-
 	nc.DataDir = chain.c.Dir
 	nc.Public = chain.c.Public
 	nc.InMemoryDB = chain.c.Memory
@@ -297,18 +295,14 @@ func (c *CXOChain) RunTxService(txChecker TxChecker) error {
 		for {
 			select {
 			case txWrapper, ok := <-c.received:
-				c.l.Info("received!")
 				if !ok {
-					c.l.Info("not okay!")
 					return
 
 				} else if e := txChecker(&txWrapper.Tx); e != nil {
-					c.l.Info("error")
 					c.l.Error(e.Error())
 
 				} else {
 					c.len.Inc()
-					c.l.Info("pushing")
 					c.attemptPushAccepted(txWrapper)
 				}
 			}
