@@ -307,7 +307,6 @@ func TestNewCXOChain(t *testing.T) {
 			masterDir, true, false, MasterAddr, []string{DiscoveryAddr}, "MASTER")
 		require.NoError(t, err)
 
-
 		// Inject more txs, waiting for slave to receive.
 
 		t.Run("InjectTxsAfterMasterRestart", func(t *testing.T) {

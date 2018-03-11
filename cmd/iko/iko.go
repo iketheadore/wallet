@@ -1,45 +1,39 @@
 package main
 
 import (
-	"github.com/kittycash/wallet/src/http"
 	"github.com/kittycash/wallet/src/iko"
 	"github.com/kittycash/wallet/src/rpc"
-	"github.com/kittycash/wallet/src/wallet"
+	"github.com/kittycash/wallet/src/util"
 	"github.com/skycoin/skycoin/src/cipher"
 	"gopkg.in/sirupsen/logrus.v1"
 	"gopkg.in/urfave/cli.v1"
 	"io/ioutil"
 	"os"
-	"os/signal"
 )
 
 const (
-	Init       = "init"
-	RootPubKey = "root-public-key"
-	RootSecKey = "root-secret-key"
-	RootNonce  = 885560
-	TxPubKey   = "tx-public-key"
+	DefaultCXOAddress = "127.0.0.1:7900"
+	DefaultRPCAddress = "127.0.0.1:7907"
+)
 
-	TestMode     = "test"
-	TestTxCount  = "test-tx-count"
-	TestTxSecKey = "test-tx-secret-key"
+const (
+	fInit       = "init"
+	fRootPubKey = "root-public-key"
+	fRootSecKey = "root-secret-key"
+	fRootNonce  = "root-nonce"
+	fTxPubKey   = "tx-public-key"
 
-	CXODir             = "cxo-dir"
-	CXOAddress         = "cxo-address"
-	CXORPCAddress      = "cxo-rpc-address"
-	DiscoveryAddresses = "messenger-addresses"
+	fTestMode     = "test"
+	fTestTxCount  = "test-tx-count"
+	fTestTxSecKey = "test-tx-secret-key"
 
-	WalletDir = "wallet-dir"
+	fCXODir             = "cxo-dir"
+	fCXOAddress         = "cxo-address"
+	fCXORPCAddress      = "cxo-rpc-address"
+	fDiscoveryAddresses = "messenger-addresses"
 
-	HttpAddress = "http-address"
-	GUI         = "gui"
-	GUIDir      = "gui-dir"
-	TLS         = "tls"
-	TLSCert     = "tls-cert"
-	TLSKey      = "tls-key"
-
-	RPCAddress  = "rpc-address"
-	RemoteClose = "remote-close"
+	fRPCAddress  = "rpc-address"
+	fRemoteClose = "remote-close"
 )
 
 func Flag(flag string, short ...string) string {
@@ -62,105 +56,72 @@ func init() {
 			<<< MASTER >>>
 		*/
 		cli.StringFlag{
-			Name:  Flag(RootPubKey, "rpk"),
+			Name:  Flag(fRootPubKey, "rpk"),
 			Usage: "public key to use as main blockchain signer",
 		},
 		cli.StringFlag{
-			Name:  Flag(RootSecKey, "rsk"),
+			Name:  Flag(fRootSecKey, "rsk"),
 			Usage: "secret key to use as main blockchain signer",
 		},
+		cli.Uint64Flag{
+			Name:  Flag(fRootNonce, "rn"),
+			Usage: "nonce to use as main blockchain identifier",
+		},
 		cli.StringFlag{
-			Name:  Flag(TxPubKey, "tpk"),
+			Name:  Flag(fTxPubKey, "tpk"),
 			Usage: "public key that is trusted for transactions",
 		},
 		cli.BoolFlag{
-			Name:  Flag(Init),
+			Name:  Flag(fInit),
 			Usage: "whether to init the root if it doesn't exist",
 		},
 		/*
 			<<< TEST MODE >>>
 		*/
 		cli.BoolFlag{
-			Name:  Flag(TestMode, "t"),
+			Name:  Flag(fTestMode, "t"),
 			Usage: "whether to use test data for run",
 		},
 		cli.IntFlag{
-			Name:  Flag(TestTxCount, "tc"),
+			Name:  Flag(fTestTxCount, "tc"),
 			Usage: "only valid in test mode, injects a number of initial transactions for testing",
 		},
 		cli.StringFlag{
-			Name:  Flag(TestTxSecKey, "tsk"),
+			Name:  Flag(fTestTxSecKey, "tsk"),
 			Usage: "secret key for signing test transactions",
 			Value: new(cipher.SecKey).Hex(),
-		},
-		/*
-			<<< WALLET CONFIG >>>
-		*/
-		cli.StringFlag{
-			Name:  Flag(WalletDir),
-			Usage: "directory to store wallet files",
-			Value: "./kc/wallet",
 		},
 		/*
 			<<< CXO CONFIG >>>
 		*/
 		cli.StringFlag{
-			Name:  Flag(CXODir),
+			Name:  Flag(fCXODir),
 			Usage: "directory to store cxo files",
 			Value: "./kc/cxo",
 		},
 		cli.StringFlag{
-			Name:  Flag(CXOAddress),
+			Name:  Flag(fCXOAddress),
 			Usage: "address to use to serve CXO",
-			Value: "[::]:8123", // TODO: Determine a default value.
+			Value: DefaultCXOAddress,
 		},
 		cli.StringSliceFlag{
-			Name:  Flag(DiscoveryAddresses),
+			Name:  Flag(fDiscoveryAddresses),
 			Usage: "discovery addresses",
 		},
 		cli.StringFlag{
-			Name:  Flag(CXORPCAddress),
+			Name:  Flag(fCXORPCAddress),
 			Usage: "address for CXO RPC, leave blank to disable CXO RPC",
-		},
-		/*
-			<<< HTTP SERVER >>>
-		*/
-		cli.StringFlag{
-			Name:  Flag(HttpAddress),
-			Usage: "address to serve http server on",
-			Value: "127.0.0.1:8080",
-		},
-		cli.BoolTFlag{
-			Name:  Flag(GUI),
-			Usage: "whether to enable gui",
-		},
-		cli.StringFlag{
-			Name:  Flag(GUIDir),
-			Usage: "directory to serve GUI from",
-			Value: "./kc/static",
-		},
-		cli.BoolFlag{
-			Name:  Flag(TLS),
-			Usage: "whether to enable tls",
-		},
-		cli.StringFlag{
-			Name:  Flag(TLSCert),
-			Usage: "tls certificate file path",
-		},
-		cli.StringFlag{
-			Name:  Flag(TLSKey),
-			Usage: "tls key file path",
 		},
 		/*
 			<<< RPC SERVER >>>
 		*/
 		cli.StringFlag{
-			Name:  Flag(RPCAddress),
+			Name:  Flag(fRPCAddress),
 			Usage: "address used to serve rpc, keep empty to not serve rpc",
-			Value: "[::]:7123", // TODO: determine default value.
+			Value: DefaultRPCAddress,
 		},
 		cli.BoolFlag{
-			Name:  Flag(RemoteClose),
+			Name:  Flag(fRemoteClose),
 			Usage: "whether to enable remote close",
 		},
 	}
@@ -168,34 +129,26 @@ func init() {
 }
 
 func action(ctx *cli.Context) error {
-	quit := CatchInterrupt()
+	quit := util.CatchInterrupt()
 
 	var (
-		rootPK = cipher.MustPubKeyFromHex(ctx.String(RootPubKey))
-		rootSK = cipher.MustSecKeyFromHex(ctx.String(RootSecKey))
-		txPK   = cipher.MustPubKeyFromHex(ctx.String(TxPubKey))
-		doInit = ctx.Bool(Init)
+		rootPK    = cipher.MustPubKeyFromHex(ctx.String(fRootPubKey))
+		rootSK    = cipher.MustSecKeyFromHex(ctx.String(fRootSecKey))
+		rootNonce = ctx.Uint64(fRootNonce)
+		txPK      = cipher.MustPubKeyFromHex(ctx.String(fTxPubKey))
+		doInit    = ctx.Bool(fInit)
 
-		testMode  = ctx.Bool(TestMode)
-		testCount = ctx.Int(TestTxCount)
-		testSK    = cipher.MustSecKeyFromHex(ctx.String(TestTxSecKey))
+		testMode  = ctx.Bool(fTestMode)
+		testCount = ctx.Int(fTestTxCount)
+		testSK    = cipher.MustSecKeyFromHex(ctx.String(fTestTxSecKey))
 
-		walletDir = ctx.String(WalletDir)
+		cxoDir             = ctx.String(fCXODir)
+		cxoAddress         = ctx.String(fCXOAddress)
+		cxoRPCAddress      = ctx.String(fCXORPCAddress)
+		discoveryAddresses = ctx.StringSlice(fDiscoveryAddresses)
 
-		cxoDir             = ctx.String(CXODir)
-		cxoAddress         = ctx.String(CXOAddress)
-		cxoRPCAddress      = ctx.String(CXORPCAddress)
-		discoveryAddresses = ctx.StringSlice(DiscoveryAddresses)
-
-		httpAddress = ctx.String(HttpAddress)
-		gui         = ctx.BoolT(GUI)
-		guiDir      = ctx.String(GUIDir)
-		tls         = ctx.Bool(TLS)
-		tlsCert     = ctx.String(TLSCert)
-		tlsKey      = ctx.String(TLSKey)
-
-		rpcAddress  = ctx.String(RPCAddress)
-		remoteClose = ctx.Bool(RemoteClose)
+		rpcAddress  = ctx.String(fRPCAddress)
+		remoteClose = ctx.Bool(fRemoteClose)
 	)
 
 	var (
@@ -218,7 +171,7 @@ func action(ctx *cli.Context) error {
 		MasterRooter:       true,
 		MasterRootPK:       rootPK,
 		MasterRootSK:       rootSK,
-		MasterRootNonce:    RootNonce,
+		MasterRootNonce:    rootNonce,
 	})
 	if e != nil {
 		return e
@@ -267,42 +220,13 @@ func action(ctx *cli.Context) error {
 		}
 	}
 
-	// Prepare wallet.
 	if testMode {
 		tempDir, e := ioutil.TempDir(os.TempDir(), "kc")
 		if e != nil {
 			return e
 		}
 		defer os.RemoveAll(tempDir)
-		walletDir = tempDir
 	}
-	if e := wallet.SetRootDir(walletDir); e != nil {
-		return e
-	}
-	walletManager, e := wallet.NewManager()
-	if e != nil {
-		return e
-	}
-
-	// Prepare http server.
-	httpServer, e := http.NewServer(
-		&http.ServerConfig{
-			Address:     httpAddress,
-			EnableGUI:   gui,
-			GUIDir:      guiDir,
-			EnableTLS:   tls,
-			TLSCertFile: tlsCert,
-			TLSKeyFile:  tlsKey,
-		},
-		&http.Gateway{
-			IKO:    bc,
-			Wallet: walletManager,
-		},
-	)
-	if e != nil {
-		return e
-	}
-	defer httpServer.Close()
 
 	// Prepare rpc server.
 	rpcServer, e := rpc.NewServer(
@@ -328,17 +252,4 @@ func main() {
 	if e := app.Run(os.Args); e != nil {
 		log.Println(e)
 	}
-}
-
-// CatchInterrupt catches Ctrl+C behaviour.
-func CatchInterrupt() chan int {
-	quit := make(chan int)
-	go func(q chan<- int) {
-		sigChan := make(chan os.Signal, 1)
-		signal.Notify(sigChan, os.Interrupt)
-		<-sigChan
-		signal.Stop(sigChan)
-		q <- 1
-	}(quit)
-	return quit
 }

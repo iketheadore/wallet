@@ -10,6 +10,8 @@ import (
 
 const (
 	AddressFlag = "address"
+
+	DefaultAddress = ":8880"
 )
 
 func Flag(flag string, short ...string) string {
@@ -32,7 +34,7 @@ func init() {
 		cli.StringFlag{
 			Name:  Flag(AddressFlag, "a"),
 			Usage: "address to serve discovery node on",
-			Value: ":8080",
+			Value: DefaultAddress,
 		},
 	}
 	app.Action = cli.ActionFunc(action)
