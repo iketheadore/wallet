@@ -295,18 +295,14 @@ func (c *CXOChain) RunTxService(txChecker TxChecker) error {
 		for {
 			select {
 			case txWrapper, ok := <-c.received:
-				c.l.Info("received!")
 				if !ok {
-					c.l.Info("not okay!")
 					return
 
 				} else if e := txChecker(&txWrapper.Tx); e != nil {
-					c.l.Info("error")
 					c.l.Error(e.Error())
 
 				} else {
 					c.len.Inc()
-					c.l.Info("pushing")
 					c.attemptPushAccepted(txWrapper)
 				}
 			}
