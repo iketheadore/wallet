@@ -12,6 +12,11 @@ matrix:
       # Do not start osx build for PR
       if: type != pull_request
 
+install:
+  # for test
+  - go get -t ./...
+  - make install-linters
+
 script:
   - make lint
   - make test
