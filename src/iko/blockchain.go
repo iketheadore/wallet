@@ -2,11 +2,12 @@ package iko
 
 import (
 	"errors"
-	"github.com/skycoin/skycoin/src/cipher"
-	"gopkg.in/sirupsen/logrus.v1"
 	"os"
 	"sync"
 	"time"
+
+	"github.com/skycoin/skycoin/src/cipher"
+	"gopkg.in/sirupsen/logrus.v1"
 )
 
 type BlockChainConfig struct {

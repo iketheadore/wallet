@@ -2,14 +2,15 @@ package iko
 
 import (
 	"fmt"
-	"github.com/skycoin/cxo/node"
-	"github.com/skycoin/net/skycoin-messenger/factory"
-	"github.com/skycoin/skycoin/src/cipher"
-	"github.com/stretchr/testify/require"
 	"io/ioutil"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/skycoin/cxo/node"
+	"github.com/skycoin/net/skycoin-messenger/factory"
+	"github.com/skycoin/skycoin/src/cipher"
+	"github.com/stretchr/testify/require"
 )
 
 func newCXOChainDB(
