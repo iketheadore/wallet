@@ -35,7 +35,7 @@ type WalletsReply struct {
 
 func listWallets(g *wallet.Manager) HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, p *Path) error {
-		return sendJson(w, http.StatusNoContent, WalletsReply{
+		return sendJson(w, http.StatusOK, WalletsReply{
 			Wallets: g.ListWallets(),
 		})
 	}
