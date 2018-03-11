@@ -165,8 +165,6 @@ func prepareNode(chain *CXOChain, modifier NodeConfigModifier) error {
 	nc.RPC = chain.c.CXORPCAddress
 
 	nc.OnRootReceived = func(c *node.Conn, r *registry.Root) error {
-		defer chain.lock()()
-
 		switch {
 		case r.Pub != chain.c.MasterRootPK:
 			e := errors.New("received root is not of master public key")
@@ -258,14 +256,12 @@ func prepareNode(chain *CXOChain, modifier NodeConfigModifier) error {
 	}
 
 	nc.OnConnect = func(c *node.Conn) error {
-		defer chain.lock()()
 
 		// TODO: implement.
 		return nil
 	}
 
 	nc.OnDisconnect = func(c *node.Conn, reason error) {
-		defer chain.lock()()
 
 		// TODO: implement.
 	}
@@ -297,14 +293,18 @@ func (c *CXOChain) RunTxService(txChecker TxChecker) error {
 		for {
 			select {
 			case txWrapper, ok := <-c.received:
+				c.l.Info("received!")
 				if !ok {
+					c.l.Info("not okay!")
 					return
 
 				} else if e := txChecker(&txWrapper.Tx); e != nil {
+					c.l.Info("error")
 					c.l.Error(e.Error())
 
 				} else {
 					c.len.Inc()
+					c.l.Info("pushing")
 					c.attemptPushAccepted(txWrapper)
 				}
 			}
