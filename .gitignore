@@ -7,7 +7,6 @@
 .glide/
 .idea
 .directory
-.*
 electron/node_modules
 electron/release
 electron/src/node_modules
