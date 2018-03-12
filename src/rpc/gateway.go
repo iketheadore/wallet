@@ -73,7 +73,8 @@ type InjectTxIn struct {
 }
 
 type InjectTxOut struct {
-	Meta iko.TxMeta
+	TxHash iko.TxHash
+	Meta   iko.TxMeta
 }
 
 func (g *Gateway) InjectTx(in *InjectTxIn, out *InjectTxOut) error {
@@ -81,6 +82,7 @@ func (g *Gateway) InjectTx(in *InjectTxIn, out *InjectTxOut) error {
 	if e != nil {
 		return e
 	}
+	out.TxHash = in.Tx.Hash()
 	out.Meta = *meta
 	return nil
 }
