@@ -56,6 +56,14 @@ func (c *Client) KittyOwner(in *KittyOwnerIn) (*KittyOwnerOut, error) {
 	return out, e
 }
 
+func (c *Client) Transaction(in *TransactionIn) (*TransactionOut, error) {
+	var (
+		out = new(TransactionOut)
+		e   = c.rpc.Call(method("Transaction"), in, out)
+	)
+	return out, e
+}
+
 func (c *Client) InjectTx(in *InjectTxIn) (*InjectTxOut, error) {
 	var (
 		out = new(InjectTxOut)

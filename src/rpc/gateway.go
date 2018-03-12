@@ -68,12 +68,34 @@ func (g *Gateway) KittyOwner(in *KittyOwnerIn, out *KittyOwnerOut) error {
 	return nil
 }
 
+type TransactionIn struct {
+	TxHash iko.TxHash
+}
+
+type TransactionOut struct {
+	Tx        iko.Transaction
+	TxMeta    iko.TxMeta
+	Confirmed bool
+}
+
+func (g *Gateway) Transaction(in *TransactionIn, out *TransactionOut) error {
+	txWrap, err := g.IKO.GetTxOfHash(in.TxHash)
+	if err != nil {
+		return err
+	}
+	out.Tx = txWrap.Tx
+	out.TxMeta = txWrap.Meta
+	out.Confirmed = true
+	return nil
+}
+
 type InjectTxIn struct {
 	Tx iko.Transaction
 }
 
 type InjectTxOut struct {
-	Meta iko.TxMeta
+	TxHash iko.TxHash
+	Meta   iko.TxMeta
 }
 
 func (g *Gateway) InjectTx(in *InjectTxIn, out *InjectTxOut) error {
@@ -81,6 +103,7 @@ func (g *Gateway) InjectTx(in *InjectTxIn, out *InjectTxOut) error {
 	if e != nil {
 		return e
 	}
+	out.TxHash = in.Tx.Hash()
 	out.Meta = *meta
 	return nil
 }
