@@ -166,7 +166,7 @@ type SeedReply struct {
 
 func newSeed() HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, p *Path) error {
-		seed, e := wallet.NewSeed()
+		seed, e := wallet.NewSeed(wallet.SeedBitSize)
 		if e != nil {
 			return sendJson(w, http.StatusInternalServerError,
 				fmt.Sprintf("Error: %v", e))

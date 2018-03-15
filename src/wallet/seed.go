@@ -6,8 +6,8 @@ const (
 	SeedBitSize = 128
 )
 
-func NewSeed() (string, error) {
-	entropy, e := bip39.NewEntropy(SeedBitSize)
+func NewSeed(seedBitSize int) (string, error) {
+	entropy, e := bip39.NewEntropy(seedBitSize)
 	if e != nil {
 		return "", e
 	}
