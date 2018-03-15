@@ -8,6 +8,34 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
+/*
+	<<< KITTY DETAILS >>>
+	>>> Used by multiple services, provides off-chain details for kitties and IKO.
+*/
+
+type Kitty struct {
+	ID    KittyID `json:"kitty_id"`    // Identifier for kitty.
+	Name  string  `json:"name"`        // Name of kitty.
+	Desc  string  `json:"description"` // Description of kitty.
+	Breed string  `json:"breed"`       // Kitty breed.
+
+	PriceBTC   int64 `json:"price_btc"`   // Price of kitty in BTC.
+	PriceSKY   int64 `json:"price_sky"`   // Price of kitty in SKY.
+	IsReserved bool  `json:"is_reserved"` // Whether kitty is reserved.
+
+	IsOpen    bool   `json:"is_open"`    // Whether box is open.
+	BirthDate int64  `json:"birth_date"` // Timestamp of box opening.
+	KittyDNA  string `json:"kitty_dna"`  // Hex representation of kitty DNA (after box opening).
+
+	BoxImgURL   string `json:"box_image_url"`   // Box image URL.
+	KittyImgURL string `json:"kitty_image_url"` // Kitty image URL.
+}
+
+/*
+	<<< KITTY ID >>>
+	>>> For IKO, kitties are indexed with IDs, not DNA.
+*/
+
 type KittyID uint64
 
 func KittyIDFromString(idStr string) (KittyID, error) {
@@ -37,6 +65,11 @@ func (ids *KittyIDs) Remove(id KittyID) {
 	}
 }
 
+/*
+	<<< KITTY STATE >>>
+	>>> The state of a kitty as represented when the IKO Chain is compiled.
+*/
+
 type KittyState struct {
 	Address      cipher.Address
 	Transactions TxHashes
@@ -45,6 +78,11 @@ type KittyState struct {
 func (s KittyState) Serialize() []byte {
 	return encoder.Serialize(s)
 }
+
+/*
+	<<< ADDRESS STATE >>>
+	>>> The state of an address as represented when the IKO Chain is compiled.
+*/
 
 type AddressState struct {
 	Kitties      KittyIDs
