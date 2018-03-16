@@ -14,7 +14,7 @@ func walletGateway(m *http.ServeMux, g *wallet.Manager) error {
 	Handle(m, "/api/wallets/new", "POST", newWallet(g))
 	Handle(m, "/api/wallets/delete", "POST", deleteWallet(g))
 	Handle(m, "/api/wallets/get", "POST", getWallet(g))
-	Handle(m, "/api/wallets/seed", "GET", newSeed())
+	Handle(m, "/api/wallets/seed", "POST", newSeed())
 	return nil
 }
 
@@ -166,13 +166,26 @@ type SeedReply struct {
 
 func newSeed() HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, p *Path) error {
-		seed, e := wallet.NewSeed(wallet.SeedBitSize)
-		if e != nil {
-			return sendJson(w, http.StatusInternalServerError,
-				fmt.Sprintf("Error: %v", e))
-		}
-		return sendJson(w, http.StatusOK, SeedReply{
-			Seed: seed,
+
+		// Only allow 'Content-Type' of 'application/x-www-form-urlencoded'.
+		_, e := SwitchContType(w, r, ContTypeActions{
+			CtApplicationForm: func() (bool, error) {
+				vSeedBitSize := r.PostFormValue("seedBitSize")
+				seedBitSize, e := wallet.SeedBitSizeFromString(vSeedBitSize)
+				if e != nil {
+					return false, sendJson(w, http.StatusBadRequest,
+						fmt.Sprintf("Error: %s", e))
+				}
+				seed, e := wallet.NewSeed(seedBitSize)
+				if e != nil {
+					return false, sendJson(w, http.StatusInternalServerError,
+						fmt.Sprintf("Error: %v", e))
+				}
+				return true, sendJson(w, http.StatusOK, SeedReply{
+					Seed: seed,
+				})
+			},
 		})
+		return e
 	}
 }
