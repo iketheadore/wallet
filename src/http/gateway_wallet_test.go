@@ -1,77 +1,121 @@
 package http
 
 import (
-	_ "errors"
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
-	_ "sync"
+	"net/http/httptest"
+	"os"
 	"testing"
 
-	"github.com/skycoin/skycoin/src/cipher"
-	_ "github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/require"
 
-	_ "github.com/kittycash/wallet/src/iko"
 	"github.com/kittycash/wallet/src/wallet"
 )
 
-func runWalletGatewayTest(t *testing.T, wallet *wallet.Manager) {
+var CTApplicationFormHeaders = map[string][]string{"Content-Type": {"application/x-www-form-urlencoded"}}
+
+type ResponseChecker func(*testing.T, *http.Response)
+
+func TestWalletGateway(t *testing.T) {
+	tempDir, err := ioutil.TempDir("", "KittyCashTestWallet")
+	require.NoError(t, err, "Created temp wallet directory")
+
+	defer func() {
+		err := os.RemoveAll(tempDir)
+		require.NoError(t, err, "Remove temp wallet directory")
+	}()
+
+	err = wallet.SetRootDir(tempDir)
+	require.NoError(t, err, "Set wallet root directory")
+
+	manager, err := wallet.NewManager()
+	require.NoError(t, err, "Should be able to create a wallet manager")
 
 	// Get an http server
 	mux := http.NewServeMux()
 
-	fmt.Println(mux)
-	gateway := walletGateway(mux, wallet)
-	fmt.Println(gateway)
+	err = walletGateway(mux, manager)
+
+	require.NoError(t, err,
+		"Shouldn't have an error initializing the walletGateway")
+
+	testCases := []struct {
+		name          string
+		endpoint      string
+		body          string
+		method        string
+		headers       http.Header
+		responseCode  int
+		checkResponse ResponseChecker
+	}{
+		/* /api/wallets/seed tests */
+		{
+			endpoint:      "/api/wallets/seed",
+			name:          "No seedBitSize provided",
+			method:        http.MethodPost,
+			headers:       CTApplicationFormHeaders,
+			responseCode:  http.StatusOK,
+			checkResponse: validSeedChecker,
+		},
+		{
+			endpoint:      "/api/wallets/seed",
+			name:          "Non-default seedBitSize provided",
+			method:        http.MethodPost,
+			body:          "seedBitSize=256",
+			headers:       CTApplicationFormHeaders,
+			responseCode:  http.StatusOK,
+			checkResponse: validSeedChecker,
+		},
+		{
+			endpoint:      "/api/wallets/seed",
+			name:          "Invalid seedBitSize provided",
+			method:        http.MethodPost,
+			body:          "seedBitSize=23",
+			headers:       CTApplicationFormHeaders,
+			responseCode:  http.StatusBadRequest,
+			checkResponse: alwaysValidChecker,
+		},
+	}
+
+	for _, testCase := range testCases {
+		fullName := fmt.Sprintf("%s %s - %d - %s",
+			testCase.method, testCase.endpoint, testCase.responseCode, testCase.name)
+
+		t.Run(fullName, func(t *testing.T) {
+
+			requestBody := bytes.NewBufferString(testCase.body)
+			request := httptest.NewRequest(testCase.method, testCase.endpoint, requestBody)
+			require.NotNil(t, request, "Should create the test request")
+			request.Header = testCase.headers
+
+			responseRecorder := httptest.NewRecorder()
+			require.NotNil(t, responseRecorder, "Should create responseRecorder")
+
+			mux.ServeHTTP(responseRecorder, request)
+
+			response := responseRecorder.Result()
+			require.NotNil(t, response, "Should return the response")
+
+			require.Equal(t, testCase.responseCode, response.StatusCode,
+				"Should return expected status code")
+
+			testCase.checkResponse(t, response)
+		})
+	}
 }
 
-func TestWalletGateway(t *testing.T) {
-	sk := cipher.SecKey([32]byte{
-		3, 4, 5, 6,
-		3, 4, 5, 6,
-		3, 4, 5, 6,
-		3, 4, 5, 6,
-		3, 4, 5, 6,
-		3, 4, 5, 6,
-		3, 4, 5, 6,
-		3, 4, 5, 6,
-	})
+func validSeedChecker(t *testing.T, response *http.Response) {
+	decoder := json.NewDecoder(response.Body)
+	require.NotNil(t, decoder, "Should be able to create a JSON decoder")
 
-	sk2 := cipher.SecKey([32]byte{
-		3, 4, 5, 6,
-		3, 4, 5, 6,
-		3, 4, 5, 6,
-		3, 4, 5, 6,
-		5, 4, 3, 6,
-		3, 4, 5, 6,
-		4, 4, 5, 6,
-		3, 4, 5, 6,
-	})
+	var seedReply SeedReply
+	err := decoder.Decode(&seedReply)
+	require.NoError(t, err, "Should be able to decode a SeedReply")
+	require.NotEmpty(t, seedReply.Seed, "Should have a non-empty seed field")
+}
 
-	entry1, err := wallet.NewEntry(sk)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	fmt.Println(entry1)
-	entry2, err := wallet.NewEntry(sk2)
-	if err != nil {
-		fmt.Println(err, "2")
-	}
-	fmt.Println(entry2)
-	/*
-		wallet.Manager{
-			mux: sync.Mutex,
-			label: ["Just", "A", "String"],
-			wallets map
-		}
-		manager, err := wallet.NewManager()
-
-		if err != nil {
-			errors.New("Cannot create manager")
-			fmt.Println(manager)
-		} else {
-			fmt.Println("It works")
-			runWalletGatewayTest(t, manager)
-		}
-	*/
+func alwaysValidChecker(t *testing.T, response *http.Response) {
 }
