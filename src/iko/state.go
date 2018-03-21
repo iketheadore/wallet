@@ -75,7 +75,7 @@ func (s *MemoryState) GetKittyUnspentTx(kittyID KittyID) (TxHash, bool) {
 	return kState.Transactions[len(kState.Transactions)-1], true
 }
 
-func (s MemoryState) GetAddressState(address cipher.Address) *AddressState {
+func (s *MemoryState) GetAddressState(address cipher.Address) *AddressState {
 	s.Lock()
 	defer s.Unlock()
 
