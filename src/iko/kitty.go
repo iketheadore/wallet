@@ -19,9 +19,9 @@ type Kitty struct {
 	Desc  string  `json:"description"` // Description of kitty.
 	Breed string  `json:"breed"`       // Kitty breed.
 
-	PriceBTC   int64 `json:"price_btc"`   // Price of kitty in BTC.
-	PriceSKY   int64 `json:"price_sky"`   // Price of kitty in SKY.
-	IsReserved bool  `json:"is_reserved"` // Whether kitty is reserved.
+	PriceBTC    int64  `json:"price_btc"`   // Price of kitty in BTC.
+	PriceSKY    int64  `json:"price_sky"`   // Price of kitty in SKY.
+	Reservation string `json:"reservation"` // Reservation status.
 
 	IsOpen    bool   `json:"is_open"`    // Whether box is open.
 	BirthDate int64  `json:"birth_date"` // Timestamp of box opening.
