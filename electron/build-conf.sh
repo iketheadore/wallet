@@ -37,7 +37,7 @@ STL_OUTPUT=".standalone_output"
 
 FINAL_OUTPUT="release"
 
-MARKETPLACE_DIST_DIR="../marketplace/dist"  # Do not append "/" to this path
+TABS_DIST_DIR="../tabs/dist"  # Do not append "/" to this path
 
 # Variable suffix guide:
 # _APP -- name of the OS X app

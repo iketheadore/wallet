@@ -1,0 +1,25 @@
+<div class="container">
+  <div class="row">
+    <div class="col-12">
+      <ul class="nav nav-tabs">
+        <li class="nav-item" [ngClass]="{'active': currentTab == 'general'}">
+          <a class="nav-link" (click)="currentTab = 'general'">General</a>
+        </li>
+        <li class="nav-item" [ngClass]="{'active': currentTab == 'marketplace'}">
+          <a class="nav-link" (click)="currentTab = 'marketplace'">Marketplace</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link disabled">Wallet</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <div class="row" [ngSwitch]="currentTab">
+    <div class="col-12" *ngSwitchCase="'general'">
+      <h1>General Information here!</h1>
+    </div>
+    <div class="col-12" *ngSwitchCase="'marketplace'">
+      <marketplace-root></marketplace-root>
+    </div>
+  </div>
+</div>

@@ -22,9 +22,9 @@ echo "Installing node modules"
 ./install-node-modules.sh
 echo
 echo "==========================="
-echo "Building marketplace release"
+echo "Building tabs release"
 
-./build-marketplace-release.sh
+./build-tabs-release.sh
 
 echo
 echo "==========================="

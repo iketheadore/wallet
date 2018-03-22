@@ -49,7 +49,7 @@
         ],
         "extraResources": [
             {
-                "from": "../marketplace/dist/",
+                "from": "../tabs/dist/",
                 "to": "./app/dist/",
                 "filter": [
                     "**/*"

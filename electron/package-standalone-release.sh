@@ -50,9 +50,9 @@ function copy_if_exists {
         cp "$BIN" "$DESTDIR"
 
         # Copy static resources to electron app
-        echo "Copying $MARKETPLACE_DIST_DIR to ${DESTDIR}/"
+        echo "Copying $TABS_DIST_DIR to ${DESTDIR}/"
         mkdir -p "${DESTDIR}/static"
-        cp -R "$MARKETPLACE_DIST_DIR" "${DESTDIR}"
+        cp -vR "$TABS_DIST_DIR" "${DESTDIR}/"
 
         echo "Adding $DESTSRC to package-source.sh list"
         DESTSRCS+=("$DESTSRC")
