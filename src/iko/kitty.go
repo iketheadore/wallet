@@ -22,7 +22,6 @@ type Kitty struct {
 
 	PriceBTC    int64  `json:"price_btc"`   // Price of kitty in BTC.
 	PriceSKY    int64  `json:"price_sky"`   // Price of kitty in SKY.
-	Reservation string `json:"reservation"` // Reservation status.
 
 	BoxOpen   bool   `json:"box_open"`    // Whether box is open.
 	BirthDate int64  `json:"birth_date"` // Timestamp of box opening.
