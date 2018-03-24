@@ -182,8 +182,7 @@ func editCommand() ikocli.Command {
 
 			for i := range kitties {
 				if uint64(kitties[i].ID) >= start && uint64(kitties[i].ID) <= end {
-					SetFieldValue(field, value, &kitties[start])
-					start++
+					SetFieldValue(field, value, &kitties[i])
 				}
 			}
 
