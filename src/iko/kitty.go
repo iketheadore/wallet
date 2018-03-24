@@ -6,6 +6,7 @@ import (
 
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"encoding/json"
 )
 
 /*
@@ -29,6 +30,23 @@ type Kitty struct {
 
 	BoxImgURL   string `json:"box_image_url"`   // Box image URL.
 	KittyImgURL string `json:"kitty_image_url"` // Kitty image URL.
+}
+
+func (k *Kitty) Json() []byte {
+	raw, _ := json.Marshal(k)
+	return raw
+}
+
+func (k *Kitty) Hash() cipher.SHA256 {
+	return cipher.SumSHA256(k.Json())
+}
+
+func (k *Kitty) Sign(sk cipher.SecKey) cipher.Sig {
+	return cipher.SignHash(k.Hash(), sk)
+}
+
+func (k *Kitty) Verify(pk cipher.PubKey, sig cipher.Sig) error {
+	return cipher.VerifySignature(pk, sig, k.Hash())
 }
 
 /*
