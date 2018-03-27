@@ -16,6 +16,12 @@ import (
 	"github.com/kittycash/wallet/src/wallet"
 )
 
+var (
+	TrustedTransPKs = []string{
+		"03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753",
+	}
+)
+
 const (
 	// TODO: Define proper values for these!
 	TrustedGenPK     = "03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753"
@@ -47,6 +53,7 @@ const (
 	fTLSKey      = "tls-key"
 
 	fTest          = "test"
+	fTestTransPKs  = "test-trans-pks"
 	fTestGenPK     = "test-gen-pk"
 	fTestRootPK    = "test-root-pk"
 	fTestRootNonce = "test-root-nonce"
@@ -141,6 +148,10 @@ func init() {
 			Name:  Flag(fTest),
 			Usage: "whether to run wallet in test mode",
 		},
+		cli.StringSliceFlag{
+			Name:  Flag(fTestTransPKs),
+			Usage: "test mode trusted transfer public keys",
+		},
 		cli.StringFlag{
 			Name:  Flag(fTestGenPK),
 			Usage: "test mode trusted generation public key",
@@ -164,6 +175,7 @@ func action(ctx *cli.Context) error {
 		rootPK = cipher.MustPubKeyFromHex(TrustedRootPK)
 		rootNc = TrustedRootNonce
 		genPK  = cipher.MustPubKeyFromHex(TrustedGenPK)
+		transPKs = util.MustPubKeysFromStrings(TrustedTransPKs)
 
 		walletDir = ctx.String(fWalletDir)
 
@@ -184,9 +196,10 @@ func action(ctx *cli.Context) error {
 
 	// Test mode changes.
 	if test {
-		genPK = cipher.MustPubKeyFromHex(ctx.String(fTestGenPK))
-		rootPK = cipher.MustPubKeyFromHex(ctx.String(fTestRootPK))
-		rootNc = ctx.Uint64(fTestRootNonce)
+		genPK    = cipher.MustPubKeyFromHex(ctx.String(fTestGenPK))
+		rootPK   = cipher.MustPubKeyFromHex(ctx.String(fTestRootPK))
+		rootNc   = ctx.Uint64(fTestRootNonce)
+		transPKs = util.MustPubKeysFromStrings(ctx.StringSlice(fTestTransPKs))
 
 		tempDir, err := ioutil.TempDir(os.TempDir(), "kc_wallet")
 		if err != nil {
@@ -219,6 +232,7 @@ func action(ctx *cli.Context) error {
 	// Prepare blockchain config.
 	bcConfig := &iko.BlockChainConfig{
 		GenerationPK: genPK,
+		TransferPKs: transPKs,
 		TxAction: func(tx *iko.Transaction) error {
 			return nil
 		},

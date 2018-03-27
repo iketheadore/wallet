@@ -8,11 +8,15 @@ import (
 
 	"github.com/skycoin/skycoin/src/cipher"
 	"gopkg.in/sirupsen/logrus.v1"
+	"github.com/kittycash/wallet/src/util"
 )
 
 type BlockChainConfig struct {
 	GenerationPK cipher.PubKey
+	TransferPKs  []cipher.PubKey
 	TxAction     TxAction
+
+	transferAddrs *util.Addresses
 }
 
 func (cc *BlockChainConfig) Prepare() error {
@@ -24,7 +28,18 @@ func (cc *BlockChainConfig) Prepare() error {
 	if e := cc.GenerationPK.Verify(); e != nil {
 		return e
 	}
+	cc.transferAddrs = util.NewAddresses(len(cc.TransferPKs))
+	for _, tPK := range cc.TransferPKs {
+		if err := tPK.Verify(); err != nil {
+			return err
+		}
+		cc.transferAddrs.AddPubKey(tPK)
+	}
 	return nil
+}
+
+func (cc *BlockChainConfig) HasTransferAddress(address cipher.Address) bool {
+	return cc.transferAddrs.HasAddress(address)
 }
 
 type BlockChain struct {
@@ -200,8 +215,8 @@ func MakeTxChecker(bc *BlockChain) TxChecker {
 				WithField("output", tx.Out.String()).
 				Debug("processing transfer tx")
 
-			// TEMPORARY: If tx is not signed from generation pk, disallow.
-			if unspent.Out != cipher.AddressFromPubKey(bc.c.GenerationPK) {
+			// TEMPORARY: If tx is not signed from transfer public key list, disallow.
+			if bc.c.HasTransferAddress(unspent.Out) == false {
 				return errors.New("tx rejected")
 			}
 

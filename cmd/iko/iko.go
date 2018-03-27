@@ -23,7 +23,8 @@ const (
 	fRootPubKey = "root-public-key"
 	fRootSecKey = "root-secret-key"
 	fRootNonce  = "root-nonce"
-	fTxPubKey   = "tx-public-key"
+	fGenTxPK    = "tx-gen-pk"
+	fTransTxPKs = "tx-trans-pks"
 
 	fTestMode     = "test"
 	fTestTxCount  = "test-tx-count"
@@ -70,8 +71,12 @@ func init() {
 			Usage: "nonce to use as main blockchain identifier",
 		},
 		cli.StringFlag{
-			Name:  Flag(fTxPubKey, "tpk"),
-			Usage: "public key that is trusted for transactions",
+			Name:  Flag(fGenTxPK, "gpk"),
+			Usage: "public key that is trusted for generation transactions",
+		},
+		cli.StringSliceFlag{
+			Name:  Flag(fTransTxPKs, "tpk"),
+			Usage: "public keys that are trusted for transfer transactions",
 		},
 		cli.BoolFlag{
 			Name:  Flag(fInit),
@@ -134,11 +139,12 @@ func action(ctx *cli.Context) error {
 	quit := util.CatchInterrupt()
 
 	var (
-		rootPK    = cipher.MustPubKeyFromHex(ctx.String(fRootPubKey))
-		rootSK    = cipher.MustSecKeyFromHex(ctx.String(fRootSecKey))
-		rootNonce = ctx.Uint64(fRootNonce)
-		txPK      = cipher.MustPubKeyFromHex(ctx.String(fTxPubKey))
-		doInit    = ctx.Bool(fInit)
+		rootPK     = cipher.MustPubKeyFromHex(ctx.String(fRootPubKey))
+		rootSK     = cipher.MustSecKeyFromHex(ctx.String(fRootSecKey))
+		rootNonce  = ctx.Uint64(fRootNonce)
+		txGenPK    = cipher.MustPubKeyFromHex(ctx.String(fGenTxPK))
+		txTransPKs = util.MustPubKeysFromStrings(ctx.StringSlice(fTransTxPKs))
+		doInit     = ctx.Bool(fInit)
 
 		testMode  = ctx.Bool(fTestMode)
 		testCount = ctx.Int(fTestTxCount)
@@ -182,8 +188,10 @@ func action(ctx *cli.Context) error {
 
 	// Prepare blockchain config.
 	bcConfig := &iko.BlockChainConfig{
-		GenerationPK: txPK,
+		GenerationPK: txGenPK,
+		TransferPKs: txTransPKs,
 		TxAction: func(tx *iko.Transaction) error {
+			// TODO: Implement web-socket.
 			return nil
 		},
 	}
