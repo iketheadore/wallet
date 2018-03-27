@@ -13,3 +13,4 @@ electron/release
 electron/src/node_modules
 package-lock.json
 yarn.lock
+!**/.angular-cli.json
