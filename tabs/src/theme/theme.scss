@@ -3,3 +3,17 @@
  * Framework overrides and customization goes here.
  */
 
+@import url('https://fonts.googleapis.com/css?family=Montserrat');
+
+html, body {
+    min-height: 100%;
+    font-family: 'Montserrat', sans-serif;
+    padding: 0;
+	margin: 0;
+}
+
+body {
+	background: linear-gradient(to bottom, rgb(255, 104, 137), rgb(250, 130, 101));
+	background-repeat: no-repeat;
+}
+
