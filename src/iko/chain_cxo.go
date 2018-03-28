@@ -299,10 +299,8 @@ func (c *CXOChain) RunTxService(txChecker TxChecker) error {
 			case txWrapper, ok := <-c.received:
 				if !ok {
 					return
-
-				} else if e := txChecker(&txWrapper.Tx); e != nil {
-					c.l.Error(e.Error())
-
+				} else if err := txChecker(&txWrapper.Tx); err != nil {
+					c.l.Println(err.Error())
 				} else {
 					c.len.Inc()
 					c.attemptPushAccepted(txWrapper)

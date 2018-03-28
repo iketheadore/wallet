@@ -16,12 +16,6 @@ import (
 	"github.com/kittycash/wallet/src/wallet"
 )
 
-var (
-	TrustedTransPKs = []string{
-		"03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753",
-	}
-)
-
 const (
 	// TODO: Define proper values for these!
 	TrustedGenPK     = "03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753"
@@ -53,7 +47,6 @@ const (
 	fTLSKey      = "tls-key"
 
 	fTest          = "test"
-	fTestTransPKs  = "test-trans-pks"
 	fTestGenPK     = "test-gen-pk"
 	fTestRootPK    = "test-root-pk"
 	fTestRootNonce = "test-root-nonce"
@@ -148,14 +141,6 @@ func init() {
 			Name:  Flag(fTest),
 			Usage: "whether to run wallet in test mode",
 		},
-		cli.StringSliceFlag{
-			Name:  Flag(fTestTransPKs),
-			Usage: "test mode trusted transfer public keys",
-		},
-		cli.StringFlag{
-			Name:  Flag(fTestGenPK),
-			Usage: "test mode trusted generation public key",
-		},
 		cli.StringFlag{
 			Name:  Flag(fTestRootPK),
 			Usage: "test mode trusted root public key",
@@ -163,6 +148,10 @@ func init() {
 		cli.Uint64Flag{
 			Name:  Flag(fTestRootNonce),
 			Usage: "test mode trusted root nonce",
+		},
+		cli.StringFlag{
+			Name: Flag(fTestGenPK),
+			Usage: "test mode trusted gen tx public key",
 		},
 	}
 	app.Action = cli.ActionFunc(action)
@@ -175,7 +164,6 @@ func action(ctx *cli.Context) error {
 		rootPK = cipher.MustPubKeyFromHex(TrustedRootPK)
 		rootNc = TrustedRootNonce
 		genPK  = cipher.MustPubKeyFromHex(TrustedGenPK)
-		transPKs = util.MustPubKeysFromStrings(TrustedTransPKs)
 
 		walletDir = ctx.String(fWalletDir)
 
@@ -196,10 +184,9 @@ func action(ctx *cli.Context) error {
 
 	// Test mode changes.
 	if test {
-		genPK    = cipher.MustPubKeyFromHex(ctx.String(fTestGenPK))
 		rootPK   = cipher.MustPubKeyFromHex(ctx.String(fTestRootPK))
 		rootNc   = ctx.Uint64(fTestRootNonce)
-		transPKs = util.MustPubKeysFromStrings(ctx.StringSlice(fTestTransPKs))
+		genPK    = cipher.MustPubKeyFromHex(ctx.String(fTestGenPK))
 
 		tempDir, err := ioutil.TempDir(os.TempDir(), "kc_wallet")
 		if err != nil {
@@ -232,7 +219,6 @@ func action(ctx *cli.Context) error {
 	// Prepare blockchain config.
 	bcConfig := &iko.BlockChainConfig{
 		GenerationPK: genPK,
-		TransferPKs: transPKs,
 		TxAction: func(tx *iko.Transaction) error {
 			return nil
 		},
@@ -246,7 +232,7 @@ func action(ctx *cli.Context) error {
 	defer bc.Close()
 
 	if cxoChain != nil {
-		cxoChain.RunTxService(iko.MakeTxChecker(bc))
+		cxoChain.RunTxService(iko.MakeTxChecker(bc, true))
 	}
 
 	log.Info("finished preparing blockchain")

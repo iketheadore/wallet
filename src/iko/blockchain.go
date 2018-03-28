@@ -25,8 +25,10 @@ func (cc *BlockChainConfig) Prepare() error {
 			return nil
 		}
 	}
-	if e := cc.GenerationPK.Verify(); e != nil {
-		return e
+	if cc.GenerationPK != (cipher.PubKey{}) {
+		if e := cc.GenerationPK.Verify(); e != nil {
+			return e
+		}
 	}
 	cc.transferAddrs = util.NewAddresses(len(cc.TransferPKs))
 	for _, tPK := range cc.TransferPKs {
@@ -183,7 +185,7 @@ func (bc *BlockChain) InjectTx(tx *Transaction) (*TxMeta, error) {
 	)
 }
 
-func MakeTxChecker(bc *BlockChain) TxChecker {
+func MakeTxChecker(bc *BlockChain, disableTranCheck ...bool) TxChecker {
 	return func(tx *Transaction) error {
 
 		var unspent *Transaction
@@ -216,8 +218,10 @@ func MakeTxChecker(bc *BlockChain) TxChecker {
 				Debug("processing transfer tx")
 
 			// TEMPORARY: If tx is not signed from transfer public key list, disallow.
-			if bc.c.HasTransferAddress(unspent.Out) == false {
-				return errors.New("tx rejected")
+			if len(disableTranCheck) == 0 || disableTranCheck[0] == false {
+				if bc.c.HasTransferAddress(unspent.Out) == false {
+					return errors.New("tx rejected")
+				}
 			}
 
 			if e := bc.state.MoveKitty(tx.Hash(), tx.KittyID, unspent.Out, tx.Out); e != nil {
