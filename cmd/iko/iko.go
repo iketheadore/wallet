@@ -19,15 +19,16 @@ const (
 )
 
 const (
-	fInit       = "init"
-	fRootPubKey = "root-public-key"
-	fRootSecKey = "root-secret-key"
-	fRootNonce  = "root-nonce"
-	fTxPubKey   = "tx-public-key"
+	fInit      = "init"
+	fRootPK    = "root-pk"
+	fRootSK    = "root-sk"
+	fRootNc    = "root-nc"
+	fGenTxPK   = "tx-gen-pk"
+	fTranTxPKs = "tx-tran-pks"
 
-	fTestMode     = "test"
-	fTestTxCount  = "test-tx-count"
-	fTestTxSecKey = "test-tx-secret-key"
+	fTestMode       = "test"
+	fTestTxGenCount = "test-tx-gen-count"
+	fTestTxGenSK    = "test-tx-gen-sk"
 
 	fCXODir             = "cxo-dir"
 	fCXOAddress         = "cxo-address"
@@ -58,20 +59,24 @@ func init() {
 			<<< MASTER >>>
 		*/
 		cli.StringFlag{
-			Name:  Flag(fRootPubKey, "rpk"),
+			Name:  Flag(fRootPK, "rpk"),
 			Usage: "public key to use as main blockchain signer",
 		},
 		cli.StringFlag{
-			Name:  Flag(fRootSecKey, "rsk"),
+			Name:  Flag(fRootSK, "rsk"),
 			Usage: "secret key to use as main blockchain signer",
 		},
 		cli.Uint64Flag{
-			Name:  Flag(fRootNonce, "rn"),
+			Name:  Flag(fRootNc, "rn"),
 			Usage: "nonce to use as main blockchain identifier",
 		},
 		cli.StringFlag{
-			Name:  Flag(fTxPubKey, "tpk"),
-			Usage: "public key that is trusted for transactions",
+			Name:  Flag(fGenTxPK, "gpk"),
+			Usage: "public key that is trusted for generation transactions",
+		},
+		cli.StringSliceFlag{
+			Name:  Flag(fTranTxPKs, "tpk"),
+			Usage: "public keys that are trusted for transfer transactions",
 		},
 		cli.BoolFlag{
 			Name:  Flag(fInit),
@@ -85,11 +90,11 @@ func init() {
 			Usage: "whether to use test data for run",
 		},
 		cli.IntFlag{
-			Name:  Flag(fTestTxCount, "tc"),
+			Name:  Flag(fTestTxGenCount, "tc"),
 			Usage: "only valid in test mode, injects a number of initial transactions for testing",
 		},
 		cli.StringFlag{
-			Name:  Flag(fTestTxSecKey, "tsk"),
+			Name:  Flag(fTestTxGenSK, "tsk"),
 			Usage: "secret key for signing test transactions",
 			Value: new(cipher.SecKey).Hex(),
 		},
@@ -134,15 +139,16 @@ func action(ctx *cli.Context) error {
 	quit := util.CatchInterrupt()
 
 	var (
-		rootPK    = cipher.MustPubKeyFromHex(ctx.String(fRootPubKey))
-		rootSK    = cipher.MustSecKeyFromHex(ctx.String(fRootSecKey))
-		rootNonce = ctx.Uint64(fRootNonce)
-		txPK      = cipher.MustPubKeyFromHex(ctx.String(fTxPubKey))
-		doInit    = ctx.Bool(fInit)
+		rootPK     = cipher.MustPubKeyFromHex(ctx.String(fRootPK))
+		rootSK     = cipher.MustSecKeyFromHex(ctx.String(fRootSK))
+		rootNonce  = ctx.Uint64(fRootNc)
+		txGenPK    = cipher.MustPubKeyFromHex(ctx.String(fGenTxPK))
+		txTransPKs = util.MustPubKeysFromStrings(ctx.StringSlice(fTranTxPKs))
+		doInit     = ctx.Bool(fInit)
 
 		testMode  = ctx.Bool(fTestMode)
-		testCount = ctx.Int(fTestTxCount)
-		testSK    = cipher.MustSecKeyFromHex(ctx.String(fTestTxSecKey))
+		testCount = ctx.Int(fTestTxGenCount)
+		testSK    = cipher.MustSecKeyFromHex(ctx.String(fTestTxGenSK))
 
 		cxoDir             = ctx.String(fCXODir)
 		cxoAddress         = ctx.String(fCXOAddress)
@@ -182,8 +188,10 @@ func action(ctx *cli.Context) error {
 
 	// Prepare blockchain config.
 	bcConfig := &iko.BlockChainConfig{
-		GenerationPK: txPK,
+		GenerationPK: txGenPK,
+		TransferPKs: txTransPKs,
 		TxAction: func(tx *iko.Transaction) error {
+			// TODO: Implement web-socket.
 			return nil
 		},
 	}

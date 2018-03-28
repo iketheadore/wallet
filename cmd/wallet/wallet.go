@@ -142,16 +142,16 @@ func init() {
 			Usage: "whether to run wallet in test mode",
 		},
 		cli.StringFlag{
-			Name:  Flag(fTestGenPK),
-			Usage: "test mode trusted generation public key",
-		},
-		cli.StringFlag{
 			Name:  Flag(fTestRootPK),
 			Usage: "test mode trusted root public key",
 		},
 		cli.Uint64Flag{
 			Name:  Flag(fTestRootNonce),
 			Usage: "test mode trusted root nonce",
+		},
+		cli.StringFlag{
+			Name: Flag(fTestGenPK),
+			Usage: "test mode trusted gen tx public key",
 		},
 	}
 	app.Action = cli.ActionFunc(action)
@@ -184,9 +184,9 @@ func action(ctx *cli.Context) error {
 
 	// Test mode changes.
 	if test {
-		genPK = cipher.MustPubKeyFromHex(ctx.String(fTestGenPK))
-		rootPK = cipher.MustPubKeyFromHex(ctx.String(fTestRootPK))
-		rootNc = ctx.Uint64(fTestRootNonce)
+		rootPK   = cipher.MustPubKeyFromHex(ctx.String(fTestRootPK))
+		rootNc   = ctx.Uint64(fTestRootNonce)
+		genPK    = cipher.MustPubKeyFromHex(ctx.String(fTestGenPK))
 
 		tempDir, err := ioutil.TempDir(os.TempDir(), "kc_wallet")
 		if err != nil {
@@ -232,7 +232,7 @@ func action(ctx *cli.Context) error {
 	defer bc.Close()
 
 	if cxoChain != nil {
-		cxoChain.RunTxService(iko.MakeTxChecker(bc))
+		cxoChain.RunTxService(iko.MakeTxChecker(bc, true))
 	}
 
 	log.Info("finished preparing blockchain")
