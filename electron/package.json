@@ -1,6 +1,6 @@
 {
     "name": "kittycash",
-    "productName": "iko",
+    "productName": "wallet",
     "author": "kittycash",
     "main": "src/electron-main.js",
     "version": "0.0.1",

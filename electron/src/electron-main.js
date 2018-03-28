@@ -27,7 +27,7 @@ require('electron-context-menu')({});
 
 global.eval = function() { throw new Error('bad!!'); }
 
-const defaultURL = 'http://127.0.0.1:8080/';
+const defaultURL = 'http://localhost:6148/boxes';
 
 // Force everything localhost, in case of a leak
 app.commandLine.appendSwitch('host-rules', 'MAP * 127.0.0.1, EXCLUDE api.coinmarketcap.com, api.github.com');
@@ -56,34 +56,30 @@ function startKittyCash() {
     kittycash = null;
   }
 
-  // Resolve kittycash iko binary location
+  // Resolve kittycash wallet binary location
   var appPath = app.getPath('exe');
   var exe = (() => {
 
   if (isDev())
   {
-    return '/Users/bkendall/go/bin/iko';
+    return '/Users/bkendall/go/bin/wallet';
   }
 
   switch (process.platform) {
     case 'darwin':
-      return path.join(appPath, '../../Resources/app/iko');
+      return path.join(appPath, '../../Resources/app/wallet');
     case 'win32':
       // Use only the relative path on windows due to short path length
       // limits
-      return './resources/app/iko.exe';
+      return './resources/app/wallet.exe';
     case 'linux':
-      return path.join(path.dirname(appPath), './resources/app/iko');
+      return path.join(path.dirname(appPath), './resources/app/wallet');
     default:
-      return './resources/app/iko';
+      return './resources/app/wallet';
   }
 })()
 
   var gui_dir = (() => {
-  if (isDev())
-  {
-    return "../marketplace/dist";
-  }
 
   switch (process.platform) {
     case 'darwin':
@@ -100,15 +96,13 @@ function startKittyCash() {
 })()
 
   var args = [
-    '--root-public-key=03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753',
-    '--root-secret-key=190030fed87872ff67015974d4c1432910724d0c0d4bfbd29d3b593dba936155',
-    '--tx-public-key=03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753',
-    '--init=true',
     '--test=true',
-    '--test-tx-count=100',
-    '--test-tx-secret-key=190030fed87872ff67015974d4c1432910724d0c0d4bfbd29d3b593dba936155',
-    '--cxo-address=127.0.0.1:7140',
-    '--http-address=127.0.0.1:8080',
+    '--test-gen-pk=03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753',
+    '--test-root-pk=03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753',
+    '--test-root-nonce=1234',
+    '--cxo-address=127.0.0.1:6140',
+    '--http-address=127.0.0.1:6148',
+    '--messenger-addresses=:8880',
     '--cxo-dir=' + cxo_dir,
     '--gui=true',
     '--gui-dir=' + gui_dir

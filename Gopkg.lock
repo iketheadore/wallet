@@ -26,6 +26,18 @@
   revision = "e89373fe6b4a7413d7acd6da1725b83ef713e6e4"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/kittycash/wallet"
+  packages = [
+    "src/http",
+    "src/iko",
+    "src/rpc",
+    "src/util",
+    "src/wallet"
+  ]
+  revision = "92ac08599d23bcfcd814908db20d1c9600189202"
+
+[[projects]]
   name = "github.com/klauspost/cpuid"
   packages = ["."]
   revision = "ae7887de9fa5d2db4eaa8174a7eff2c1ac00f2da"
@@ -150,6 +162,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f368dab677f117f40c947f0873cbc2a6f8c13713a3bdc51b0f856564eaa632a2"
+  inputs-digest = "c8babb18716a74d7fc21b0192596adae892e88f6f07b2ea09c214230818780d9"
   solver-name = "gps-cdcl"
   solver-version = 1
