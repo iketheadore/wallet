@@ -3,3 +3,32 @@
  * Framework overrides and customization goes here.
  */
 
+@import url('https://fonts.googleapis.com/css?family=Montserrat');
+
+html {
+	height: 100%;
+	font-family: 'Montserrat', sans-serif;
+}
+
+body {
+	font-family: 'Montserrat', sans-serif;
+	background: linear-gradient(to bottom, rgb(255, 104, 137), rgb(250, 130, 101));
+	background-repeat: no-repeat;
+	height: 100%;
+}
+
+.btn-primary {
+    color: $white;
+}
+
+.btn-primary:hover {
+    color: $kittyred;
+}
+
+.btn-outline-primary {
+    color: $kittyred;
+}
+
+.btn-outline-primary:hover {
+    color: $white;
+}
