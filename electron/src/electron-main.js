@@ -6,8 +6,6 @@ const userDataPath = app.getPath('userData');
 
 const cxo_dir = userDataPath + "/cxo";
 
-require('./fakeapi.js');
-
 var log = require('electron-log');
 
 var fs = require('fs');
@@ -27,10 +25,10 @@ require('electron-context-menu')({});
 
 global.eval = function() { throw new Error('bad!!'); }
 
-const defaultURL = 'http://localhost:6148/boxes';
+const defaultURL = 'http://127.0.0.1:6148/boxes';
 
 // Force everything localhost, in case of a leak
-app.commandLine.appendSwitch('host-rules', 'MAP * 127.0.0.1, EXCLUDE api.coinmarketcap.com, api.github.com');
+// app.commandLine.appendSwitch('host-rules', 'MAP * 127.0.0.1, EXCLUDE www.google.com, fonts.gstatic.com, www.gstatic.com, fonts.googleapis.com');
 app.commandLine.appendSwitch('ssl-version-fallback-min', 'tls1.2');
 app.commandLine.appendSwitch('--no-proxy-server');
 app.setAsDefaultProtocolClient('kittycash');
