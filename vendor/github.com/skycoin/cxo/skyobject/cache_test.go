@@ -1,7 +1,0 @@
-package skyobject
-
-import (
-//"testing"
-)
-
-//
