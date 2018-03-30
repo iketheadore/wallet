@@ -4,9 +4,9 @@ import (
 	"sort"
 	"strconv"
 
+	"encoding/json"
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-	"encoding/json"
 )
 
 /*
@@ -15,20 +15,23 @@ import (
 */
 
 type Kitty struct {
-	ID    KittyID `json:"kitty_id"`    // Identifier for kitty.
-	Name  string  `json:"name"`        // Name of kitty.
-	Desc  string  `json:"description"` // Description of kitty.
-	Breed string  `json:"breed"`       // Kitty breed.
+	ID        KittyID `json:"kitty_id"`    // Identifier for kitty.
+	Name      string  `json:"name"`        // Name of kitty.
+	Desc      string  `json:"description"` // Description of kitty.
+	Breed     string  `json:"breed"`       // Kitty breed.
+	Legendary bool    `json:"legendary"`   // Whether kitty is legendary.
 
-	PriceBTC    int64  `json:"price_btc"`   // Price of kitty in BTC.
-	PriceSKY    int64  `json:"price_sky"`   // Price of kitty in SKY.
+	PriceBTC int64 `json:"price_btc"` // Price of kitty in BTC.
+	PriceSKY int64 `json:"price_sky"` // Price of kitty in SKY.
 
-	BoxOpen   bool   `json:"box_open"`    // Whether box is open.
-	BirthDate int64  `json:"birth_date"` // Timestamp of box opening.
-	KittyDNA  string `json:"kitty_dna"`  // Hex representation of kitty DNA (after box opening).
+	BoxOpen bool `json:"box_open"` // Whether box is open.
 
-	BoxImgURL   string `json:"box_image_url"`   // Box image URL.
-	KittyImgURL string `json:"kitty_image_url"` // Kitty image URL.
+	Created   int64  `json:"created,omitempty"`    // Timestamp that the kitty box began existing.
+	BirthDate int64  `json:"birth_date,omitempty"` // Timestamp of box opening (after box opening).
+	KittyDNA  string `json:"kitty_dna,omitempty"`  // Hex representation of kitty DNA (after box opening).
+
+	BoxImgURL   string `json:"box_image_url,omitempty"`   // Box image URL.
+	KittyImgURL string `json:"kitty_image_url,omitempty"` // Kitty image URL (after box opening).
 }
 
 func (k *Kitty) Json() []byte {
@@ -46,6 +49,21 @@ func (k *Kitty) Sign(sk cipher.SecKey) cipher.Sig {
 
 func (k *Kitty) Verify(pk cipher.PubKey, sig cipher.Sig) error {
 	return cipher.VerifySignature(pk, sig, k.Hash())
+}
+
+// CheckData ensures that the Kitty fields makes sense.
+func (k *Kitty) CheckData() error {
+	// TODO: Implement the following.
+	// - Ensure Name/Desc/Breed fields are filled.
+	//		- Ensure Desc, Breed and Name fields are all valid and based on algorithm.
+	//
+	// - When BoxOpen == false :
+	//		- Ensure BirthDate/KittyDNA/KittyImgURL are not set.
+	//		- Ensure BoxImgURL is set.
+	//
+	// - When BoxOpen == true :
+	//		- Ensure BirthDate/KittyDNA/KittyImgURL are all set.
+	return nil
 }
 
 /*
