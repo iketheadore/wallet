@@ -1,25 +1,44 @@
-<div class="container">
+<div class="container tab m-5">
+  <div class="row py-4">
+    <div class="col-12 text-center">
+      <img class="img-fluid" src="assets/tab-logo.svg">
+    </div>
+  </div>
   <div class="row">
-    <div class="col-12">
-      <ul class="nav nav-tabs">
-        <li class="nav-item" [ngClass]="{'active': currentTab == 'general'}">
-          <a class="nav-link" (click)="currentTab = 'general'">General</a>
+    <div class="col-6">
+      <ul class="nav">
+        <li class="nav-item">
+           <img class="img-fluid pt-3" src="assets/hamburger.svg">
+        </li>
+        <li class="nav-item" [ngClass]="{'active': currentTab == 'wallet'}">
+          <a class="nav-link" (click)="currentTab = 'wallet'">Wallet</a>
         </li>
         <li class="nav-item" [ngClass]="{'active': currentTab == 'marketplace'}">
           <a class="nav-link" (click)="currentTab = 'marketplace'">Marketplace</a>
         </li>
-        <li class="nav-item">
-          <a class="nav-link disabled">Wallet</a>
-        </li>
+        <li class="nav-item" [ngClass]="{'active': currentTab == 'play'}">
+          <a class="nav-link" (click)="currentTab = 'play'">Play</a>
+        </li>        
       </ul>
+    </div>
+    <div class="col-4 offset-2 actions-bar pt-3">
+      <div class="mx-3" style="display: inline-block;">
+        <div class="status connected"></div> <span class="status-description">Connected</span>
+      </div>
+      <a><i class="fa fa-redo fa-lg px-2"></i></a>
+      <a><i class="fas fa-th-large fa-lg px-2"></i></a>
+      <a><i class="fas fa-sliders-h fa-lg px-2"></i></a>
     </div>
   </div>
   <div class="row" [ngSwitch]="currentTab">
-    <div class="col-12" *ngSwitchCase="'general'">
-      <h1>General Information here!</h1>
+    <div class="col-12" *ngSwitchCase="'wallet'">
+      <h1>Wallet stuff here</h1>
     </div>
     <div class="col-12" *ngSwitchCase="'marketplace'">
       <marketplace-root></marketplace-root>
+    </div>
+    <div class="col-12" *ngSwitchCase="'play'">
+      <h1>Play stuff here</h1>
     </div>
   </div>
 </div>
