@@ -4,9 +4,19 @@ import (
 	"sort"
 	"strconv"
 
+	"encoding/json"
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-	"encoding/json"
+	"github.com/pkg/errors"
+	"fmt"
+)
+
+var (
+	ErrInvalidKittyName = errors.New("kitty has invalid name")
+	ErrInvalidKittyDesc = errors.New("kitty has invalid description")
+	ErrInvalidKittyBreed = errors.New("kitty has invalid breed")
+	ErrInvalidKittyBirthDate = errors.New("kitty has invalid birth date")
+	ErrInvalidKittyDNA = errors.New("kitty has invalid DNA")
 )
 
 /*
@@ -15,20 +25,23 @@ import (
 */
 
 type Kitty struct {
-	ID    KittyID `json:"kitty_id"`    // Identifier for kitty.
-	Name  string  `json:"name"`        // Name of kitty.
-	Desc  string  `json:"description"` // Description of kitty.
-	Breed string  `json:"breed"`       // Kitty breed.
+	ID        KittyID `json:"kitty_id"`    // Identifier for kitty.
+	Name      string  `json:"name"`        // Name of kitty.
+	Desc      string  `json:"description"` // Description of kitty.
+	Breed     string  `json:"breed"`       // Kitty breed.
+	Legendary bool    `json:"legendary"`   // Whether kitty is legendary.
 
-	PriceBTC    int64  `json:"price_btc"`   // Price of kitty in BTC.
-	PriceSKY    int64  `json:"price_sky"`   // Price of kitty in SKY.
+	PriceBTC int64 `json:"price_btc"` // Price of kitty in BTC.
+	PriceSKY int64 `json:"price_sky"` // Price of kitty in SKY.
 
-	BoxOpen   bool   `json:"box_open"`   // Whether box is open.
-	BirthDate int64  `json:"birth_date"` // Timestamp of box opening.
-	KittyDNA  string `json:"kitty_dna"`  // Hex representation of kitty DNA (after box opening).
+	BoxOpen bool `json:"box_open"` // Whether box is open.
 
-	BoxImgURL   string `json:"box_image_url"`   // Box image URL.
-	KittyImgURL string `json:"kitty_image_url"` // Kitty image URL.
+	Created   int64  `json:"created,omitempty"`    // Timestamp that the kitty box began existing.
+	BirthDate int64  `json:"birth_date,omitempty"` // Timestamp of box opening (after box opening).
+	KittyDNA  string `json:"kitty_dna,omitempty"`  // Hex representation of kitty DNA (after box opening).
+
+	BoxImgURL   string `json:"box_image_url,omitempty"`   // Box image URL.
+	KittyImgURL string `json:"kitty_image_url,omitempty"` // Kitty image URL (after box opening).
 }
 
 func (k *Kitty) Json() []byte {
@@ -46,6 +59,83 @@ func (k *Kitty) Sign(sk cipher.SecKey) cipher.Sig {
 
 func (k *Kitty) Verify(pk cipher.PubKey, sig cipher.Sig) error {
 	return cipher.VerifySignature(pk, sig, k.Hash())
+}
+
+// CheckData ensures that the Kitty fields makes sense. It does the following:
+// - Ensure Name/Desc/Breed fields are filled.
+//		- Ensure Desc, Breed and Name fields are all valid and based on algorithm.
+// - When BoxOpen == true :
+//		- Ensure BirthDate/KittyDNA/KittyImgURL are all set.
+// - When BoxOpen == false :
+//		- Ensure BirthDate/KittyDNA/KittyImgURL are not set.
+//		- Ensure BoxImgURL is set.
+func (k *Kitty) CheckData() error {
+	if err := checkName(k.Name, make(map[string]struct{})); err != nil {
+		return err
+	}
+	if err := checkDesc(k.Desc); err != nil {
+		return err
+	}
+	if err := checkBreed(k.Breed, make(map[string]struct{})); err != nil {
+		return err
+	}
+	if k.BoxOpen {
+		if k.BirthDate <= 0 {
+			return ErrInvalidKittyBirthDate
+		}
+		if err := checkDNA(k.KittyDNA); err != nil {
+			return err
+		}
+		if k.KittyImgURL != "" {
+			return errors.New("kitty image URL should be set as box is open")
+		}
+	} else {
+		switch {
+		case k.BirthDate != 0:
+			return errors.New("birth date should be unset as box is not open")
+		case k.KittyDNA != "":
+			return errors.New("kitty DNA should be unset as box is not open")
+		case k.KittyImgURL != "":
+			return errors.New("kitty image URL should be unset as box is not open")
+		case k.BoxImgURL == "":
+			return errors.New("kitty box URL should be set as box is not open")
+		}
+	}
+	return nil
+}
+
+func checkName(name string, validList map[string]struct{}) error {
+	if _, ok := validList[name]; !ok {
+		return errors.WithMessage(ErrInvalidKittyName,
+			fmt.Sprintf("'%s' is not allowed", name))
+	}
+	return nil
+}
+
+func checkDesc(desc string) error {
+	// TODO: Determine algorithm for checking kitty description.
+	if desc == "" {
+		return errors.WithMessage(ErrInvalidKittyDesc,
+			"an empty description is not allowed")
+	}
+	return nil
+}
+
+func checkBreed(breed string, validList map[string]struct{}) error {
+	if _, ok := validList[breed]; !ok {
+		return errors.WithMessage(ErrInvalidKittyBreed,
+			fmt.Sprintf("'%s' is not allowed", breed))
+	}
+	return nil
+}
+
+func checkDNA(dna string) error {
+	// TODO: Determine algorithm for checking kitty DNA.
+	if dna == "" {
+		return errors.WithMessage(ErrInvalidKittyDNA,
+			fmt.Sprintf("'%s' is not allowed", dna))
+	}
+	return nil
 }
 
 /*
