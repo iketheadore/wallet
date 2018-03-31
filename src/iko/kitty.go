@@ -104,11 +104,16 @@ func (k *Kitty) CheckData() error {
 	return nil
 }
 
-func checkName(name string, validList map[string]struct{}) error {
-	if _, ok := validList[name]; !ok {
+func checkName(name string, _ map[string]struct{}) error {
+	// TODO: Determine nameList algorithm and mechanism.
+	if name == "" {
 		return errors.WithMessage(ErrInvalidKittyName,
-			fmt.Sprintf("'%s' is not allowed", name))
+			"empty name not allowed")
 	}
+	//if _, ok := validList[name]; !ok {
+	//	return errors.WithMessage(ErrInvalidKittyName,
+	//		fmt.Sprintf("'%s' is not allowed", name))
+	//}
 	return nil
 }
 
@@ -121,11 +126,16 @@ func checkDesc(desc string) error {
 	return nil
 }
 
-func checkBreed(breed string, validList map[string]struct{}) error {
-	if _, ok := validList[breed]; !ok {
+func checkBreed(breed string, _ map[string]struct{}) error {
+	// TODO: Determine breedList algorithm and mechanism.
+	if breed == "" {
 		return errors.WithMessage(ErrInvalidKittyBreed,
-			fmt.Sprintf("'%s' is not allowed", breed))
+			"an empty breed is not allowed")
 	}
+	//if _, ok := validList[breed]; !ok {
+	//	return errors.WithMessage(ErrInvalidKittyBreed,
+	//		fmt.Sprintf("'%s' is not allowed", breed))
+	//}
 	return nil
 }
 
