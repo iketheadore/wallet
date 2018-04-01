@@ -157,7 +157,7 @@ func sendBin(w http.ResponseWriter, status int, data []byte) error {
 }
 
 /*
-	<<< URL Handler >>>
+	<<< TransformURL Handler >>>
 */
 
 type Path struct {

@@ -266,8 +266,8 @@ func ParseIndexRange(indexRange string) (start, end uint64, err error) {
 	BirthDate int64  `json:"birth_date"` // Timestamp of box opening.
 	KittyDNA  string `json:"kitty_dna"`  // Hex representation of kitty DNA (after box opening).
 
-	BoxImgURL   string `json:"box_image_url"`   // Box image URL.
-	KittyImgURL string `json:"kitty_image_url"` // Kitty image URL.
+	BoxImgURL   string `json:"box_image_url"`   // Box image TransformURL.
+	KittyImgURL string `json:"kitty_image_url"` // Kitty image TransformURL.
 }*/
 
 // SetFieldValue sets value of a kitty field from the tag name

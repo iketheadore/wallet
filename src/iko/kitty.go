@@ -5,18 +5,18 @@ import (
 	"strconv"
 
 	"encoding/json"
+	"fmt"
+	"github.com/pkg/errors"
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-	"github.com/pkg/errors"
-	"fmt"
 )
 
 var (
-	ErrInvalidKittyName = errors.New("kitty has invalid name")
-	ErrInvalidKittyDesc = errors.New("kitty has invalid description")
-	ErrInvalidKittyBreed = errors.New("kitty has invalid breed")
+	ErrInvalidKittyName      = errors.New("kitty has invalid name")
+	ErrInvalidKittyDesc      = errors.New("kitty has invalid description")
+	ErrInvalidKittyBreed     = errors.New("kitty has invalid breed")
 	ErrInvalidKittyBirthDate = errors.New("kitty has invalid birth date")
-	ErrInvalidKittyDNA = errors.New("kitty has invalid DNA")
+	ErrInvalidKittyDNA       = errors.New("kitty has invalid DNA")
 )
 
 /*
@@ -40,8 +40,8 @@ type Kitty struct {
 	BirthDate int64  `json:"birth_date,omitempty"` // Timestamp of box opening (after box opening).
 	KittyDNA  string `json:"kitty_dna,omitempty"`  // Hex representation of kitty DNA (after box opening).
 
-	BoxImgURL   string `json:"box_image_url,omitempty"`   // Box image URL.
-	KittyImgURL string `json:"kitty_image_url,omitempty"` // Kitty image URL (after box opening).
+	BoxImgURL   string `json:"box_image_url,omitempty"`   // Box image TransformURL.
+	KittyImgURL string `json:"kitty_image_url,omitempty"` // Kitty image TransformURL (after box opening).
 }
 
 func (k *Kitty) Json() []byte {
@@ -87,7 +87,7 @@ func (k *Kitty) CheckData() error {
 			return err
 		}
 		if k.KittyImgURL != "" {
-			return errors.New("kitty image URL should be set as box is open")
+			return errors.New("kitty image TransformURL should be set as box is open")
 		}
 	} else {
 		switch {
@@ -96,9 +96,9 @@ func (k *Kitty) CheckData() error {
 		case k.KittyDNA != "":
 			return errors.New("kitty DNA should be unset as box is not open")
 		case k.KittyImgURL != "":
-			return errors.New("kitty image URL should be unset as box is not open")
+			return errors.New("kitty image TransformURL should be unset as box is not open")
 		case k.BoxImgURL == "":
-			return errors.New("kitty box URL should be set as box is not open")
+			return errors.New("kitty box TransformURL should be set as box is not open")
 		}
 	}
 	return nil
@@ -180,6 +180,41 @@ func (ids *KittyIDs) Remove(id KittyID) {
 			return
 		}
 	}
+}
+
+/*
+	<<< KITTY ENTRY >>>
+	>>> The way a kitty is entered in the kitty-api.
+*/
+
+type KittyEntry struct {
+	Kitty
+	Sig         string `json:"sig"`               // Signature should be verified with
+	Reservation string `json:"reservation"`       // Whether kitty is reserved or not.
+	Address     string `json:"address,omitempty"` // The address in which the kitty resides in.
+}
+
+func KittyEntryFromJson(raw []byte) (*KittyEntry, error) {
+	out := new(KittyEntry)
+	err := json.Unmarshal(raw, out)
+	return out, err
+}
+
+func (e *KittyEntry) Json() []byte {
+	raw, _ := json.Marshal(e)
+	return raw
+}
+
+func (e *KittyEntry) Sign(sk cipher.SecKey) {
+	e.Sig = e.Kitty.Sign(sk).Hex()
+}
+
+func (e *KittyEntry) Verify(pk cipher.PubKey) error {
+	sig, err := cipher.SigFromHex(e.Sig)
+	if err != nil {
+		return err
+	}
+	return e.Kitty.Verify(pk, sig)
 }
 
 /*

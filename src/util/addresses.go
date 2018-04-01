@@ -6,7 +6,7 @@ import (
 )
 
 type Addresses struct {
-	mux sync.Mutex
+	mux  sync.Mutex
 	dict map[cipher.Address]struct{}
 }
 
@@ -30,4 +30,3 @@ func (a *Addresses) HasAddress(v cipher.Address) bool {
 	_, ok := a.dict[v]
 	return ok
 }
-

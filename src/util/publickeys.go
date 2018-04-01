@@ -9,4 +9,3 @@ func MustPubKeysFromStrings(pkStrings []string) []cipher.PubKey {
 	}
 	return out
 }
-
