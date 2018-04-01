@@ -150,7 +150,7 @@ func init() {
 			Usage: "test mode trusted root nonce",
 		},
 		cli.StringFlag{
-			Name: Flag(fTestGenPK),
+			Name:  Flag(fTestGenPK),
 			Usage: "test mode trusted gen tx public key",
 		},
 	}
@@ -184,9 +184,9 @@ func action(ctx *cli.Context) error {
 
 	// Test mode changes.
 	if test {
-		rootPK   = cipher.MustPubKeyFromHex(ctx.String(fTestRootPK))
-		rootNc   = ctx.Uint64(fTestRootNonce)
-		genPK    = cipher.MustPubKeyFromHex(ctx.String(fTestGenPK))
+		rootPK = cipher.MustPubKeyFromHex(ctx.String(fTestRootPK))
+		rootNc = ctx.Uint64(fTestRootNonce)
+		genPK = cipher.MustPubKeyFromHex(ctx.String(fTestGenPK))
 
 		tempDir, err := ioutil.TempDir(os.TempDir(), "kc_wallet")
 		if err != nil {

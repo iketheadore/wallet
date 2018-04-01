@@ -16,3 +16,4 @@ yarn.lock
 vendor
 electron/.gox_output
 electron/.standalone_output
+.DS_STORE

@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/kittycash/wallet/src/util"
 	"github.com/skycoin/skycoin/src/cipher"
 	"gopkg.in/sirupsen/logrus.v1"
-	"github.com/kittycash/wallet/src/util"
 )
 
 type BlockChainConfig struct {

@@ -14,11 +14,17 @@ const (
 
 type ServerConfig struct {
 	Address     string
+	KittyAPIURL string
 	EnableGUI   bool
 	GUIDir      string
 	EnableTLS   bool
 	TLSCertFile string
 	TLSKeyFile  string
+}
+
+func (sc *ServerConfig) APIPath(elem ...string) string {
+	return path.Join(append(
+		[]string{sc.KittyAPIURL, "api"}, elem...)...)
 }
 
 type Server struct {

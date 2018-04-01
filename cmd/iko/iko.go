@@ -189,7 +189,7 @@ func action(ctx *cli.Context) error {
 	// Prepare blockchain config.
 	bcConfig := &iko.BlockChainConfig{
 		GenerationPK: txGenPK,
-		TransferPKs: txTransPKs,
+		TransferPKs:  txTransPKs,
 		TxAction: func(tx *iko.Transaction) error {
 			// TODO: Implement web-socket.
 			return nil
