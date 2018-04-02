@@ -4,6 +4,21 @@ Where one claims ownership of dem' kitties.
 
 ## Test wallet
 
+**Start `kitty-api`**
+
+```bash
+# Go into directory.
+cd ${GOPATH}/src/github.com/kittycash/kitty-api
+
+# Run with environment variable declared.
+bash run_test_mode.sh
+
+# Inject some kitties.
+go run ${GOPATH}/src/github.com/kittycash/kitty-api/cmd/testcli/testcli.go
+```
+
+Detailed Instructions: https://github.com/kittycash/kitty-api
+
 **Start Discovery Node**
 
 ```bash
@@ -36,6 +51,7 @@ go run ${GOPATH}/src/github.com/kittycash/wallet/cmd/wallet/wallet.go \
 --test-gen-pk=03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753 \
 --test-root-pk=03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753 \
 --test-root-nonce=1234 \
+--test-api-domain="127.0.0.1:7080" \
 --cxo-address="127.0.0.1:6140" \
 --http-address="127.0.0.1:6148" \
 --messenger-addresses=":8880"

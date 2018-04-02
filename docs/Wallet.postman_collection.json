@@ -1,7 +1,7 @@
 {
 	"info": {
-		"name": "Wallet",
 		"_postman_id": "ebf88441-92d2-4b9e-b1dd-77a6f8064a4b",
+		"name": "Wallet",
 		"description": "Endpoints of where the Kitties are stored.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -31,8 +31,7 @@
 								"wallets",
 								"refresh"
 							]
-						},
-						"description": ""
+						}
 					},
 					"response": []
 				},
@@ -52,8 +51,7 @@
 								"wallets",
 								"list"
 							]
-						},
-						"description": ""
+						}
 					},
 					"response": []
 				},
@@ -113,8 +111,7 @@
 								"wallets",
 								"new"
 							]
-						},
-						"description": ""
+						}
 					},
 					"response": []
 				},
@@ -149,8 +146,7 @@
 								"wallets",
 								"delete"
 							]
-						},
-						"description": ""
+						}
 					},
 					"response": []
 				},
@@ -197,8 +193,7 @@
 								"wallets",
 								"get"
 							]
-						},
-						"description": ""
+						}
 					},
 					"response": []
 				},
@@ -218,8 +213,7 @@
 								"wallets",
 								"seed"
 							]
-						},
-						"description": ""
+						}
 					},
 					"response": []
 				}
@@ -258,7 +252,7 @@
 						"header": [],
 						"body": {},
 						"url": {
-							"raw": "{{domain}}/api/iko/kitty/{{$randomInt}}?type=json",
+							"raw": "{{domain}}/api/iko/kitty/0?type=json",
 							"host": [
 								"{{domain}}"
 							],
@@ -266,18 +260,16 @@
 								"api",
 								"iko",
 								"kitty",
-								"{{$randomInt}}"
+								"0"
 							],
 							"query": [
 								{
 									"key": "type",
 									"value": "json",
-									"equals": true,
 									"description": "Type of output. \"json\" or \"enc\""
 								}
 							]
-						},
-						"description": ""
+						}
 					},
 					"response": []
 				},
@@ -302,12 +294,10 @@
 								{
 									"key": "type",
 									"value": "json",
-									"equals": true,
 									"description": "Type of output. \"json\" or \"enc\""
 								}
 							]
-						},
-						"description": ""
+						}
 					},
 					"response": []
 				},
@@ -332,18 +322,15 @@
 								{
 									"key": "type",
 									"value": "json",
-									"equals": true,
 									"description": "Type of output. \"json\" or \"enc\""
 								},
 								{
 									"key": "request",
 									"value": "seq",
-									"equals": true,
 									"description": "Type of request. \"hash\" or \"seq\""
 								}
 							]
-						},
-						"description": ""
+						}
 					},
 					"response": []
 				},
@@ -367,12 +354,10 @@
 								{
 									"key": "type",
 									"value": "json",
-									"equals": true,
 									"description": "Type of output. \"json\" or \"enc\""
 								}
 							]
-						},
-						"description": ""
+						}
 					},
 					"response": []
 				},
@@ -383,7 +368,7 @@
 						"header": [],
 						"body": {},
 						"url": {
-							"raw": "{{domain}}/api/iko/txs?current_page=2&per_page=10",
+							"raw": "{{domain}}/api/iko/txs?current_page=0&per_page=10",
 							"host": [
 								"{{domain}}"
 							],
@@ -395,19 +380,16 @@
 							"query": [
 								{
 									"key": "current_page",
-									"value": "2",
-									"equals": true,
+									"value": "0",
 									"description": "Current page index."
 								},
 								{
 									"key": "per_page",
 									"value": "10",
-									"equals": true,
 									"description": "Number of items per page."
 								}
 							]
-						},
-						"description": ""
+						}
 					},
 					"response": []
 				},
@@ -423,7 +405,7 @@
 						],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n\t\"hex\": \"8c9a7b5e9b578110388399b275fd010a8906e9637ac082e9cdeb1339f333319414000000000000001e43ab6754ea18151400000000000000000427fcd0f0b9461c5c516cd66a4b5ac413978272000427fcd0f0b9461c5c516cd66a4b5ac4139782725d743acc0b8b40b0be6466d6b84a5a980e64358f153b7af4e676708e95c79d3628ae9a1111c0aaa040aac5e054f81a45588bafac6dee2cdae05457475498301a01\"\n}"
+							"raw": "{\n  \"hex\": \"8c9a7b5e9b578110388399b275fd010a8906e9637ac082e9cdeb1339f333319414000000000000001e43ab6754ea18151400000000000000000427fcd0f0b9461c5c516cd66a4b5ac413978272000427fcd0f0b9461c5c516cd66a4b5ac4139782725d743acc0b8b40b0be6466d6b84a5a980e64358f153b7af4e676708e95c79d3628ae9a1111c0aaa040aac5e054f81a45588bafac6dee2cdae05457475498301a01\"\n}"
 						},
 						"url": {
 							"raw": "{{domain}}/api/iko/inject_tx",
@@ -435,8 +417,7 @@
 								"iko",
 								"inject_tx"
 							]
-						},
-						"description": ""
+						}
 					},
 					"response": []
 				},
@@ -459,12 +440,114 @@
 							"query": [
 								{
 									"key": "addrs",
-									"value": "2fzr9thfdgHCWe8Hp9btr3nNEVTaAmkDk7",
-									"equals": true
+									"value": "2fzr9thfdgHCWe8Hp9btr3nNEVTaAmkDk7"
 								}
 							]
-						},
-						"description": ""
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Re-Served API",
+			"description": "",
+			"item": [
+				{
+					"name": "Count",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{domain}}/api/count",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"count"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Entry",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{domain}}/api/entry?kitty_id=4",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"entry"
+							],
+							"query": [
+								{
+									"key": "kitty_id",
+									"value": "4"
+								},
+								{
+									"key": "kitty_dna",
+									"value": "dna0",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Entries",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{domain}}/api/entries?offset=0&page_size=10",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"entries"
+							],
+							"query": [
+								{
+									"key": "filter_price",
+									"value": "0,233334,btc",
+									"description": "RANGE: If set, filters kitties of price in given range. \"{min},{max},{coin}\"",
+									"disabled": true
+								},
+								{
+									"key": "filter_date",
+									"value": "30,12345",
+									"description": "RANGE: same as price_btc but for sky.",
+									"disabled": true
+								},
+								{
+									"key": "order",
+									"value": "-price_btc",
+									"description": "LIST: The way we order the results. Possible values: \"kitty_id\", \"name\", \"price_btc\", \"price_sky\", \"-kitty_id\", \"-name\", \"-price_btc\", \"-price_sky\".",
+									"disabled": true
+								},
+								{
+									"key": "offset",
+									"value": "0",
+									"description": "INT: Offset for results."
+								},
+								{
+									"key": "page_size",
+									"value": "10",
+									"description": "INT: Results per page."
+								}
+							]
+						}
 					},
 					"response": []
 				}
