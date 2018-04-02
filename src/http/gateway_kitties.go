@@ -4,8 +4,8 @@ import (
 	"github.com/kittycash/wallet/src/kitties"
 	"net/http"
 	"fmt"
-	"bytes"
 	"github.com/kittycash/wallet/src/iko"
+	"io/ioutil"
 )
 
 func marketKitties(m *http.ServeMux, g *kitties.Manager, bc *iko.BlockChain) error {
@@ -33,8 +33,6 @@ func entries(g *kitties.Manager, bc *iko.BlockChain) HandlerFunc {
 	})
 }
 
-
-
 /*
 	<<< HELPER FUNCTIONS >>>
 */
@@ -45,16 +43,14 @@ func marketHandler(action MHAction) HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, p *Path) error {
 		resp, err := action(r)
 		if err != nil {
-			sendJson(w, http.StatusBadRequest,
+			return sendJson(w, http.StatusBadRequest,
 				fmt.Sprintf("Error: %s", err.Error()))
 		}
-		b := bytes.NewBuffer(make([]byte, resp.ContentLength))
-		if err := resp.Write(b); err != nil {
-			sendJson(w, http.StatusBadRequest,
-				fmt.Sprintf("Error: %s", err.Error()))
-		}
+		data, _ := ioutil.ReadAll(resp.Body)
+
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(resp.StatusCode)
-		_, err = w.Write(b.Bytes())
+		_, err = w.Write(data)
 		return err
 	}
 }

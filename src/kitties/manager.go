@@ -15,12 +15,19 @@ import (
 
 type ManagerConfig struct {
 	KittyAPIDomain string
+	TLS            bool
 }
 
 func (mc *ManagerConfig) TransformURL(originalURL *url.URL) string {
-	return path.Join(append(
+	out :=  path.Join(append(
 		[]string{mc.KittyAPIDomain},
-		originalURL.EscapedPath())...)
+		originalURL.EscapedPath())...) + "?" + originalURL.Query().Encode()
+	if mc.TLS {
+		out = "https://" + out
+	} else {
+		out = "http://" + out
+	}
+	return out
 }
 
 type Manager struct {
@@ -100,15 +107,11 @@ func (m *Manager) Entries(bc *iko.BlockChain, req *http.Request) (*http.Response
 type BodyChanger func(body []byte) ([]byte, error)
 
 func (m *Manager) do(req *http.Request, changer BodyChanger) (*http.Response, error) {
-	var (
-		err  error
-		resp *http.Response
-	)
-	req.URL, err = url.Parse(m.c.TransformURL(req.URL))
+	newURL, err := url.Parse(m.c.TransformURL(req.URL))
 	if err != nil {
 		return nil, err
 	}
-	resp, err = m.http.Do(req)
+	resp, err := m.http.Get(newURL.String())
 	if err != nil {
 		return nil, err
 	}
@@ -116,6 +119,7 @@ func (m *Manager) do(req *http.Request, changer BodyChanger) (*http.Response, er
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println("DATA:", string(data))
 	if resp.StatusCode == http.StatusOK {
 		data, err = changer(data)
 		if err != nil {
@@ -125,17 +129,6 @@ func (m *Manager) do(req *http.Request, changer BodyChanger) (*http.Response, er
 		resp.Body = ioutil.NopCloser(bytes.NewReader(data))
 	}
 	return resp, nil
-}
-
-func processResp(resp *http.Response) ([]byte, error) {
-	raw, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-	if resp.StatusCode != http.StatusOK {
-		return nil, errNot200(raw)
-	}
-	return raw, nil
 }
 
 func errRespCorrupt(err error) error {
