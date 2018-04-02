@@ -14,10 +14,6 @@ import (
 	"time"
 )
 
-const (
-	MAX_UDP_PACKAGE_SIZE = 1200
-)
-
 type UDPConn struct {
 	*ConnCommonFields
 	*UDPPendingMap
@@ -53,6 +49,10 @@ type UDPConn struct {
 	*fecDecoder
 
 	closed bool
+
+	// callbacks
+	BeforeSend func(m *msg.UDPMessage)
+	BeforeRead func(m *msg.UDPMessage)
 }
 
 const (
@@ -276,6 +276,9 @@ func (c *UDPConn) writePendingMsgs() (err error) {
 		tx := !m.IsTransmitted()
 		if tx {
 			m.SetSeq(c.GetNextSeq())
+			if c.BeforeSend != nil {
+				c.BeforeSend(m)
+			}
 			c.GetContextLogger().Debugf("new msg seq %d", m.GetSeq())
 		} else {
 			c.GetContextLogger().Debugf("resend msg seq %d", m.GetSeq())
@@ -338,8 +341,10 @@ func (c *UDPConn) fillAckInfo(m []byte) {
 	if seq > nSeq+1 {
 		acked := c.GetAckedSeqs(nSeq+1, seq)
 		binary.BigEndian.PutUint32(m[msg.UDP_ACK_ACKED_SEQ_BEGIN:], acked)
+		c.GetContextLogger().Debugf("fill ack %d, next %d, acked %d", seq, nSeq, acked)
 	} else {
 		binary.BigEndian.PutUint32(m[msg.UDP_ACK_ACKED_SEQ_BEGIN:], 0)
+		c.GetContextLogger().Debugf("fill ack %d, next %d, acked %d", seq, nSeq, 0)
 	}
 }
 
@@ -440,6 +445,9 @@ func (c *UDPConn) process(t byte, seq uint32, m []byte) (err error) {
 					return
 				}
 			}
+			if c.BeforeRead != nil {
+				c.BeforeRead(m)
+			}
 			c.In <- m.Body
 		}
 	}
@@ -500,6 +508,7 @@ func (c *UDPConn) ack(seq uint32) error {
 	if seq > nSeq+1 {
 		acked := c.GetAckedSeqs(nSeq+1, seq)
 		binary.BigEndian.PutUint32(m[msg.ACK_ACKED_SEQ_BEGIN:msg.ACK_ACKED_SEQ_END], acked)
+		c.GetContextLogger().Debugf("ack %d, next %d, acked %d", seq, nSeq, acked)
 	}
 	checksum := crc32.ChecksumIEEE(m)
 	binary.BigEndian.PutUint32(p[msg.PKG_CRC32_BEGIN:], checksum)
@@ -571,7 +580,7 @@ func (c *UDPConn) GetNextSeq() uint32 {
 	return atomic.AddUint32(&c.seq, 1)
 }
 
-func (c *UDPConn) IsClose() (r bool) {
+func (c *UDPConn) IsClosed() (r bool) {
 	c.FieldsMutex.RLock()
 	r = c.closed
 	c.FieldsMutex.RUnlock()
@@ -581,6 +590,7 @@ func (c *UDPConn) IsClose() (r bool) {
 func (c *UDPConn) Close() {
 	c.FieldsMutex.Lock()
 	if c.closed {
+		c.FieldsMutex.Unlock()
 		return
 	}
 	c.closed = true
@@ -1144,8 +1154,8 @@ func (ca *ca) isCwndFull() (r bool) {
 func (ca *ca) setCwnd(cwnd uint32) {
 	if cwnd < 4 {
 		cwnd = 4
-	} else if cwnd > 200 {
-		cwnd = 200
+	} else if cwnd > MAX_CWND {
+		cwnd = MAX_CWND
 	}
 
 	ca.cwndMtx.Lock()
@@ -1162,7 +1172,7 @@ func (ca *ca) setPacingRate(rate uint64) {
 }
 
 func (ca *ca) calcPacingTime(len int) (d time.Duration) {
-	d = time.Duration(uint64(len*1000000000) / ca.getPacingRate())
+	d = time.Duration(uint64(len)*1000000000 / ca.getPacingRate())
 	r := time.Now().Add(d)
 	logrus.Debugf("calcPacingTime %s", d)
 	ca.nextPacingTime = r

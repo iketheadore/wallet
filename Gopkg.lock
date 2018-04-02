@@ -2,6 +2,39 @@
 
 
 [[projects]]
+  name = "github.com/aws/aws-sdk-go"
+  packages = [
+    "aws",
+    "aws/awserr",
+    "aws/awsutil",
+    "aws/client",
+    "aws/client/metadata",
+    "aws/corehandlers",
+    "aws/credentials",
+    "aws/credentials/ec2rolecreds",
+    "aws/credentials/endpointcreds",
+    "aws/credentials/stscreds",
+    "aws/defaults",
+    "aws/ec2metadata",
+    "aws/endpoints",
+    "aws/request",
+    "aws/session",
+    "aws/signer/v4",
+    "internal/sdkio",
+    "internal/sdkrand",
+    "internal/shareddefaults",
+    "private/protocol",
+    "private/protocol/query",
+    "private/protocol/query/queryutil",
+    "private/protocol/rest",
+    "private/protocol/xml/xmlutil",
+    "service/sqs",
+    "service/sts"
+  ]
+  revision = "74ca63959be8b9a9a24cd86eaaea8bf99de8022d"
+  version = "v1.13.25"
+
+[[projects]]
   name = "github.com/boltdb/bolt"
   packages = ["."]
   revision = "2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8"
@@ -20,22 +53,21 @@
   version = "0.2.0"
 
 [[projects]]
+  name = "github.com/go-ini/ini"
+  packages = ["."]
+  revision = "6333e38ac20b8949a8dd68baa3650f4dee8f39f0"
+  version = "v1.33.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/google/btree"
   packages = ["."]
   revision = "e89373fe6b4a7413d7acd6da1725b83ef713e6e4"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/kittycash/wallet"
-  packages = [
-    "src/http",
-    "src/iko",
-    "src/rpc",
-    "src/util",
-    "src/wallet"
-  ]
-  revision = "92ac08599d23bcfcd814908db20d1c9600189202"
+  name = "github.com/jmespath/go-jmespath"
+  packages = ["."]
+  revision = "0b12d6b5"
 
 [[projects]]
   name = "github.com/klauspost/cpuid"
@@ -56,10 +88,22 @@
   version = "v1"
 
 [[projects]]
+  name = "github.com/oschwald/maxminddb-golang"
+  packages = ["."]
+  revision = "c5bec84d1963260297932a1b7a1753c8420717a7"
+  version = "v1.3.0"
+
+[[projects]]
   branch = "master"
   name = "github.com/petar/GoLLRB"
   packages = ["llrb"]
   revision = "53be0d36a84c2a886ca057d34b6aa4468df9ccb4"
+
+[[projects]]
+  name = "github.com/pkg/errors"
+  packages = ["."]
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
 
 [[projects]]
   name = "github.com/pmezard/go-difflib"
@@ -70,8 +114,8 @@
 [[projects]]
   name = "github.com/sirupsen/logrus"
   packages = ["."]
-  revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
-  version = "v1.0.4"
+  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
+  version = "v1.0.5"
 
 [[projects]]
   branch = "master"
@@ -99,9 +143,10 @@
     "msg",
     "server",
     "skycoin-messenger/factory",
-    "util"
+    "util",
+    "util/producer"
   ]
-  revision = "4bcee2eb0c36a33dd22757247c83ab7e78c50834"
+  revision = "da53c822edc61578f5e6019f5eb910b30308a9f1"
 
 [[projects]]
   name = "github.com/skycoin/skycoin"
@@ -136,7 +181,7 @@
     "pbkdf2",
     "ssh/terminal"
   ]
-  revision = "8c653846df49742c4c85ec37e5d9f8d3ba657895"
+  revision = "12892e8c234f4fe6f6803f052061de9057903bb2"
 
 [[projects]]
   branch = "master"
@@ -145,13 +190,13 @@
     "unix",
     "windows"
   ]
-  revision = "f6cff0780e542efa0c8e864dc8fa522808f6a598"
+  revision = "378d26f46672a356c46195c28f61bdb4c0a781dd"
 
 [[projects]]
   name = "gopkg.in/sirupsen/logrus.v1"
   packages = ["."]
-  revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
-  version = "v1.0.4"
+  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
+  version = "v1.0.5"
 
 [[projects]]
   name = "gopkg.in/urfave/cli.v1"
@@ -162,6 +207,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c8babb18716a74d7fc21b0192596adae892e88f6f07b2ea09c214230818780d9"
+  inputs-digest = "54679928d223b3e11f3e8304b8de5727a8b3016a04edd83e8e24a99fa9a95148"
   solver-name = "gps-cdcl"
   solver-version = 1
