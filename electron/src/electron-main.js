@@ -17,6 +17,7 @@ const childProcess = require('child_process');
 
 const cwd = require('process').cwd();
 
+
 // This adds refresh and devtools console keybindings
 // Page can refresh with cmd+r, ctrl+r, F5
 // Devtools can be toggled with cmd+alt+i, ctrl+shift+i, F12
@@ -27,8 +28,10 @@ global.eval = function() { throw new Error('bad!!'); }
 
 const defaultURL = 'http://127.0.0.1:6148/boxes';
 
+//WARNING - Re-enable this after testing!  Need to figure out all the recaptcha urls
 // Force everything localhost, in case of a leak
 // app.commandLine.appendSwitch('host-rules', 'MAP * 127.0.0.1, EXCLUDE www.google.com, fonts.gstatic.com, www.gstatic.com, fonts.googleapis.com');
+app.commandLine.appendSwitch('--enable-viewport-meta', 'true');
 app.commandLine.appendSwitch('ssl-version-fallback-min', 'tls1.2');
 app.commandLine.appendSwitch('--no-proxy-server');
 app.setAsDefaultProtocolClient('kittycash');
@@ -60,7 +63,7 @@ function startKittyCash() {
 
   if (isDev())
   {
-    return '/Users/bkendall/go/bin/wallet';
+    return 'go';
   }
 
   switch (process.platform) {
@@ -79,6 +82,10 @@ function startKittyCash() {
 
   var gui_dir = (() => {
 
+   if (isDev())
+    {
+      return '../tabs/dist';
+    }
   switch (process.platform) {
     case 'darwin':
       return path.join(appPath, '../../Resources/app/dist');
@@ -105,6 +112,12 @@ function startKittyCash() {
     '--gui=true',
     '--gui-dir=' + gui_dir
   ];
+
+  if (isDev())
+  {
+    args.unshift("${GOPATH}/src/github.com/kittycash/wallet/cmd/wallet/wallet.go");
+    args.unshift("run");
+  }
 
   kittycash = childProcess.spawn(exe, args);
 
@@ -163,6 +176,14 @@ function createWindow(url) {
     },
   });
 
+  let webContents = win.webContents;
+
+  webContents.on('did-finish-load', () => {
+    webContents.setZoomFactor(1);
+    webContents.setVisualZoomLevelLimits(1, 1);
+    webContents.setLayoutZoomLevelLimits(0, 0);
+  });
+
   // patch out eval
   win.eval = global.eval;
 
@@ -192,8 +213,12 @@ function createWindow(url) {
   var template = [{
     label: "KittyCash",
     submenu: [
-      { label: "About KittyCash", selector: "orderFrontStandardAboutPanel:" },
-      { type: "separator" },
+      { label: "About KittyCash", selector: "orderFrontStandardAboutPanel:", click: function() 
+        { 
+          var appVersion = require('electron').app.getVersion();
+          dialog.showMessageBox({ type: 'info', title: 'About KittyCash', message: 'KittyCash version: ' + appVersion });
+        }
+      },
       { label: "Quit", accelerator: "Command+Q", click: function() { app.quit(); } }
     ]
   }, {
