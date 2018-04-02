@@ -42,11 +42,14 @@ type Connection interface {
 	WriteToChannel(channel int, bytes []byte) (err error)
 
 	WaitForDisconnected()
+	GetDisconnectedChan() <-chan struct{}
 
 	WriteSyn(bytes []byte) (err error)
 
 	SetCrypto(crypto *Crypto)
 	GetCrypto() *Crypto
+
+	SetStatusToError(err error)
 }
 
 type ConnCommonFields struct {
@@ -113,13 +116,13 @@ func (c *ConnCommonFields) SetStatusToError(err error) {
 }
 
 func (c *ConnCommonFields) GetStatusError() (err error) {
-	c.FieldsMutex.Lock()
+	c.FieldsMutex.RLock()
 	if c.Status != STATUS_ERROR {
-		c.FieldsMutex.Unlock()
+		c.FieldsMutex.RUnlock()
 		return
 	}
 	err = c.err
-	c.FieldsMutex.Unlock()
+	c.FieldsMutex.RUnlock()
 	return
 }
 
@@ -172,6 +175,10 @@ func (c *ConnCommonFields) IsClosed() bool {
 
 func (c *ConnCommonFields) WaitForDisconnected() {
 	<-c.disconnected
+}
+
+func (c *ConnCommonFields) GetDisconnectedChan() <-chan struct{} {
+	return c.disconnected
 }
 
 func (c *ConnCommonFields) GetLastTime() int64 {

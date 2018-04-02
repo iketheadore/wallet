@@ -40,15 +40,18 @@ type Connection struct {
 	appTransports      map[cipher.PubKey]*Transport
 	appTransportsMutex sync.RWMutex
 
+	CreatedByTransport *Transport
+	transportPair      *transportPair
+
 	connectTime int64
 
 	skipFactoryReg bool
 
 	appMessages        []PriorityMsg
-	appMessagesPty     Priority
 	appMessagesReadCnt int
 	appMessagesMutex   sync.RWMutex
-	appFeedback        atomic.Value
+	appFeedback        *AppFeedback
+	appFeedbackMutex   sync.RWMutex
 	// callbacks
 
 	// call after received response for FindServiceNodesByKeys
@@ -237,9 +240,12 @@ func (c *Connection) RegWithKeys(key, target cipher.PubKey, context map[string]s
 
 // register services to discovery
 func (c *Connection) UpdateServices(ns *NodeServices) (err error) {
-	if ns != nil && !checkNodeServices(ns) {
-		err = fmt.Errorf("invalid NodeServices %#v", ns)
-		return
+	if ns != nil {
+		if !checkNodeServices(ns) {
+			err = fmt.Errorf("invalid NodeServices %#v", ns)
+			return
+		}
+		ns.Version = []string{c.factory.GetAppVersion(), VERSION, conn.VERSION}
 	}
 	c.setServices(ns)
 	if ns == nil {
@@ -336,12 +342,17 @@ func (c *Connection) OfferService(attrs ...string) error {
 }
 
 // register a service to discovery
-func (c *Connection) OfferServiceWithAddress(address string, attrs ...string) error {
-	return c.UpdateServices(&NodeServices{Services: []*Service{{Key: c.GetKey(), Attributes: attrs, Address: address}}})
+func (c *Connection) OfferServiceWithAddress(address, version string, attrs ...string) error {
+	return c.UpdateServices(&NodeServices{
+		Services: []*Service{{Key: c.GetKey(),
+			Attributes: attrs,
+			Address:    address,
+			Version:    version,
+		}}})
 }
 
 // register a service to discovery
-func (c *Connection) OfferPrivateServiceWithAddress(address string, allowNodes []string, attrs ...string) error {
+func (c *Connection) OfferPrivateServiceWithAddress(address, version string, allowNodes []string, attrs ...string) error {
 	return c.UpdateServices(&NodeServices{
 		Services: []*Service{{
 			Key:               c.GetKey(),
@@ -349,17 +360,8 @@ func (c *Connection) OfferPrivateServiceWithAddress(address string, allowNodes [
 			Address:           address,
 			HideFromDiscovery: true,
 			AllowNodes:        allowNodes,
+			Version:           version,
 		}}})
-}
-
-// register a service to discovery
-func (c *Connection) OfferStaticServiceWithAddress(address string, attrs ...string) (err error) {
-	ns := &NodeServices{Services: []*Service{{Key: c.GetKey(), Attributes: attrs, Address: address}}}
-	err = c.factory.discoveryRegister(c, ns)
-	if err != nil {
-		return
-	}
-	return c.UpdateServices(ns)
 }
 
 // find services by attributes
@@ -375,13 +377,21 @@ func (c *Connection) FindServiceNodesWithSeqByAttributes(attrs ...string) (seq u
 	return
 }
 
+// find services by attributes
+func (c *Connection) FindServiceNodesWithSeqByAttributesAndPaging(pages, limit int, attrs ...string) (seq uint32, err error) {
+	q := newQueryByAttrsAndPage(pages, limit, attrs)
+	seq = q.Seq
+	err = c.writeOP(OP_QUERY_BY_ATTRS, q)
+	return
+}
+
 // find services nodes by service public keys
 func (c *Connection) FindServiceNodesByKeys(keys []cipher.PubKey) error {
 	return c.writeOP(OP_QUERY_SERVICE_NODES, newQuery(keys))
 }
 
-func (c *Connection) BuildAppConnection(node, app cipher.PubKey) error {
-	return c.writeOP(OP_BUILD_APP_CONN, &appConn{Node: node, App: app})
+func (c *Connection) BuildAppConnection(node, app, discovery cipher.PubKey) error {
+	return c.writeOP(OP_BUILD_APP_CONN, &appConn{Node: node, App: app, Discovery: discovery})
 }
 
 func (c *Connection) Send(to cipher.PubKey, msg []byte) error {
@@ -429,8 +439,9 @@ OUTER:
 							return
 						}
 					}
+					c.GetContextLogger().Debugf("executing op %#v", r)
 					err = r.Run(c)
-					c.GetContextLogger().Debugf("execute op %#v err %v", r, err)
+					c.GetContextLogger().Debugf("executed op %#v err %v", r, err)
 					if err != nil {
 						if err == ErrDetach {
 							err = nil
@@ -465,12 +476,6 @@ func (c *Connection) GetChanIn() <-chan []byte {
 }
 
 func (c *Connection) Close() {
-	if c.reconnect != nil {
-		go c.reconnect()
-	}
-	if c.onDisconnected != nil {
-		c.onDisconnected(c)
-	}
 	c.keySetCond.Broadcast()
 	c.fieldsMutex.Lock()
 	defer c.fieldsMutex.Unlock()
@@ -478,6 +483,12 @@ func (c *Connection) Close() {
 		return
 	}
 	c.closed = true
+	if c.reconnect != nil {
+		go c.reconnect()
+	}
+	if c.onDisconnected != nil {
+		c.onDisconnected(c)
+	}
 	if c.keySet {
 		if !c.skipFactoryReg {
 			c.factory.unregister(c.key, c)
@@ -488,14 +499,17 @@ func (c *Connection) Close() {
 		close(c.in)
 	}
 
-	c.appTransportsMutex.RLock()
-	defer c.appTransportsMutex.RUnlock()
+	if c.transportPair != nil {
+		c.transportPair.close()
+	}
 
+	c.appTransportsMutex.RLock()
 	if len(c.appTransports) > 0 {
 		for _, v := range c.appTransports {
 			v.Close()
 		}
 	}
+	c.appTransportsMutex.RUnlock()
 
 	c.Connection.Close()
 }
@@ -507,9 +521,10 @@ func (c *Connection) WaitForKey() (err error) {
 		close(ok)
 	}()
 	select {
-	case <-time.After(15 * time.Second):
-		c.Close()
+	case <-time.After(10 * time.Second):
 		err = errors.New("reg timeout")
+		c.SetStatusToError(err)
+		c.Close()
 	case <-ok:
 	}
 	return err
@@ -543,19 +558,38 @@ func (c *Connection) writeOPSyn(op byte, object interface{}) error {
 	return c.WriteSyn(data)
 }
 
-func (c *Connection) setTransport(to cipher.PubKey, tr *Transport) {
+// Set transport if key is not exists. Delete the transport of the key if tr is nil
+func (c *Connection) setTransportIfNotExists(key cipher.PubKey, tr *Transport) (exists bool) {
 	c.appTransportsMutex.Lock()
 	if tr == nil {
-		delete(c.appTransports, to)
+		delete(c.appTransports, key)
 	} else {
-		c.appTransports[to] = tr
+		_, exists = c.appTransports[key]
+		if !exists {
+			c.appTransports[key] = tr
+		}
 	}
 	c.appTransportsMutex.Unlock()
+	return
 }
 
-func (c *Connection) getTransport(to cipher.PubKey) (tr *Transport, ok bool) {
+func (c *Connection) deleteTransport(key cipher.PubKey) {
+	c.appTransportsMutex.Lock()
+	delete(c.appTransports, key)
+	c.appTransportsMutex.Unlock()
+	return
+}
+
+func (c *Connection) setTransport(key cipher.PubKey, tr *Transport) {
+	c.appTransportsMutex.Lock()
+	c.appTransports[key] = tr
+	c.appTransportsMutex.Unlock()
+	return
+}
+
+func (c *Connection) getTransport(key cipher.PubKey) (tr *Transport, ok bool) {
 	c.appTransportsMutex.RLock()
-	tr, ok = c.appTransports[to]
+	tr, ok = c.appTransports[key]
 	c.appTransportsMutex.RUnlock()
 	return
 }
@@ -582,8 +616,14 @@ func (c *Connection) IsSkipFactoryReg() (skip bool) {
 }
 
 func (c *Connection) ForEachTransport(fn func(t *Transport)) {
+	filter := make(map[*Transport]struct{})
 	c.appTransportsMutex.RLock()
 	for _, tr := range c.appTransports {
+		_, ok := filter[tr]
+		if ok {
+			continue
+		}
+		filter[tr] = struct{}{}
 		fn(tr)
 	}
 	c.appTransportsMutex.RUnlock()
@@ -597,17 +637,11 @@ func (c *Connection) LoadContext(key interface{}) (value interface{}, ok bool) {
 	return c.context.Load(key)
 }
 
-func (c *Connection) PutMessage(v PriorityMsg) bool {
+func (c *Connection) PutMessage(v PriorityMsg) {
 	c.appMessagesMutex.Lock()
-	if c.appMessagesPty > v.Priority {
-		c.appMessagesMutex.Unlock()
-		return false
-	}
 	v.Time = time.Now().Unix()
 	c.appMessages = append(c.appMessages, v)
-	c.appMessagesPty = v.Priority
 	c.appMessagesMutex.Unlock()
-	return true
 }
 
 // Get messages
@@ -628,15 +662,18 @@ func (c *Connection) CheckMessages() (result int) {
 }
 
 func (c *Connection) SetAppFeedback(fb *AppFeedback) {
-	c.appFeedback.Store(fb)
+	c.appFeedbackMutex.Lock()
+	if c.appFeedback == nil || fb.Discovery == c.appFeedback.Discovery {
+		c.appFeedback = fb
+	}
+	c.appFeedbackMutex.Unlock()
 }
 
-func (c *Connection) GetAppFeedback() *AppFeedback {
-	v, ok := c.appFeedback.Load().(*AppFeedback)
-	if !ok {
-		return nil
-	}
-	return v
+func (c *Connection) GetAppFeedback() (v *AppFeedback) {
+	c.appFeedbackMutex.RLock()
+	v = c.appFeedback
+	c.appFeedbackMutex.RUnlock()
+	return
 }
 
 func (c *Connection) SetCrypto(pk cipher.PubKey, sk cipher.SecKey, target cipher.PubKey, iv []byte) (err error) {
@@ -657,5 +694,18 @@ func (c *Connection) SetCrypto(pk cipher.PubKey, sk cipher.SecKey, target cipher
 		}
 	}
 	c.Connection.SetCrypto(crypto)
+	return
+}
+
+func (c *Connection) SetTransportPair(pair *transportPair) {
+	c.fieldsMutex.Lock()
+	c.transportPair = pair
+	c.fieldsMutex.Unlock()
+}
+
+func (c *Connection) GetTransportPair() (pair *transportPair) {
+	c.fieldsMutex.RLock()
+	pair = c.transportPair
+	c.fieldsMutex.RUnlock()
 	return
 }

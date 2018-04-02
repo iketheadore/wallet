@@ -1,11 +1,15 @@
 package factory
 
 import (
+	"crypto/hmac"
+	"crypto/sha256"
 	"encoding/binary"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	cn "github.com/skycoin/net/conn"
+	"github.com/skycoin/net/msg"
 	"github.com/skycoin/skycoin/src/cipher"
 	"io"
 	"net"
@@ -41,8 +45,192 @@ type Transport struct {
 
 	connAcked bool
 
+	discoveryConn *Connection
+
+	ticketSeqCounter  uint32
+	unChargeMsgs      []*msg.UDPMessage
+	unChargeMsgsMutex sync.Mutex
+
 	fieldsMutex sync.RWMutex
 }
+
+type transportPair struct {
+	uid                                    uint64
+	fromApp, fromNode, toNode, toApp       cipher.PubKey
+	fromConn, toConn                       *Connection
+	fromHostPort, toHostPort, fromIp, toIp string
+	tickets                                map[uint32]*workTicket
+	lastTicket                             *workTicket
+	ticketsMutex                           sync.Mutex
+	timeoutTimer                           *time.Timer
+	closed                                 bool
+	lastCheckedTime                        time.Time
+	fieldsMutex                            sync.RWMutex
+}
+
+func (p *transportPair) ok() {
+	p.fieldsMutex.Lock()
+	if p.timeoutTimer == nil {
+		p.fieldsMutex.Unlock()
+		return
+	}
+	p.timeoutTimer.Stop()
+	p.timeoutTimer = nil
+	p.fieldsMutex.Unlock()
+}
+
+func (p *transportPair) close() {
+	p.fieldsMutex.Lock()
+	if p.closed {
+		p.fieldsMutex.Unlock()
+		return
+	}
+	p.closed = true
+	p.fieldsMutex.Unlock()
+	keys := p.fromApp.Hex() + p.fromNode.Hex() + p.toNode.Hex() + p.toApp.Hex()
+	globalTransportPairManagerInstance.del(keys)
+}
+
+func (p *transportPair) submitTicket(ticket *workTicket) (ok uint, err error) {
+	p.ticketsMutex.Lock()
+	defer p.ticketsMutex.Unlock()
+
+	if p.lastCheckedTime.IsZero() {
+		p.lastCheckedTime = time.Now()
+	} else if time.Now().Sub(p.lastCheckedTime) > 30*time.Second {
+		if len(p.tickets) > 10 {
+			err = errors.New("too many uncheck tickets")
+			return
+		}
+	}
+
+	if len(ticket.Codes) > 0 {
+		if p.lastTicket == nil {
+			clone := *ticket
+			p.lastTicket = &clone
+			return
+		}
+		t := p.lastTicket
+		p.lastTicket = nil
+		for i, c := range ticket.Codes {
+			if hmac.Equal(t.Codes[i], c) {
+				ok++
+			} else {
+				return
+			}
+		}
+		return
+	}
+
+	t, o := p.tickets[ticket.Seq]
+	if !o {
+		clone := *ticket
+		p.tickets[ticket.Seq] = &clone
+		return
+	}
+	delete(p.tickets, ticket.Seq)
+	if !hmac.Equal(t.Code, ticket.Code) {
+		err = errors.New("ticket code is not valid")
+		return
+	}
+	ok = msgsEveryTicket
+	p.lastCheckedTime = time.Now()
+	return
+}
+
+func (p *transportPair) setFromConn(fromConn *Connection) (err error) {
+	p.fieldsMutex.Lock()
+	addr := fromConn.GetRemoteAddr().String()
+	fromIp, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		p.fieldsMutex.Unlock()
+		return
+	}
+	p.fromConn = fromConn
+	hash := sha256.New()
+	hash.Write([]byte(addr))
+	p.fromHostPort = hex.EncodeToString(hash.Sum(nil))
+	hash.Reset()
+	hash.Write([]byte(fromIp))
+	p.fromIp = hex.EncodeToString(hash.Sum(nil))
+
+	p.fieldsMutex.Unlock()
+	return
+}
+
+func (p *transportPair) setToConn(toConn *Connection) (err error) {
+	p.fieldsMutex.Lock()
+	addr := toConn.GetRemoteAddr().String()
+	toIp, _, err := net.SplitHostPort(addr)
+	if err != nil {
+		p.fieldsMutex.Unlock()
+		return
+	}
+	p.toConn = toConn
+	hash := sha256.New()
+	hash.Write([]byte(addr))
+	p.toHostPort = hex.EncodeToString(hash.Sum(nil))
+	hash.Reset()
+	hash.Write([]byte(toIp))
+	p.toIp = hex.EncodeToString(hash.Sum(nil))
+
+	p.fieldsMutex.Unlock()
+	return
+}
+
+var globalTransportPairManagerInstance = newTransportPairManager()
+
+type transportPairManager struct {
+	pairs      map[string]*transportPair
+	pairsMutex sync.RWMutex
+}
+
+func newTransportPairManager() *transportPairManager {
+	return &transportPairManager{
+		pairs: make(map[string]*transportPair),
+	}
+}
+
+var guid uint64 = 0
+
+func (m *transportPairManager) create(fromApp, fromNode, toNode, toApp cipher.PubKey) (p *transportPair) {
+	keys := fromApp.Hex() + fromNode.Hex() + toNode.Hex() + toApp.Hex()
+	m.pairsMutex.Lock()
+	p, ok := m.pairs[keys]
+	if ok {
+		delete(m.pairs, keys)
+	}
+	p = &transportPair{
+		uid:      atomic.AddUint64(&guid, 1),
+		fromApp:  fromApp,
+		fromNode: fromNode,
+		toNode:   toNode,
+		toApp:    toApp,
+		tickets:  make(map[uint32]*workTicket),
+	}
+	p.timeoutTimer = time.AfterFunc(120*time.Second, func() {
+		p.close()
+	})
+	m.pairs[keys] = p
+	m.pairsMutex.Unlock()
+	return
+}
+
+func (m *transportPairManager) get(fromApp, fromNode, toNode, toApp cipher.PubKey) (p *transportPair, ok bool) {
+	keys := fromApp.Hex() + fromNode.Hex() + toNode.Hex() + toApp.Hex()
+	m.pairsMutex.RLock()
+	p, ok = m.pairs[keys]
+	m.pairsMutex.RUnlock()
+	return
+}
+
+func (m *transportPairManager) del(keys string) {
+	m.pairsMutex.Lock()
+	delete(m.pairs, keys)
+	m.pairsMutex.Unlock()
+}
+
+const msgsEveryTicket = 1000
 
 func NewTransport(creator *MessengerFactory, appConn *Connection, fromNode, toNode, fromApp, toApp cipher.PubKey) *Transport {
 	if appConn == nil {
@@ -64,10 +252,59 @@ func NewTransport(creator *MessengerFactory, appConn *Connection, fromNode, toNo
 		clientSide:    cs,
 		factory:       NewMessengerFactory(),
 		conns:         make(map[uint32]net.Conn),
+		unChargeMsgs:  make([]*msg.UDPMessage, 0, msgsEveryTicket-1),
+	}
+	ticketFunc := func(m *msg.UDPMessage) {
+		c := atomic.AddUint32(&t.ticketSeqCounter, 1)
+		if c%msgsEveryTicket != 0 {
+			t.unChargeMsgsMutex.Lock()
+			t.unChargeMsgs = append(t.unChargeMsgs, m)
+			t.unChargeMsgsMutex.Unlock()
+			return
+		}
+		t.unChargeMsgsMutex.Lock()
+		t.unChargeMsgs = t.unChargeMsgs[:0]
+		t.unChargeMsgsMutex.Unlock()
+		t.sendTicket(c/msgsEveryTicket, m)
+	}
+	if cs {
+		t.factory.BeforeReadOnConn = ticketFunc
+	} else {
+		t.factory.BeforeSendOnConn = ticketFunc
 	}
 	t.factory.Parent = creator
 	t.factory.SetDefaultSeedConfig(creator.GetDefaultSeedConfig())
 	return t
+}
+
+func (t *Transport) sendTicket(seq uint32, m *msg.UDPMessage) {
+	mac := hmac.New(sha256.New, t.FromNode[:])
+	mac.Write(m.Body)
+	code := mac.Sum(nil)
+	t.discoveryConn.writeOP(OP_POW, &workTicket{
+		Seq:  seq,
+		Code: code,
+	})
+}
+
+func (t *Transport) sendLastTicket() {
+	c := atomic.AddUint32(&t.ticketSeqCounter, 1)
+	if c < msgsEveryTicket {
+		return
+	}
+	t.unChargeMsgsMutex.Lock()
+	codes := make([][]byte, len(t.unChargeMsgs))
+	for i, m := range t.unChargeMsgs {
+		mac := hmac.New(sha256.New, t.FromNode[:])
+		mac.Write(m.Body)
+		code := mac.Sum(nil)
+		codes[i] = code
+	}
+	t.unChargeMsgsMutex.Unlock()
+	t.discoveryConn.writeOP(OP_POW, &workTicket{
+		Codes: codes,
+		Last:  true,
+	})
 }
 
 func (t *Transport) SetOnAcceptedUDPCallback(fn func(connection *Connection)) {
@@ -86,25 +323,29 @@ func (t *Transport) ListenAndConnect(address string, key cipher.PubKey) (conn *C
 		return
 	}
 	conn, err = t.factory.connectUDPWithConfig(address, &ConnConfig{
-		Creator:   t.creator,
-		UseCrypto: RegWithKeyAndEncryptionVersion,
-		TargetKey: key,
+		UseCrypto:           RegWithKeyAndEncryptionVersion,
+		TargetKey:           key,
+		SkipBeforeCallbacks: true,
 	})
+	conn.CreatedByTransport = t
+	t.discoveryConn = conn
 	return
 }
 
 // Connect to node B
 func (t *Transport) clientSideConnect(address string, sc *SeedConfig, iv []byte) (err error) {
 	t.fieldsMutex.Lock()
+	defer t.fieldsMutex.Unlock()
 	if t.connAcked {
-		t.fieldsMutex.Unlock()
 		return
 	}
 	t.connAcked = true
-	t.fieldsMutex.Unlock()
-	conn, err := t.factory.acceptUDPWithConfig(address, &ConnConfig{
-		Creator: t.creator,
-	})
+	if t.factory == nil {
+		err = errors.New("transport has been closed")
+		return
+	}
+
+	conn, err := t.factory.acceptUDPWithConfig(address, &ConnConfig{})
 	if err != nil {
 		return
 	}
@@ -126,14 +367,21 @@ func (t *Transport) connAck() {
 	t.fieldsMutex.Unlock()
 }
 
+func (t *Transport) isConnAck() (is bool) {
+	t.fieldsMutex.RLock()
+	is = t.connAcked
+	t.fieldsMutex.RUnlock()
+	return
+}
+
 // Connect to node A and server app
 func (t *Transport) serverSiceConnect(address, appAddress string, sc *SeedConfig, iv []byte) (err error) {
-	conn, err := t.factory.connectUDPWithConfig(address, &ConnConfig{
-		Creator: t.creator,
-	})
+	conn, err := t.factory.connectUDPWithConfig(address, &ConnConfig{})
 	if err != nil {
 		return
 	}
+	conn.CreatedByTransport = t
+	conn.SetKey(t.FromNode)
 	err = conn.SetCrypto(sc.publicKey, sc.secKey, t.FromNode, iv)
 	if err != nil {
 		return
@@ -169,6 +417,13 @@ func (t *Transport) serverSiceConnect(address, appAddress string, sc *SeedConfig
 	})
 
 	return
+}
+
+func (t *Transport) getDiscoveryDisconntedChan() <-chan struct{} {
+	if t.discoveryConn == nil {
+		return nil
+	}
+	return t.discoveryConn.GetDisconnectedChan()
 }
 
 // Read from node, write to app
@@ -214,6 +469,9 @@ func (t *Transport) nodeReadLoop(conn *Connection, getAppConn func(id uint32) ne
 				appConn.Close()
 				continue
 			}
+		case <-t.getDiscoveryDisconntedChan():
+			conn.GetContextLogger().Debugf("transport discovery conn closed")
+			return
 		}
 	}
 }
@@ -369,12 +627,43 @@ func (t *Transport) accept() {
 	}
 }
 
+func (t *Transport) getDiscoveryKey() cipher.PubKey {
+	if t.discoveryConn == nil {
+		return EMPATY_PUBLIC_KEY
+	}
+	return t.discoveryConn.GetTargetKey()
+}
+
 func (t *Transport) Close() {
 	t.fieldsMutex.Lock()
 	defer t.fieldsMutex.Unlock()
 
 	if t.factory == nil {
 		return
+	}
+	t.sendLastTicket()
+
+	var key cipher.PubKey
+	if t.clientSide {
+		key = t.ToApp
+	} else {
+		key = t.FromApp
+	}
+	tr, ok := t.appConnHolder.getTransport(key)
+	if !ok || !t.clientSide || tr == t {
+		msg := PriorityMsg{
+			Priority: TransportClosed,
+			Msg:      fmt.Sprintf("Discovery(%s): Transport closed", t.getDiscoveryKey().Hex()),
+			Type:     Failed,
+		}
+		t.appConnHolder.PutMessage(msg)
+		t.appConnHolder.SetAppFeedback(&AppFeedback{
+			Discovery: t.getDiscoveryKey(),
+			App:       key,
+			Failed:    true,
+			Msg:       msg,
+		})
+		t.appConnHolder.deleteTransport(key)
 	}
 
 	if t.timeoutTimer != nil {
@@ -398,17 +687,6 @@ func (t *Transport) Close() {
 	}
 	t.factory.Close()
 	t.factory = nil
-
-	if t.clientSide {
-		t.appConnHolder.setTransport(t.ToApp, nil)
-	} else {
-		t.appConnHolder.setTransport(t.FromApp, nil)
-	}
-	t.appConnHolder.SetAppFeedback(&AppFeedback{
-		App:    t.ToApp,
-		Failed: true,
-		Msg:    PriorityMsg{Priority: TransportClosed, Msg: "transport closed", Type: Failed},
-	})
 }
 
 func (t *Transport) IsClientSide() bool {
