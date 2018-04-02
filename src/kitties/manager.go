@@ -9,6 +9,8 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"fmt"
+	"time"
 )
 
 type ManagerConfig struct {
@@ -23,8 +25,17 @@ func (mc *ManagerConfig) TransformURL(originalURL *url.URL) string {
 
 type Manager struct {
 	c    *ManagerConfig
-	iko  *iko.BlockChain
 	http *http.Client
+}
+
+func NewManager(c *ManagerConfig) (*Manager, error) {
+	return &Manager{
+		c: c,
+		http: &http.Client{
+			Transport: http.DefaultTransport,
+			Timeout: time.Second * 10,
+		},
+	}, nil
 }
 
 func (m *Manager) Count(req *http.Request) (*http.Response, error) {
@@ -37,7 +48,7 @@ type EntryOut struct {
 	Entry *iko.KittyEntry `json:"entry"`
 }
 
-func (m *Manager) Entry(req *http.Request) (*http.Response, error) {
+func (m *Manager) Entry(bc *iko.BlockChain, req *http.Request) (*http.Response, error) {
 	return m.do(req, func(body []byte) ([]byte, error) {
 		var (
 			out = new(EntryOut)
@@ -45,11 +56,38 @@ func (m *Manager) Entry(req *http.Request) (*http.Response, error) {
 		if err := json.Unmarshal(body, out); err != nil {
 			return nil, errRespCorrupt(err)
 		}
-		state, ok := m.iko.GetKittyState(out.Entry.ID)
+		state, ok := bc.GetKittyState(out.Entry.ID)
 		if !ok {
 			return nil, errNoStateInfo(out.Entry.ID)
 		}
 		out.Entry.Address = state.Address.String()
+		body, _ = json.Marshal(out)
+		return body, nil
+	})
+}
+
+type EntriesOut struct {
+	TotalCount int64             `json:"total_count"`
+	PageCount  int               `json:"page_count"`
+	Entries    []*iko.KittyEntry `json:"entries"`
+}
+
+func (m *Manager) Entries(bc *iko.BlockChain, req *http.Request) (*http.Response, error) {
+	return m.do(req, func(body []byte) ([]byte, error) {
+		var (
+			out = new(EntriesOut)
+		)
+		if err := json.Unmarshal(body, out); err != nil {
+			return nil, errRespCorrupt(err)
+		}
+		for i, entry := range out.Entries {
+			state, ok := bc.GetKittyState(entry.ID)
+			if !ok {
+				return nil, errors.WithMessage(errNoStateInfo(entry.ID),
+					fmt.Sprintf("failed at index %d", i))
+			}
+			out.Entries[i].Address = state.Address.String()
+		}
 		body, _ = json.Marshal(out)
 		return body, nil
 	})

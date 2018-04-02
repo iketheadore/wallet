@@ -14,6 +14,7 @@ import (
 	"github.com/kittycash/wallet/src/iko"
 	"github.com/kittycash/wallet/src/util"
 	"github.com/kittycash/wallet/src/wallet"
+	"github.com/kittycash/wallet/src/kitties"
 )
 
 const (
@@ -21,6 +22,7 @@ const (
 	TrustedGenPK     = "03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753"
 	TrustedRootPK    = "03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753"
 	TrustedRootNonce = uint64(79)
+	TrustedAPIDomain = "https://api.kittycash.com"
 
 	DefaultHttpAddress = "127.0.0.1:7908"
 	DefaultCXOAddress  = "127.0.0.1:7900"
@@ -50,6 +52,7 @@ const (
 	fTestGenPK     = "test-gen-pk"
 	fTestRootPK    = "test-root-pk"
 	fTestRootNonce = "test-root-nonce"
+	fTestAPIDomain = "test-api-domain"
 )
 
 func Flag(flag string, short ...string) string {
@@ -153,6 +156,10 @@ func init() {
 			Name:  Flag(fTestGenPK),
 			Usage: "test mode trusted gen tx public key",
 		},
+		cli.StringFlag{
+			Name: Flag(fTestAPIDomain),
+			Usage: "test mode kitty-api domain to use",
+		},
 	}
 	app.Action = cli.ActionFunc(action)
 }
@@ -164,6 +171,7 @@ func action(ctx *cli.Context) error {
 		rootPK = cipher.MustPubKeyFromHex(TrustedRootPK)
 		rootNc = TrustedRootNonce
 		genPK  = cipher.MustPubKeyFromHex(TrustedGenPK)
+		apiDomain = TrustedAPIDomain
 
 		walletDir = ctx.String(fWalletDir)
 
@@ -187,6 +195,7 @@ func action(ctx *cli.Context) error {
 		rootPK = cipher.MustPubKeyFromHex(ctx.String(fTestRootPK))
 		rootNc = ctx.Uint64(fTestRootNonce)
 		genPK = cipher.MustPubKeyFromHex(ctx.String(fTestGenPK))
+		apiDomain = ctx.String(fTestAPIDomain)
 
 		tempDir, err := ioutil.TempDir(os.TempDir(), "kc_wallet")
 		if err != nil {
@@ -246,6 +255,14 @@ func action(ctx *cli.Context) error {
 		return err
 	}
 
+	// Prepare market.
+	market, err := kitties.NewManager(&kitties.ManagerConfig{
+		KittyAPIDomain: apiDomain,
+	})
+	if err != nil {
+		return err
+	}
+
 	// Prepare http server.
 	httpServer, err := http.NewServer(
 		&http.ServerConfig{
@@ -259,6 +276,7 @@ func action(ctx *cli.Context) error {
 		&http.Gateway{
 			IKO:    bc,
 			Wallet: walletManager,
+			Market: market,
 		},
 	)
 	if err != nil {
