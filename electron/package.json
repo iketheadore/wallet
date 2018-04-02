@@ -1,7 +1,7 @@
 {
-    "name": "kittycash",
-    "productName": "wallet",
-    "author": "kittycash",
+    "name": "KittyCash",
+    "productName": "KittyCash",
+    "author": "KittyCash",
     "main": "src/electron-main.js",
     "version": "0.0.1",
     "description": "Kittycash wallet",
