@@ -17,7 +17,6 @@ const childProcess = require('child_process');
 
 const cwd = require('process').cwd();
 
-
 // This adds refresh and devtools console keybindings
 // Page can refresh with cmd+r, ctrl+r, F5
 // Devtools can be toggled with cmd+alt+i, ctrl+shift+i, F12
@@ -115,7 +114,7 @@ function startKittyCash() {
 
   if (isDev())
   {
-    args.unshift("${GOPATH}/src/github.com/kittycash/wallet/cmd/wallet/wallet.go");
+    args.unshift("../cmd/wallet/wallet.go");
     args.unshift("run");
   }
 
@@ -129,6 +128,7 @@ function startKittyCash() {
   //WARNING - for some reason everything is coming out as stderr instead of stdout
   kittycash.stderr.on('data', (data) => {
     // log.info(data.toString());
+    console.log(data.toString());
     app.emit('kittycash-ready', { url: defaultURL });
 });
 
@@ -192,9 +192,10 @@ function createWindow(url) {
     log.info('Cleared the caching of the kittycash wallet.');
   });
 
-  ses.clearStorageData([],function(){
-    log.info('Cleared the stored cached data');
-  });
+  //Don't clear out the localstorage, because we use it!
+  // ses.clearStorageData([],function(){
+  //   log.info('Cleared the stored cached data');
+  // });
 
   win.loadURL(url);
 

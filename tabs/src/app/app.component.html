@@ -1,4 +1,4 @@
-<div class="container tab m-5">
+<div class="container tab">
   <div class="row py-4">
     <div class="col-12 text-center">
       <img class="img-fluid" src="assets/tab-logo.svg">
@@ -7,9 +7,6 @@
   <div class="row">
     <div class="col-6">
       <ul class="nav">
-        <li class="nav-item">
-           <img class="img-fluid pt-3" src="assets/hamburger.svg">
-        </li>
         <li class="nav-item" [ngClass]="{'active': currentTab == 'wallet'}">
           <a class="nav-link" (click)="currentTab = 'wallet'">Wallet</a>
         </li>
@@ -21,13 +18,13 @@
         </li>        
       </ul>
     </div>
-    <div class="col-4 offset-2 actions-bar pt-3">
+    <div class="col-2 offset-2 actions-bar pt-3">
       <div class="mx-3" style="display: inline-block;">
         <div class="status connected"></div> <span class="status-description">Connected</span>
       </div>
-      <a><i class="fa fa-redo fa-lg px-2"></i></a>
-      <a><i class="fas fa-th-large fa-lg px-2"></i></a>
-      <a><i class="fas fa-sliders-h fa-lg px-2"></i></a>
+    </div>
+    <div class="col-1 actions-bar pt-3">
+      <a><i class="fa fa-redo fa-lg px-2 pull-right"></i></a>
     </div>
   </div>
   <div class="row" [ngSwitch]="currentTab">
@@ -38,7 +35,8 @@
       <marketplace-root></marketplace-root>
     </div>
     <div class="col-12" *ngSwitchCase="'play'">
-      <h1>Play stuff here</h1>
+      <h1 class="text-center">More to come soon!</h1>
+      <game></game>
     </div>
   </div>
 </div>
