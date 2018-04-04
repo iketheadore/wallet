@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  serverUrl: 'https://pre-staging.kittycash.com'
+  serverUrl: 'https://staging-api.kittycatscatarat.club'
 };
