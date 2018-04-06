@@ -3,13 +3,13 @@ package kitties
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"github.com/kittycash/wallet/src/iko"
 	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
-	"fmt"
 	"time"
 )
 
@@ -19,7 +19,7 @@ type ManagerConfig struct {
 }
 
 func (mc *ManagerConfig) TransformURL(originalURL *url.URL) string {
-	out :=  path.Join(append(
+	out := path.Join(append(
 		[]string{mc.KittyAPIDomain},
 		originalURL.EscapedPath())...) + "?" + originalURL.Query().Encode()
 	if mc.TLS {
@@ -40,7 +40,7 @@ func NewManager(c *ManagerConfig) (*Manager, error) {
 		c: c,
 		http: &http.Client{
 			Transport: http.DefaultTransport,
-			Timeout: time.Second * 10,
+			Timeout:   time.Second * 10,
 		},
 	}, nil
 }
@@ -119,7 +119,6 @@ func (m *Manager) do(req *http.Request, changer BodyChanger) (*http.Response, er
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("DATA:", string(data))
 	if resp.StatusCode == http.StatusOK {
 		data, err = changer(data)
 		if err != nil {

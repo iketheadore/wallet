@@ -21,7 +21,12 @@ const (
 
 var (
 	app = ikocli.NewApp()
-	log = logrus.New()
+	log = &logrus.Logger{
+		Out:       os.Stdout,
+		Formatter: new(logrus.TextFormatter),
+		Hooks:     make(logrus.LevelHooks),
+		Level:     logrus.DebugLevel,
+	}
 )
 
 var (

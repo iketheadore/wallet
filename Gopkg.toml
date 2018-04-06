@@ -19,7 +19,6 @@
 #  name = "github.com/x/y"
 #  version = "2.4.0"
 
-
 [prune]
   unused-packages = true
   go-tests = true
@@ -27,3 +26,11 @@
 [[constraint]]
   name = "github.com/stretchr/testify"
   version = "1.2.1"
+
+[[override]]
+  name = "github.com/skycoin/skycoin"
+  version = "0.22.0"
+
+[[override]]
+  name = "github.com/skycoin/net"
+  revision = "4bcee2eb0c36a33dd22757247c83ab7e78c50834"

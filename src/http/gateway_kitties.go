@@ -1,11 +1,11 @@
 package http
 
 import (
-	"github.com/kittycash/wallet/src/kitties"
-	"net/http"
 	"fmt"
 	"github.com/kittycash/wallet/src/iko"
+	"github.com/kittycash/wallet/src/kitties"
 	"io/ioutil"
+	"net/http"
 )
 
 func marketKitties(m *http.ServeMux, g *kitties.Manager, bc *iko.BlockChain) error {

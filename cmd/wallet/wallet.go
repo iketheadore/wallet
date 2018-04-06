@@ -12,9 +12,9 @@ import (
 
 	"github.com/kittycash/wallet/src/http"
 	"github.com/kittycash/wallet/src/iko"
+	"github.com/kittycash/wallet/src/kitties"
 	"github.com/kittycash/wallet/src/util"
 	"github.com/kittycash/wallet/src/wallet"
-	"github.com/kittycash/wallet/src/kitties"
 )
 
 const (
@@ -64,7 +64,12 @@ func Flag(flag string, short ...string) string {
 
 var (
 	app       = cli.NewApp()
-	log       = logrus.New()
+	log       = &logrus.Logger{
+		Out:       os.Stdout,
+		Formatter: new(logrus.TextFormatter),
+		Hooks:     make(logrus.LevelHooks),
+		Level:     logrus.DebugLevel,
+	}
 	homeDir   = file.UserHome()
 	staticDir = func() string {
 		if goPath := os.Getenv("GOPATH"); goPath != "" {
@@ -157,7 +162,7 @@ func init() {
 			Usage: "test mode trusted gen tx public key",
 		},
 		cli.StringFlag{
-			Name: Flag(fTestAPIDomain),
+			Name:  Flag(fTestAPIDomain),
 			Usage: "test mode kitty-api domain to use",
 		},
 	}
@@ -168,9 +173,9 @@ func action(ctx *cli.Context) error {
 	quit := util.CatchInterrupt()
 
 	var (
-		rootPK = cipher.MustPubKeyFromHex(TrustedRootPK)
-		rootNc = TrustedRootNonce
-		genPK  = cipher.MustPubKeyFromHex(TrustedGenPK)
+		rootPK    = cipher.MustPubKeyFromHex(TrustedRootPK)
+		rootNc    = TrustedRootNonce
+		genPK     = cipher.MustPubKeyFromHex(TrustedGenPK)
 		apiDomain = TrustedAPIDomain
 
 		walletDir = ctx.String(fWalletDir)

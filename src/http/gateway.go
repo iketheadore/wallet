@@ -7,8 +7,9 @@ import (
 	"strings"
 
 	"github.com/kittycash/wallet/src/iko"
-	"github.com/kittycash/wallet/src/wallet"
 	"github.com/kittycash/wallet/src/kitties"
+	"github.com/kittycash/wallet/src/wallet"
+	"github.com/pkg/errors"
 )
 
 type Gateway struct {
@@ -45,21 +46,24 @@ type HandlerFunc func(w http.ResponseWriter, r *http.Request, p *Path) error
 func Handle(mux *http.ServeMux, pattern, method string, handler HandlerFunc) {
 	mux.HandleFunc(pattern, func(w http.ResponseWriter, r *http.Request) {
 
-		if r.Method != method {
-			sendJson(w, http.StatusBadRequest,
-				fmt.Sprintf("invalid method type of '%s', expected '%s'",
-					r.Method, method))
+		logPrefix := func(v ...interface{}) {
+			fmt.Printf("REQ(%s:'%s') %v", method, r.URL.EscapedPath(),
+				fmt.Sprintln(v...))
+		}
 
-		} else if e := handler(w, r, NewPath(r)); e != nil {
-			fmt.Println(e)
+		if r.Method != method {
+			err := errors.Errorf("invalid method type of '%s', expected '%s'",
+				r.Method, method)
+
+			sendJson(w, http.StatusBadRequest, err.Error())
+			logPrefix("ERROR: ", err.Error())
+
+		} else if err := handler(w, r, NewPath(r)); err != nil {
+			logPrefix("ERROR: ", err.Error())
+		} else {
+			logPrefix("OKAY")
 		}
 	})
-}
-
-func MultiHandle(mux *http.ServeMux, patterns []string, method string, handler HandlerFunc) {
-	for _, pattern := range patterns {
-		Handle(mux, pattern, method, handler)
-	}
 }
 
 /*
