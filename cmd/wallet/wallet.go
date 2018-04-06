@@ -10,6 +10,7 @@ import (
 	"gopkg.in/sirupsen/logrus.v1"
 	"gopkg.in/urfave/cli.v1"
 
+	"github.com/kittycash/wallet/src/cxo"
 	"github.com/kittycash/wallet/src/http"
 	"github.com/kittycash/wallet/src/iko"
 	"github.com/kittycash/wallet/src/kitties"
@@ -63,8 +64,8 @@ func Flag(flag string, short ...string) string {
 }
 
 var (
-	app       = cli.NewApp()
-	log       = &logrus.Logger{
+	app = cli.NewApp()
+	log = &logrus.Logger{
 		Out:       os.Stdout,
 		Formatter: new(logrus.TextFormatter),
 		Hooks:     make(logrus.LevelHooks),
@@ -214,7 +215,7 @@ func action(ctx *cli.Context) error {
 	stateDB := iko.NewMemoryState()
 
 	// Prepare ChainDB.
-	cxoChain, err := iko.NewCXOChain(&iko.CXOChainConfig{
+	cxoChain, err := cxo.New(&cxo.Config{
 		Dir:                cxoDir,
 		Public:             true,
 		Memory:             test,
@@ -282,6 +283,7 @@ func action(ctx *cli.Context) error {
 			IKO:    bc,
 			Wallet: walletManager,
 			Market: market,
+			Conn:   cxoChain.Connectivity(),
 		},
 	)
 	if err != nil {

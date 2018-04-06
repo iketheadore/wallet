@@ -5,8 +5,9 @@ import (
 	"net/rpc"
 	"sync"
 
-	"gopkg.in/sirupsen/logrus.v1"
 	"os"
+
+	"gopkg.in/sirupsen/logrus.v1"
 )
 
 type ServerConfig struct {
@@ -27,8 +28,8 @@ func NewServer(c *ServerConfig, g *Gateway) (*Server, error) {
 	var (
 		e error
 		s = &Server{
-			c:   c,
-			l:   &logrus.Logger{
+			c: c,
+			l: &logrus.Logger{
 				Out:       os.Stdout,
 				Formatter: new(logrus.TextFormatter),
 				Hooks:     make(logrus.LevelHooks),
