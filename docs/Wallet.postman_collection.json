@@ -450,6 +450,75 @@
 			]
 		},
 		{
+			"name": "Conn",
+			"description": "",
+			"item": [
+				{
+					"name": "All Statuses",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{domain}}/api/conn/all_statuses",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"conn",
+								"all_statuses"
+							]
+						},
+						"description": "Lists all possible connection statuses"
+					},
+					"response": []
+				},
+				{
+					"name": "Status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{domain}}/api/conn/status",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"conn",
+								"status"
+							]
+						},
+						"description": "Returns the current status code."
+					},
+					"response": []
+				},
+				{
+					"name": "Reconnect",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{domain}}/api/conn/reconnect",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"conn",
+								"reconnect"
+							]
+						},
+						"description": "Manually reconnect."
+					},
+					"response": []
+				}
+			]
+		},
+		{
 			"name": "Re-Served API",
 			"description": "",
 			"item": [

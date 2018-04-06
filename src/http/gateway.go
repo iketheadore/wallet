@@ -10,12 +10,14 @@ import (
 	"github.com/kittycash/wallet/src/kitties"
 	"github.com/kittycash/wallet/src/wallet"
 	"github.com/pkg/errors"
+	"github.com/kittycash/wallet/src/connectivity"
 )
 
 type Gateway struct {
 	IKO    *iko.BlockChain
 	Wallet *wallet.Manager
 	Market *kitties.Manager
+	Conn   connectivity.Connectivity
 }
 
 func (g *Gateway) host(mux *http.ServeMux) error {
@@ -31,6 +33,11 @@ func (g *Gateway) host(mux *http.ServeMux) error {
 	}
 	if g.Wallet != nil {
 		if e := walletGateway(mux, g.Wallet); e != nil {
+			return e
+		}
+	}
+	if g.Conn != nil {
+		if e := connGateway(mux, g.Conn); e != nil {
 			return e
 		}
 	}

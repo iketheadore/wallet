@@ -325,6 +325,13 @@ func initChain(cxo *CXO) error {
 	<<< PUBLIC FUNCTIONS >>>
 */
 
+func (c *CXO) Connectivity() *Connectivity {
+	return &Connectivity{
+		c: c.c,
+		n: c.node,
+	}
+}
+
 func (c *CXO) MasterInitChain() error {
 	defer c.lock()()
 

@@ -283,6 +283,7 @@ func action(ctx *cli.Context) error {
 			IKO:    bc,
 			Wallet: walletManager,
 			Market: market,
+			Conn:   cxoChain.Connectivity(),
 		},
 	)
 	if err != nil {
