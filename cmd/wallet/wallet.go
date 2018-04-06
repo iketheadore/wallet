@@ -12,9 +12,9 @@ import (
 
 	"github.com/kittycash/wallet/src/http"
 	"github.com/kittycash/wallet/src/iko"
+	"github.com/kittycash/wallet/src/kitties"
 	"github.com/kittycash/wallet/src/util"
 	"github.com/kittycash/wallet/src/wallet"
-	"github.com/kittycash/wallet/src/kitties"
 )
 
 const (
@@ -157,7 +157,7 @@ func init() {
 			Usage: "test mode trusted gen tx public key",
 		},
 		cli.StringFlag{
-			Name: Flag(fTestAPIDomain),
+			Name:  Flag(fTestAPIDomain),
 			Usage: "test mode kitty-api domain to use",
 		},
 	}
@@ -168,9 +168,9 @@ func action(ctx *cli.Context) error {
 	quit := util.CatchInterrupt()
 
 	var (
-		rootPK = cipher.MustPubKeyFromHex(TrustedRootPK)
-		rootNc = TrustedRootNonce
-		genPK  = cipher.MustPubKeyFromHex(TrustedGenPK)
+		rootPK    = cipher.MustPubKeyFromHex(TrustedRootPK)
+		rootNc    = TrustedRootNonce
+		genPK     = cipher.MustPubKeyFromHex(TrustedGenPK)
 		apiDomain = TrustedAPIDomain
 
 		walletDir = ctx.String(fWalletDir)
