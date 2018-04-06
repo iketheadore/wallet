@@ -119,7 +119,7 @@ func (m *Manager) do(req *http.Request, changer BodyChanger) (*http.Response, er
 	if err != nil {
 		return nil, err
 	}
-	fmt.Println("DATA:", string(data))
+	fmt.Printf("REQ(%s) RESP_LEN(%d)\n", newURL.EscapedPath(), len(data))
 	if resp.StatusCode == http.StatusOK {
 		data, err = changer(data)
 		if err != nil {
