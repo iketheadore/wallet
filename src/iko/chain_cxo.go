@@ -82,7 +82,7 @@ type CXOChain struct {
 
 func NewCXOChain(config *CXOChainConfig, modifyNC ...NodeConfigModifier) (*CXOChain, error) {
 	log := &logrus.Logger{
-		Out:       os.Stderr,
+		Out:       os.Stdout,
 		Formatter: new(logrus.TextFormatter),
 		Hooks:     make(logrus.LevelHooks),
 		Level:     logrus.DebugLevel,

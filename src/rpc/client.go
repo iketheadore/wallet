@@ -4,6 +4,7 @@ import (
 	"net/rpc"
 
 	"gopkg.in/sirupsen/logrus.v1"
+	"os"
 )
 
 type ClientConfig struct {
@@ -21,7 +22,12 @@ func NewClient(c *ClientConfig) (*Client, error) {
 		e error
 		s = &Client{
 			c: c,
-			l: logrus.New(),
+			l: &logrus.Logger{
+				Out:       os.Stdout,
+				Formatter: new(logrus.TextFormatter),
+				Hooks:     make(logrus.LevelHooks),
+				Level:     logrus.DebugLevel,
+			},
 		}
 	)
 	if s.rpc, e = rpc.Dial(NetworkName, c.Address); e != nil {

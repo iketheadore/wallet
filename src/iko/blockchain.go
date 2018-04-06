@@ -64,7 +64,7 @@ func NewBlockChain(config *BlockChainConfig, chainDB ChainDB, stateDB StateDB) (
 		chain: chainDB,
 		state: stateDB,
 		log: &logrus.Logger{
-			Out:       os.Stderr,
+			Out:       os.Stdout,
 			Formatter: new(logrus.TextFormatter),
 			Hooks:     make(logrus.LevelHooks),
 			Level:     logrus.DebugLevel,

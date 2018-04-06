@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"gopkg.in/sirupsen/logrus.v1"
+	"os"
 )
 
 type ServerConfig struct {
@@ -27,7 +28,12 @@ func NewServer(c *ServerConfig, g *Gateway) (*Server, error) {
 		e error
 		s = &Server{
 			c:   c,
-			l:   logrus.New(),
+			l:   &logrus.Logger{
+				Out:       os.Stdout,
+				Formatter: new(logrus.TextFormatter),
+				Hooks:     make(logrus.LevelHooks),
+				Level:     logrus.DebugLevel,
+			},
 			rpc: rpc.NewServer(),
 			api: g,
 		}
