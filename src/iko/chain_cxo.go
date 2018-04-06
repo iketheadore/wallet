@@ -16,8 +16,6 @@ import (
 	"github.com/kittycash/wallet/src/util"
 )
 
-type MeasureChain func() uint64
-
 type CXOStore struct {
 	Meta  []byte
 	Txs   registry.Refs `skyobject:"schema=iko.Transaction"`
