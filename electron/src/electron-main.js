@@ -27,8 +27,10 @@ global.eval = function() { throw new Error('bad!!'); }
 
 const defaultURL = 'http://127.0.0.1:6148/boxes';
 
+//WARNING - Re-enable this after testing!  Need to figure out all the recaptcha urls
 // Force everything localhost, in case of a leak
 // app.commandLine.appendSwitch('host-rules', 'MAP * 127.0.0.1, EXCLUDE www.google.com, fonts.gstatic.com, www.gstatic.com, fonts.googleapis.com');
+app.commandLine.appendSwitch('--enable-viewport-meta', 'true');
 app.commandLine.appendSwitch('ssl-version-fallback-min', 'tls1.2');
 app.commandLine.appendSwitch('--no-proxy-server');
 app.setAsDefaultProtocolClient('kittycash');
@@ -60,7 +62,7 @@ function startKittyCash() {
 
   if (isDev())
   {
-    return '/Users/bkendall/go/bin/wallet';
+    return 'go';
   }
 
   switch (process.platform) {
@@ -79,6 +81,10 @@ function startKittyCash() {
 
   var gui_dir = (() => {
 
+   if (isDev())
+    {
+      return '../tabs/dist';
+    }
   switch (process.platform) {
     case 'darwin':
       return path.join(appPath, '../../Resources/app/dist');
@@ -106,6 +112,12 @@ function startKittyCash() {
     '--gui-dir=' + gui_dir
   ];
 
+  if (isDev())
+  {
+    args.unshift("../cmd/wallet/wallet.go");
+    args.unshift("run");
+  }
+
   kittycash = childProcess.spawn(exe, args);
 
   kittycash.on('error', (e) => {
@@ -116,6 +128,7 @@ function startKittyCash() {
   //WARNING - for some reason everything is coming out as stderr instead of stdout
   kittycash.stderr.on('data', (data) => {
     // log.info(data.toString());
+    console.log(data.toString());
     app.emit('kittycash-ready', { url: defaultURL });
 });
 
@@ -163,6 +176,14 @@ function createWindow(url) {
     },
   });
 
+  let webContents = win.webContents;
+
+  webContents.on('did-finish-load', () => {
+    webContents.setZoomFactor(1);
+    webContents.setVisualZoomLevelLimits(1, 1);
+    webContents.setLayoutZoomLevelLimits(0, 0);
+  });
+
   // patch out eval
   win.eval = global.eval;
 
@@ -171,9 +192,10 @@ function createWindow(url) {
     log.info('Cleared the caching of the kittycash wallet.');
   });
 
-  ses.clearStorageData([],function(){
-    log.info('Cleared the stored cached data');
-  });
+  //Don't clear out the localstorage, because we use it!
+  // ses.clearStorageData([],function(){
+  //   log.info('Cleared the stored cached data');
+  // });
 
   win.loadURL(url);
 
@@ -192,8 +214,12 @@ function createWindow(url) {
   var template = [{
     label: "KittyCash",
     submenu: [
-      { label: "About KittyCash", selector: "orderFrontStandardAboutPanel:" },
-      { type: "separator" },
+      { label: "About KittyCash", selector: "orderFrontStandardAboutPanel:", click: function() 
+        { 
+          var appVersion = require('electron').app.getVersion();
+          dialog.showMessageBox({ type: 'info', title: 'About KittyCash', message: 'KittyCash version: ' + appVersion });
+        }
+      },
       { label: "Quit", accelerator: "Command+Q", click: function() { app.quit(); } }
     ]
   }, {
