@@ -10,9 +10,10 @@ import (
 	"regexp"
 	"strconv"
 
-	"github.com/kittycash/wallet/src/iko"
 	"gopkg.in/sirupsen/logrus.v1"
 	ikocli "gopkg.in/urfave/cli.v1"
+
+	"github.com/kittycash/wallet/src/iko"
 )
 
 const (

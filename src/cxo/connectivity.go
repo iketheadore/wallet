@@ -1,8 +1,9 @@
 package cxo
 
 import (
-	"github.com/kittycash/wallet/src/connectivity"
 	"github.com/skycoin/cxo/node"
+
+	"github.com/kittycash/wallet/src/connectivity"
 )
 
 type Connectivity struct {

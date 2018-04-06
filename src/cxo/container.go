@@ -1,9 +1,10 @@
 package cxo
 
 import (
-	"github.com/kittycash/wallet/src/iko"
 	"github.com/skycoin/cxo/skyobject/registry"
 	"github.com/skycoin/skycoin/src/cipher"
+
+	"github.com/kittycash/wallet/src/iko"
 )
 
 type Container struct {

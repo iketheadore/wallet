@@ -6,10 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/kittycash/wallet/src/cxo"
 	"github.com/skycoin/cxo/node"
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/stretchr/testify/require"
+
+	"github.com/kittycash/wallet/src/cxo"
 )
 
 const (

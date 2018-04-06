@@ -1,8 +1,9 @@
 package util
 
 import (
-	"github.com/skycoin/skycoin/src/cipher"
 	"sync"
+
+	"github.com/skycoin/skycoin/src/cipher"
 )
 
 type Addresses struct {

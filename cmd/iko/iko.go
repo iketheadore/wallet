@@ -8,10 +8,10 @@ import (
 	"gopkg.in/sirupsen/logrus.v1"
 	"gopkg.in/urfave/cli.v1"
 
+	"github.com/kittycash/wallet/src/cxo"
 	"github.com/kittycash/wallet/src/iko"
 	"github.com/kittycash/wallet/src/rpc"
 	"github.com/kittycash/wallet/src/util"
-	"github.com/kittycash/wallet/src/cxo"
 )
 
 const (

@@ -1,9 +1,10 @@
 package http
 
 import (
-	"net/http"
-	"github.com/kittycash/wallet/src/connectivity"
 	"fmt"
+	"net/http"
+
+	"github.com/kittycash/wallet/src/connectivity"
 )
 
 func connGateway(m *http.ServeMux, g connectivity.Connectivity) error {

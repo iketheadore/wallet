@@ -5,8 +5,6 @@ import (
 	"os"
 	"sync"
 
-	"github.com/kittycash/wallet/src/iko"
-	"github.com/kittycash/wallet/src/util"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 	"github.com/skycoin/cxo/node"
@@ -14,6 +12,9 @@ import (
 	"github.com/skycoin/cxo/skyobject/registry"
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
+
+	"github.com/kittycash/wallet/src/iko"
+	"github.com/kittycash/wallet/src/util"
 )
 
 /*

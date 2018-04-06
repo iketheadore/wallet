@@ -6,11 +6,12 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/pkg/errors"
+
+	"github.com/kittycash/wallet/src/connectivity"
 	"github.com/kittycash/wallet/src/iko"
 	"github.com/kittycash/wallet/src/kitties"
 	"github.com/kittycash/wallet/src/wallet"
-	"github.com/pkg/errors"
-	"github.com/kittycash/wallet/src/connectivity"
 )
 
 type Gateway struct {

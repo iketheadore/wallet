@@ -4,13 +4,15 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/kittycash/wallet/src/iko"
-	"github.com/pkg/errors"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"path"
 	"time"
+
+	"github.com/pkg/errors"
+
+	"github.com/kittycash/wallet/src/iko"
 )
 
 type ManagerConfig struct {
