@@ -27,8 +27,8 @@ func NewServer(c *ServerConfig, g *Gateway) (*Server, error) {
 	var (
 		e error
 		s = &Server{
-			c:   c,
-			l:   &logrus.Logger{
+			c: c,
+			l: &logrus.Logger{
 				Out:       os.Stdout,
 				Formatter: new(logrus.TextFormatter),
 				Hooks:     make(logrus.LevelHooks),

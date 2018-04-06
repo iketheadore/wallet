@@ -6,6 +6,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/kittycash/wallet/src/cxo"
+	"github.com/skycoin/cxo/node"
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/stretchr/testify/require"
 )
@@ -244,4 +246,44 @@ func TestChainDB_CXOChain(t *testing.T) {
 		"master root should init with no problem")
 
 	runChainDBTest(t, chainDB)
+}
+
+func newCXOChainDB(
+	dir string,
+	master bool,
+	doInit bool,
+	addr string,
+	dAddrs []string,
+	logPrefix ...string,
+) (*cxo.CXO, error) {
+	chainDB, err := cxo.New(
+		&cxo.Config{
+			Dir:                dir,
+			Public:             true,
+			Memory:             dir == "",
+			MessengerAddresses: dAddrs,
+			CXOAddress:         addr,
+			MasterRooter:       master,
+			MasterRootPK:       RootPK,
+			MasterRootSK:       RootSK,
+			MasterRootNonce:    MasterRootNonce,
+		},
+		func(nc *node.Config) error {
+			if len(logPrefix) > 0 {
+				nc.Logger.Prefix = logPrefix[0] + " "
+			}
+			return nil
+		},
+	)
+	if err != nil {
+		return nil, err
+	}
+	if doInit {
+		if err := chainDB.MasterInitChain(); err != nil {
+			return nil, err
+		}
+	}
+	return chainDB, chainDB.RunTxService(func(tx *Transaction) error {
+		return nil
+	})
 }

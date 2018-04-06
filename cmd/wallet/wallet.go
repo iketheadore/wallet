@@ -15,6 +15,7 @@ import (
 	"github.com/kittycash/wallet/src/kitties"
 	"github.com/kittycash/wallet/src/util"
 	"github.com/kittycash/wallet/src/wallet"
+	"github.com/kittycash/wallet/src/cxo"
 )
 
 const (
@@ -63,8 +64,8 @@ func Flag(flag string, short ...string) string {
 }
 
 var (
-	app       = cli.NewApp()
-	log       = &logrus.Logger{
+	app = cli.NewApp()
+	log = &logrus.Logger{
 		Out:       os.Stdout,
 		Formatter: new(logrus.TextFormatter),
 		Hooks:     make(logrus.LevelHooks),
@@ -214,7 +215,7 @@ func action(ctx *cli.Context) error {
 	stateDB := iko.NewMemoryState()
 
 	// Prepare ChainDB.
-	cxoChain, err := iko.NewCXOChain(&iko.CXOChainConfig{
+	cxoChain, err := cxo.New(&cxo.Config{
 		Dir:                cxoDir,
 		Public:             true,
 		Memory:             test,

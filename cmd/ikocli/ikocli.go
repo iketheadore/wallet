@@ -37,11 +37,6 @@ var (
 	ErrInvalidTagName    = errors.New("invalid tag name")
 )
 
-type cliKitty struct {
-	iko.Kitty
-	ToAddress string `json:"to_address"`
-}
-
 func init() {
 	app.Name = "ikocli"
 	app.Usage = "KittyCash CLI is a help tool for iko-chain and kitty-api"
@@ -95,11 +90,11 @@ func initCommand() ikocli.Command {
 
 			fileHandle, _ := os.Create(file)
 			defer fileHandle.Close()
-			var kitties []cliKitty
+			var kitties []iko.KittyEntry
 			for start <= end {
-				kitties = append(kitties, cliKitty{
+				kitties = append(kitties, iko.KittyEntry{
 					//TODO (therealssj): where does this address come from?
-					ToAddress: "",
+					Address: "",
 					//TODO (therealssj): where does the extra data come from?
 					Kitty: iko.Kitty{
 						ID: iko.KittyID(start),
@@ -172,7 +167,7 @@ func editCommand() ikocli.Command {
 				return err
 			}
 
-			var kitties []cliKitty
+			var kitties []iko.KittyEntry
 			fileHandle, err := os.OpenFile(file, os.O_RDWR, 0666)
 			if err != nil {
 				log.Errorf("unable to open file %v", file)
@@ -276,7 +271,7 @@ func ParseIndexRange(indexRange string) (start, end uint64, err error) {
 }*/
 
 // SetFieldValue sets value of a kitty field from the tag name
-func SetFieldValue(tag string, value interface{}, kitty *cliKitty) error {
+func SetFieldValue(tag string, value interface{}, kitty *iko.KittyEntry) error {
 	switch tag {
 	case "kitty_id":
 		if reflect.TypeOf(value) != reflect.TypeOf(kitty.ID) {
@@ -338,11 +333,11 @@ func SetFieldValue(tag string, value interface{}, kitty *cliKitty) error {
 			return errors.New("trying to set wrong type of value for Kitty.KittyImgURL")
 		}
 		kitty.KittyImgURL = value.(string)
-	case "to_address":
-		if reflect.TypeOf(value) != reflect.TypeOf(kitty.ToAddress) {
+	case "address":
+		if reflect.TypeOf(value) != reflect.TypeOf(kitty.Address) {
 			return errors.New("trying to set wrong type of value for Kitty.ToAddress")
 		}
-		kitty.ToAddress = value.(string)
+		kitty.Address = value.(string)
 	default:
 		return ErrInvalidTagName
 	}

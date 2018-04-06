@@ -11,6 +11,7 @@ import (
 	"github.com/kittycash/wallet/src/iko"
 	"github.com/kittycash/wallet/src/rpc"
 	"github.com/kittycash/wallet/src/util"
+	"github.com/kittycash/wallet/src/cxo"
 )
 
 const (
@@ -167,14 +168,14 @@ func action(ctx *cli.Context) error {
 	var (
 		e        error
 		stateDB  iko.StateDB
-		cxoChain *iko.CXOChain
+		cxoChain *cxo.CXO
 	)
 
 	// Prepare StateDB.
 	stateDB = iko.NewMemoryState()
 
 	// Prepare ChainDB.
-	cxoChain, e = iko.NewCXOChain(&iko.CXOChainConfig{
+	cxoChain, e = cxo.New(&cxo.Config{
 		Dir:                cxoDir,
 		Public:             true,
 		Memory:             testMode,
