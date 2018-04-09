@@ -125,16 +125,14 @@ function startKittyCash() {
     app.quit();
   });
 
-  //WARNING - for some reason everything is coming out as stderr instead of stdout
-  kittycash.stderr.on('data', (data) => {
-    // log.info(data.toString());
-    console.log(data.toString());
+  kittycash.stdout.on('data', (data) => {
+    log.info(data.toString());
     app.emit('kittycash-ready', { url: defaultURL });
-});
+  });
 
-//   kittycash.stderr.on('data', (data) => {
-//     console.log(data.toString());
-// });
+  kittycash.stderr.on('data', (data) => {
+    log.error(data.toString());
+  });
 
   kittycash.on('close', (code) => {
     log.info('KittyCash closed');
