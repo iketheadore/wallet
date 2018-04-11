@@ -1,39 +1,27 @@
-package iko
+package cxo
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"sync"
 
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 	"github.com/skycoin/cxo/node"
 	"github.com/skycoin/cxo/skyobject"
 	"github.com/skycoin/cxo/skyobject/registry"
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-	"gopkg.in/sirupsen/logrus.v1"
 
+	"github.com/kittycash/wallet/src/iko"
 	"github.com/kittycash/wallet/src/util"
 )
 
-type MeasureChain func() uint64
+/*
+	<<< CONFIG >>>
+*/
 
-type CXOStore struct {
-	Meta  []byte
-	Txs   registry.Refs `skyobject:"schema=iko.Transaction"`
-	Metas registry.Refs `skyobject:"schema=iko.TxMeta"`
-}
-
-var (
-	cxoReg = registry.NewRegistry(func(r *registry.Reg) {
-		r.Register("cipher.Address", cipher.Address{})
-		r.Register("iko.Transaction", Transaction{})
-		r.Register("iko.TxMeta", TxMeta{})
-		r.Register("iko.Store", CXOStore{})
-	})
-)
-
-type CXOChainConfig struct {
+type Config struct {
 	Dir                string
 	Public             bool
 	Memory             bool
@@ -47,11 +35,10 @@ type CXOChainConfig struct {
 	MasterRootNonce uint64 // Public
 }
 
-func (c *CXOChainConfig) Process(log *logrus.Logger) error {
+func (c *Config) Process(log *logrus.Logger) error {
 	if e := c.MasterRootPK.Verify(); e != nil {
 		return e
 	}
-
 	if c.MasterRooter {
 		if e := c.MasterRootSK.Verify(); e != nil {
 			return e
@@ -60,27 +47,29 @@ func (c *CXOChainConfig) Process(log *logrus.Logger) error {
 			return errors.New("public and secret keys do not match")
 		}
 	}
-
 	if c.Memory {
 		c.Dir = ""
 	}
-
 	return nil
 }
 
-type CXOChain struct {
+/*
+	<<< CXO >>>
+*/
+
+type CXO struct {
 	mux      sync.Mutex
-	c        *CXOChainConfig
+	c        *Config
 	l        *logrus.Logger
 	node     *node.Node
 	wg       sync.WaitGroup
-	received chan *TxWrapper
-	accepted chan *TxWrapper
+	received chan *iko.TxWrapper
+	accepted chan *iko.TxWrapper
 
 	len util.SafeInt
 }
 
-func NewCXOChain(config *CXOChainConfig, modifyNC ...NodeConfigModifier) (*CXOChain, error) {
+func New(config *Config, modifyNC ...NodeConfigModifier) (*CXO, error) {
 	log := &logrus.Logger{
 		Out:       os.Stdout,
 		Formatter: new(logrus.TextFormatter),
@@ -90,35 +79,30 @@ func NewCXOChain(config *CXOChainConfig, modifyNC ...NodeConfigModifier) (*CXOCh
 	if e := config.Process(log); e != nil {
 		return nil, e
 	}
-
-	chain := &CXOChain{
+	cxo := &CXO{
 		c:        config,
 		l:        log,
-		received: make(chan *TxWrapper),
-		accepted: make(chan *TxWrapper),
+		received: make(chan *iko.TxWrapper),
+		accepted: make(chan *iko.TxWrapper),
 	}
-
 	var modify NodeConfigModifier
 	if len(modifyNC) > 0 {
 		modify = modifyNC[0]
 	}
-
-	if e := prepareNode(chain, modify); e != nil {
+	if e := prepareNode(cxo, modify); e != nil {
 		return nil, e
 	}
-
-	if e := initChain(chain); e != nil {
+	if e := initChain(cxo); e != nil {
 		log.WithError(e).
 			Info("no blockchain yet")
 	} else {
-		log.WithField("height", chain.len.Val()).
+		log.WithField("height", cxo.len.Val()).
 			Info("blockchain re-initialized")
 	}
-
-	return chain, nil
+	return cxo, nil
 }
 
-func (c *CXOChain) Close() {
+func (c *CXO) Close() {
 	defer c.lock()()
 
 	close(c.received)
@@ -136,12 +120,12 @@ func (c *CXOChain) Close() {
 	<<< PREP AND SERVICE FUNCTIONS >>>
 */
 
-func (c *CXOChain) lock() func() {
+func (c *CXO) lock() func() {
 	c.mux.Lock()
 	return c.mux.Unlock
 }
 
-func (c *CXOChain) attemptPushAccepted(txWrap *TxWrapper) {
+func (c *CXO) attemptPushAccepted(txWrap *iko.TxWrapper) {
 	select {
 	case c.accepted <- txWrap:
 	default:
@@ -150,67 +134,67 @@ func (c *CXOChain) attemptPushAccepted(txWrap *TxWrapper) {
 
 type NodeConfigModifier func(nc *node.Config) error
 
-func prepareNode(chain *CXOChain, modifier NodeConfigModifier) error {
+func prepareNode(cxo *CXO, modifier NodeConfigModifier) error {
 
 	nc := node.NewConfig()
 
-	nc.DataDir = chain.c.Dir
-	nc.Public = chain.c.Public
-	nc.InMemoryDB = chain.c.Memory
+	nc.DataDir = cxo.c.Dir
+	nc.Public = cxo.c.Public
+	nc.InMemoryDB = cxo.c.Memory
 
-	nc.TCP.Listen = chain.c.CXOAddress
-	if len(chain.c.MessengerAddresses) > 0 {
-		nc.TCP.Discovery = node.Addresses(chain.c.MessengerAddresses)
+	nc.TCP.Listen = cxo.c.CXOAddress
+	if len(cxo.c.MessengerAddresses) > 0 {
+		nc.TCP.Discovery = node.Addresses(cxo.c.MessengerAddresses)
 	}
-	nc.RPC = chain.c.CXORPCAddress
+	nc.RPC = cxo.c.CXORPCAddress
 
 	nc.OnRootReceived = func(c *node.Conn, r *registry.Root) error {
-		defer chain.lock()()
+		defer cxo.lock()()
 
 		switch {
-		case r.Pub != chain.c.MasterRootPK:
+		case r.Pub != cxo.c.MasterRootPK:
 			e := errors.New("received root is not of master public key")
-			chain.l.
-				WithField("master_pk", chain.c.MasterRootPK.Hex()).
+			cxo.l.
+				WithField("master_pk", cxo.c.MasterRootPK.Hex()).
 				WithField("received_pk", r.Pub.Hex()).
 				Warning(e.Error())
 			return e
 
-		case r.Nonce != chain.c.MasterRootNonce:
+		case r.Nonce != cxo.c.MasterRootNonce:
 			e := errors.New("received root is not of master nonce")
-			chain.l.
-				WithField("master_nonce", chain.c.MasterRootNonce).
+			cxo.l.
+				WithField("master_nonce", cxo.c.MasterRootNonce).
 				WithField("received_nonce", r.Nonce).
 				Warning(e.Error())
 			return e
 
 		case len(r.Refs) <= 0:
 			e := errors.New("empty refs")
-			chain.l.Warning(e.Error())
+			cxo.l.Warning(e.Error())
 			return e
 
 		default:
-			chain.l.Info("blockchain syncing")
+			cxo.l.Info("blockchain syncing")
 			return nil
 		}
 	}
 
 	nc.OnRootFilled = func(n *node.Node, r *registry.Root) {
-		defer chain.lock()()
+		defer cxo.lock()()
 
-		e := func(c *CXOChain, n *node.Node, r *registry.Root) error {
-			var store = new(CXOStore)
+		e := func(c *CXO, n *node.Node, r *registry.Root) error {
+			var container = new(Container)
 
-			p, e := n.Container().Pack(r, cxoReg)
+			p, e := n.Container().Pack(r, reg)
 			if e != nil {
 				return e
 			}
 
-			if e := r.Refs[0].Value(p, store); e != nil {
+			if e := r.Refs[0].Value(p, container); e != nil {
 				return e
 			}
 
-			rLen, e := store.Txs.Len(p)
+			rLen, e := container.Txs.Len(p)
 			if e != nil {
 				return e
 			}
@@ -226,14 +210,14 @@ func prepareNode(chain *CXOChain, modifier NodeConfigModifier) error {
 
 			for i := c.len.Val(); i < rLen; i++ {
 
-				var wrapper = new(TxWrapper)
+				var wrapper = new(iko.TxWrapper)
 
-				txHash, e := store.Txs.ValueByIndex(p, int(i), &wrapper.Tx)
+				txHash, e := container.Txs.ValueByIndex(p, int(i), &wrapper.Tx)
 				if e != nil {
 					return e
 				}
 
-				_, e = store.Metas.ValueByIndex(p, int(i), &wrapper.Meta)
+				_, e = container.Metas.ValueByIndex(p, int(i), &wrapper.Meta)
 				if e != nil {
 					return e
 				}
@@ -246,26 +230,26 @@ func prepareNode(chain *CXOChain, modifier NodeConfigModifier) error {
 				c.received <- wrapper
 			}
 
-			chain.l.Info("blockchain synced")
+			cxo.l.Info("blockchain synced")
 			return nil
 
-		}(chain, n, r)
+		}(cxo, n, r)
 
 		if e != nil {
-			chain.l.Error(e.Error())
+			cxo.l.Error(e.Error())
 			return
 		}
 	}
 
 	nc.OnConnect = func(c *node.Conn) error {
-		defer chain.lock()()
+		defer cxo.lock()()
 
 		// TODO: implement.
 		return nil
 	}
 
 	nc.OnDisconnect = func(c *node.Conn, reason error) {
-		defer chain.lock()()
+		defer cxo.lock()()
 
 		// TODO: implement.
 	}
@@ -277,18 +261,18 @@ func prepareNode(chain *CXOChain, modifier NodeConfigModifier) error {
 	}
 
 	var e error
-	if chain.node, e = node.NewNode(nc); e != nil {
+	if cxo.node, e = node.NewNode(nc); e != nil {
 		return e
 	}
 
-	if e := chain.node.Share(chain.c.MasterRootPK); e != nil {
+	if e := cxo.node.Share(cxo.c.MasterRootPK); e != nil {
 		return e
 	}
 
 	return nil
 }
 
-func (c *CXOChain) RunTxService(txChecker TxChecker) error {
+func (c *CXO) RunTxService(txChecker iko.TxChecker) error {
 	c.wg.Add(1)
 
 	go func() {
@@ -311,30 +295,30 @@ func (c *CXOChain) RunTxService(txChecker TxChecker) error {
 	return nil
 }
 
-func initChain(c *CXOChain) error {
-	defer c.lock()()
+func initChain(cxo *CXO) error {
+	defer cxo.lock()()
 
-	r, e := cxoRoot(c)
+	r, e := getRoot(cxo)
 	if e != nil {
 		return e
 	}
 
-	p, e := cxoPack(c, r)
+	p, e := getPack(cxo, r)
 	if e != nil {
 		return e
 	}
 
-	store, e := cxoGetStore(r, p)
+	container, e := getContainer(r, p)
 	if e != nil {
 		return e
 	}
 
-	sLen, e := store.Txs.Len(p)
+	sLen, e := container.Txs.Len(p)
 	if e != nil {
 		return e
 	}
 
-	c.len.Set(sLen)
+	cxo.len.Set(sLen)
 	return nil
 }
 
@@ -342,23 +326,30 @@ func initChain(c *CXOChain) error {
 	<<< PUBLIC FUNCTIONS >>>
 */
 
-func (c *CXOChain) MasterInitChain() error {
+func (c *CXO) Connectivity() *Connectivity {
+	return &Connectivity{
+		c: c.c,
+		n: c.node,
+	}
+}
+
+func (c *CXO) MasterInitChain() error {
 	defer c.lock()()
 
-	up, e := cxoUnpack(c)
+	up, e := getUnpack(c)
 	if e != nil {
 		return e
 	}
 
-	s := new(CXOStore)
-	sReg, e := cxoNewStore(up, s)
+	cont := new(Container)
+	sReg, e := newContainer(up, cont)
 	if e != nil {
 		return e
 	}
 
 	r := &registry.Root{
 		Refs:  []registry.Dynamic{sReg},
-		Reg:   cxoReg.Reference(),
+		Reg:   reg.Reference(),
 		Pub:   c.c.MasterRootPK,
 		Nonce: c.c.MasterRootNonce,
 	}
@@ -372,11 +363,11 @@ func (c *CXOChain) MasterInitChain() error {
 	return nil
 }
 
-func (c *CXOChain) Head() (TxWrapper, error) {
+func (c *CXO) Head() (iko.TxWrapper, error) {
 	defer c.lock()()
 
 	var (
-		txWrap TxWrapper
+		txWrap iko.TxWrapper
 		cLen   = c.len.Val()
 	)
 
@@ -384,7 +375,7 @@ func (c *CXOChain) Head() (TxWrapper, error) {
 		return txWrap, errors.New("no transactions available")
 	}
 
-	store, _, p, e := c.getStore(gsRead)
+	store, _, p, e := c.getContainer(gsRead)
 	if e != nil {
 		return txWrap, e
 	}
@@ -397,12 +388,12 @@ func (c *CXOChain) Head() (TxWrapper, error) {
 	return txWrap, nil
 }
 
-func (c *CXOChain) Len() uint64 {
+func (c *CXO) Len() uint64 {
 	defer c.lock()()
 	return uint64(c.len.Val())
 }
 
-func (c *CXOChain) AddTx(txWrap TxWrapper, check TxChecker) error {
+func (c *CXO) AddTx(txWrap iko.TxWrapper, check iko.TxChecker) error {
 
 	if c.c.MasterRooter == false {
 		return errors.New("not master node")
@@ -415,7 +406,7 @@ func (c *CXOChain) AddTx(txWrap TxWrapper, check TxChecker) error {
 	defer c.lock()()
 	cLen := c.len.Val()
 
-	store, r, up, e := c.getStore(gsWrite)
+	store, r, up, e := c.getContainer(gsWrite)
 	if e != nil {
 		return e
 	}
@@ -437,11 +428,11 @@ func (c *CXOChain) AddTx(txWrap TxWrapper, check TxChecker) error {
 	return nil
 }
 
-func (c *CXOChain) GetTxOfHash(hash TxHash) (TxWrapper, error) {
+func (c *CXO) GetTxOfHash(hash iko.TxHash) (iko.TxWrapper, error) {
 	defer c.lock()()
-	var txWrap TxWrapper
+	var txWrap iko.TxWrapper
 
-	store, _, p, e := c.getStore(gsRead)
+	store, _, p, e := c.getContainer(gsRead)
 	if e != nil {
 		return txWrap, e
 	}
@@ -455,11 +446,11 @@ func (c *CXOChain) GetTxOfHash(hash TxHash) (TxWrapper, error) {
 	return txWrap, nil
 }
 
-func (c *CXOChain) GetTxOfSeq(seq uint64) (TxWrapper, error) {
+func (c *CXO) GetTxOfSeq(seq uint64) (iko.TxWrapper, error) {
 	defer c.lock()()
-	var txWrap TxWrapper
+	var txWrap iko.TxWrapper
 
-	store, _, p, e := c.getStore(gsRead)
+	store, _, p, e := c.getContainer(gsRead)
 	if e != nil {
 		return txWrap, e
 	}
@@ -472,13 +463,13 @@ func (c *CXOChain) GetTxOfSeq(seq uint64) (TxWrapper, error) {
 	return txWrap, nil
 }
 
-func (c *CXOChain) TxChan() <-chan *TxWrapper {
+func (c *CXO) TxChan() <-chan *iko.TxWrapper {
 	return c.accepted
 }
 
-func (c *CXOChain) GetTxsOfSeqRange(startSeq uint64, pageSize uint64) ([]TxWrapper, error) {
+func (c *CXO) GetTxsOfSeqRange(startSeq uint64, pageSize uint64) ([]iko.TxWrapper, error) {
 	defer c.lock()()
-	var txWraps []TxWrapper
+	var txWraps []iko.TxWrapper
 
 	if pageSize == 0 {
 		return txWraps, fmt.Errorf("invalid pageSize: %d", pageSize)
@@ -490,11 +481,11 @@ func (c *CXOChain) GetTxsOfSeqRange(startSeq uint64, pageSize uint64) ([]TxWrapp
 	if startSeq+pageSize > cLen {
 		diff := startSeq + pageSize - cLen
 		if pageSize-diff <= 0 {
-			return []TxWrapper{}, nil
+			return []iko.TxWrapper{}, nil
 		}
 		pageSize -= diff
 	}
-	store, _, p, e := c.getStore(gsRead)
+	store, _, p, e := c.getContainer(gsRead)
 	if e != nil {
 		return txWraps, e
 	}
@@ -510,7 +501,7 @@ func (c *CXOChain) GetTxsOfSeqRange(startSeq uint64, pageSize uint64) ([]TxWrapp
 	if e != nil {
 		return txWraps, e
 	}
-	txWraps = make([]TxWrapper, refsLen)
+	txWraps = make([]iko.TxWrapper, refsLen)
 	e = txRefs.Ascend(p, func(i int, hash cipher.SHA256) error {
 		raw, _, e := c.node.Container().Get(hash, 0)
 		if e != nil {
@@ -531,32 +522,32 @@ func (c *CXOChain) GetTxsOfSeqRange(startSeq uint64, pageSize uint64) ([]TxWrapp
 	return txWraps, e
 }
 
-type getStoreType int
+type getContType int
 
 const (
-	gsRead  getStoreType = iota
-	gsWrite getStoreType = iota
+	gsRead  getContType = iota
+	gsWrite getContType = iota
 )
 
-func (c *CXOChain) getStore(t getStoreType) (*CXOStore, *registry.Root, registry.Pack, error) {
-	r, e := cxoRoot(c)
+func (c *CXO) getContainer(t getContType) (*Container, *registry.Root, registry.Pack, error) {
+	r, e := getRoot(c)
 	if e != nil {
 		return nil, nil, nil, e
 	}
 	var p registry.Pack
 	switch t {
 	case gsRead:
-		if p, e = cxoPack(c, r); e != nil {
+		if p, e = getPack(c, r); e != nil {
 			return nil, nil, nil, e
 		}
 	case gsWrite:
-		if p, e = cxoUnpack(c); e != nil {
+		if p, e = getUnpack(c); e != nil {
 			return nil, nil, nil, e
 		}
 	default:
-		panic("invalid getStoreType")
+		panic("invalid getContType")
 	}
-	store, e := cxoGetStore(r, p)
+	store, e := getContainer(r, p)
 	if e != nil {
 		return nil, nil, nil, e
 	}
@@ -567,7 +558,7 @@ func (c *CXOChain) getStore(t getStoreType) (*CXOStore, *registry.Root, registry
 	<<< HELPER FUNCTIONS >>>
 */
 
-func cxoRoot(c *CXOChain) (*registry.Root, error) {
+func getRoot(c *CXO) (*registry.Root, error) {
 	r, e := c.node.Container().LastRoot(c.c.MasterRootPK, c.c.MasterRootNonce)
 	if e != nil {
 		return nil, e
@@ -575,40 +566,24 @@ func cxoRoot(c *CXOChain) (*registry.Root, error) {
 	return r, nil
 }
 
-func cxoGetStore(r *registry.Root, p registry.Pack) (*CXOStore, error) {
+func getContainer(r *registry.Root, p registry.Pack) (*Container, error) {
 	if len(r.Refs) < 1 {
 		return nil, errors.New("corrupt root, invalid ref count")
 	}
-	store := new(CXOStore)
+	store := new(Container)
 	if e := r.Refs[0].Value(p, store); e != nil {
 		return nil, e
 	}
 	return store, nil
 }
 
-func cxoPack(c *CXOChain, r *registry.Root) (*skyobject.Pack, error) {
-	p, e := c.node.Container().Pack(r, cxoReg)
-	if e != nil {
-		return nil, e
-	}
-
-	return p, nil
-}
-
-func cxoUnpack(c *CXOChain) (*skyobject.Unpack, error) {
-	if c.c.MasterRooter == false {
-		return nil, errors.New("not master")
-	}
-	return c.node.Container().Unpack(c.c.MasterRootSK, cxoReg)
-}
-
-func cxoNewStore(up *skyobject.Unpack, s *CXOStore) (registry.Dynamic, error) {
-	raw := encoder.Serialize(s)
+func newContainer(up *skyobject.Unpack, container *Container) (registry.Dynamic, error) {
+	raw := encoder.Serialize(container)
 	hash, e := up.Add(raw)
 	if e != nil {
 		return registry.Dynamic{}, e
 	}
-	schema, e := up.Registry().SchemaByName("iko.Store")
+	schema, e := up.Registry().SchemaByName("iko.Container")
 	if e != nil {
 		return registry.Dynamic{}, e
 	}
@@ -616,4 +591,20 @@ func cxoNewStore(up *skyobject.Unpack, s *CXOStore) (registry.Dynamic, error) {
 		Hash:   hash,
 		Schema: schema.Reference(),
 	}, nil
+}
+
+func getPack(cxo *CXO, r *registry.Root) (*skyobject.Pack, error) {
+	p, e := cxo.node.Container().Pack(r, reg)
+	if e != nil {
+		return nil, e
+	}
+
+	return p, nil
+}
+
+func getUnpack(cxo *CXO) (*skyobject.Unpack, error) {
+	if cxo.c.MasterRooter == false {
+		return nil, errors.New("not master")
+	}
+	return cxo.node.Container().Unpack(cxo.c.MasterRootSK, reg)
 }
