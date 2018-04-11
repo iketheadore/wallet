@@ -1,0 +1,27 @@
+@import "src/theme/theme-variables";
+
+.error-screen .modal-title {
+	font-family: 'Montserrat-SemiBold', sans-serif;
+	font-size: 30px;
+	font-weight: 600;
+	text-align: center;
+	color: $kittyred;
+	width: 100%;
+}
+
+.error-screen .modal-header {
+	border: none;
+}
+
+.error-screen .modal-footer {
+	border: none;
+}
+
+.error-screen p {
+	text-align: center;
+	font-size: 20px;
+}
+
+.modal.show {
+  display: block;
+}

@@ -126,8 +126,8 @@ function startKittyCash() {
   });
 
   kittycash.stdout.on('data', (data) => {
-    log.info(data.toString());
     app.emit('kittycash-ready', { url: defaultURL });
+    log.info(data.toString());
   });
 
   kittycash.stderr.on('data', (data) => {

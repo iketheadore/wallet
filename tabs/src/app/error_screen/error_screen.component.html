@@ -1,0 +1,25 @@
+<div class="error-screen" *ngIf="currentError">
+  <div class="modal fade show">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Error</h5>
+        </div>
+        <div class="modal-body">
+          <div class="row">
+              <!-- Code Error Dialog -->
+                  <div class="col-12">
+                    <p>{{currentError}}</p>
+                  </div>
+              <!-- End Code Error Dialog -->
+            </div>
+          </div>
+          <div class="modal-footer">
+            <div class="mx-auto">
+              <button type="button" class="btn btn-lg btn-primary" (click)="resetError()" translate>Okay</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
