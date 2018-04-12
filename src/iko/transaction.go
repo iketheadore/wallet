@@ -148,16 +148,20 @@ func (tx Transaction) VerifyWith(in *Transaction, genPK cipher.PubKey) error {
 //		- Tx is of the correct structure to create a new kitty.
 //		- Tx is of the right address to create a new kitty.
 func (tx Transaction) IsKittyGen(pk cipher.PubKey) bool {
+	finish := func(is bool, reason string) bool {
+		fmt.Printf("[GENERATION TX?] (%v) %s\n", is, reason)
+		return is
+	}
 	// Check input tx hash is empty.
 	if tx.In != EmptyTxHash() {
-		return false
+		return finish(false, "hash is empty")
 	}
 	// Check output address.
 	if e := tx.Out.Verify(pk); e != nil {
-		return false
+		return finish(false, fmt.Sprintf("error: %s", e.Error()))
 	}
 	// Accept.
-	return true
+	return finish(true, "")
 }
 
 // String returns human readable string of transaction.

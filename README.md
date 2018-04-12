@@ -40,6 +40,7 @@ go run ${GOPATH}/src/github.com/kittycash/wallet/cmd/iko/iko.go \
 --test-tx-gen-count=100 \
 --test-tx-gen-sk=190030fed87872ff67015974d4c1432910724d0c0d4bfbd29d3b593dba936155 \
 --cxo-address="127.0.0.1:7140" \
+--rpc-address="127.0.0.1:7907" \
 --messenger-addresses=":8880" 
 ```
 
