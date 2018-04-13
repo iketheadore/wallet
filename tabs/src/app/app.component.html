@@ -15,7 +15,7 @@
         </li>
         <li class="nav-item" [ngClass]="{'active': currentTab == 'play'}">
           <a class="nav-link" (click)="currentTab = 'play'">Play</a>
-        </li>        
+        </li>
       </ul>
     </div>
     <div class="col-2 offset-2 actions-bar pt-3">
@@ -25,6 +25,11 @@
     </div>
     <div class="col-1 actions-bar pt-3">
       <a><i class="fa fa-redo fa-lg px-2 pull-right"></i></a>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-12 notification-bar" *ngIf="updateAvailable">
+      Wallet update <a href="https://www.kittycash.com/downloads/" target="_blank">v{{ releaseVersion }}</a>  available.
     </div>
   </div>
   <div class="row" [ngSwitch]="currentTab">
