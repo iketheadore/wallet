@@ -6,6 +6,8 @@ import (
 	"github.com/skycoin/skycoin/src/cipher"
 
 	"github.com/kittycash/wallet/src/iko"
+	"github.com/kittycash/kittiverse/src/kitty"
+	"github.com/kittycash/wallet/src/iko/transaction"
 )
 
 const (
@@ -37,7 +39,7 @@ type BalancesIn struct {
 
 type BalancesOut struct {
 	Count int
-	List  iko.KittyIDs
+	List  kitty.IDs
 }
 
 func (g *Gateway) Balances(in *BalancesIn, out *BalancesOut) error {
@@ -50,12 +52,12 @@ func (g *Gateway) Balances(in *BalancesIn, out *BalancesOut) error {
 }
 
 type KittyOwnerIn struct {
-	KittyID iko.KittyID
+	KittyID kitty.ID
 }
 
 type KittyOwnerOut struct {
 	Address cipher.Address
-	Unspent iko.TxHash
+	Unspent transaction.ID
 }
 
 func (g *Gateway) KittyOwner(in *KittyOwnerIn, out *KittyOwnerOut) error {
@@ -69,12 +71,12 @@ func (g *Gateway) KittyOwner(in *KittyOwnerIn, out *KittyOwnerOut) error {
 }
 
 type TransactionIn struct {
-	TxHash iko.TxHash
+	TxHash transaction.ID
 }
 
 type TransactionOut struct {
-	Tx        iko.Transaction
-	TxMeta    iko.TxMeta
+	Tx        transaction.Transaction
+	TxMeta    transaction.Meta
 	Confirmed bool
 }
 
@@ -90,12 +92,12 @@ func (g *Gateway) Transaction(in *TransactionIn, out *TransactionOut) error {
 }
 
 type InjectTxIn struct {
-	Tx iko.Transaction
+	Tx transaction.Transaction
 }
 
 type InjectTxOut struct {
-	TxHash iko.TxHash
-	Meta   iko.TxMeta
+	TxID transaction.ID
+	Meta transaction.Meta
 }
 
 func (g *Gateway) InjectTx(in *InjectTxIn, out *InjectTxOut) error {
@@ -103,7 +105,7 @@ func (g *Gateway) InjectTx(in *InjectTxIn, out *InjectTxOut) error {
 	if e != nil {
 		return e
 	}
-	out.TxHash = in.Tx.Hash()
+	out.TxID = in.Tx.Hash()
 	out.Meta = *meta
 	return nil
 }

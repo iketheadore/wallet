@@ -12,7 +12,8 @@ import (
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/stretchr/testify/require"
 
-	"github.com/kittycash/wallet/src/iko"
+	"github.com/kittycash/kittiverse/src/kitty"
+	"github.com/kittycash/wallet/src/iko/transaction"
 )
 
 const (
@@ -61,7 +62,7 @@ func newCXOChainDB(
 			return nil, err
 		}
 	}
-	return chainDB, chainDB.RunTxService(func(tx *iko.Transaction) error {
+	return chainDB, chainDB.RunTxService(func(tx *transaction.Transaction) error {
 		return nil
 	})
 }
@@ -73,21 +74,21 @@ func newDiscoveryServer(addr string) (func(), error) {
 	}, f.Listen(addr)
 }
 
-func genTxWraps(count, start int) []iko.TxWrapper {
+func genTxWraps(count, start int) []transaction.Wrapper {
 	var (
-		out = make([]iko.TxWrapper, count)
+		out = make([]transaction.Wrapper, count)
 	)
 	for i := range out {
-		out[i] = iko.TxWrapper{
-			Tx:   *iko.NewGenTx(iko.KittyID(i+start), GenSK),
+		out[i] = transaction.Wrapper{
+			Tx:   *transaction.NewGenTx(kitty.ID(i+start), GenSK),
 			Meta: genTxMeta(uint64(i + start)),
 		}
 	}
 	return out
 }
 
-func genTxMeta(seq uint64) iko.TxMeta {
-	return iko.TxMeta{
+func genTxMeta(seq uint64) transaction.Meta {
+	return transaction.Meta{
 		Seq: seq,
 		TS:  time.Now().UnixNano(),
 	}
@@ -135,7 +136,7 @@ func TestNewCXOChain(t *testing.T) {
 
 		for i, txWrap := range txWraps {
 			t.Run(fmt.Sprintf("ReceiveTx_%d", i), func(t *testing.T) {
-				err := master.AddTx(txWrap, func(tx *iko.Transaction) error {
+				err := master.AddTx(txWrap, func(tx *transaction.Transaction) error {
 					return nil
 				})
 				require.NoErrorf(t, err,
@@ -159,11 +160,11 @@ func TestNewCXOChain(t *testing.T) {
 
 		// Add transfer transactions.
 		for i := len(txWraps); i < 5; i++ {
-			tx, err := iko.NewTransferTx(&txWraps[0].Tx, addr0, GenSK)
+			tx, err := transaction.NewTransferTx(&txWraps[0].Tx, addr0, GenSK)
 			require.NoError(t, err,
 				"should generate transfer tx successfully")
 
-			txWrap := iko.TxWrapper{
+			txWrap := transaction.Wrapper{
 				Tx:   *tx,
 				Meta: genTxMeta(uint64(i)),
 			}
@@ -171,7 +172,7 @@ func TestNewCXOChain(t *testing.T) {
 			txWraps = append(txWraps, txWrap)
 
 			// Inject in master.
-			err = master.AddTx(txWrap, func(tx *iko.Transaction) error {
+			err = master.AddTx(txWrap, func(tx *transaction.Transaction) error {
 				return nil
 			})
 			require.NoError(t, err,
@@ -224,7 +225,7 @@ func TestNewCXOChain(t *testing.T) {
 			defer master.Close()
 
 			for _, txWrap := range txWraps {
-				err := master.AddTx(txWrap, func(_ *iko.Transaction) error {
+				err := master.AddTx(txWrap, func(_ *transaction.Transaction) error {
 					return nil
 				})
 				require.NoError(t, err, "inject tx should succeed")
@@ -280,7 +281,7 @@ func TestNewCXOChain(t *testing.T) {
 			txWraps      = genTxWraps(count, start)
 		)
 		for _, txWrap := range txWraps {
-			require.NoError(t, master.AddTx(txWrap, func(_ *iko.Transaction) error {
+			require.NoError(t, master.AddTx(txWrap, func(_ *transaction.Transaction) error {
 				return nil
 			}))
 		}
@@ -300,7 +301,7 @@ func TestNewCXOChain(t *testing.T) {
 
 			for i := start; i < start+count; i++ {
 				// Inject.
-				require.NoError(t, master.AddTx(txWraps[i], func(_ *iko.Transaction) error {
+				require.NoError(t, master.AddTx(txWraps[i], func(_ *transaction.Transaction) error {
 					return nil
 				}))
 				// Wait for slave to receive.
@@ -330,7 +331,7 @@ func TestNewCXOChain(t *testing.T) {
 
 			for i := start; i < start+count; i++ {
 				// Inject.
-				require.NoError(t, master.AddTx(txWraps[i], func(_ *iko.Transaction) error {
+				require.NoError(t, master.AddTx(txWraps[i], func(_ *transaction.Transaction) error {
 					return nil
 				}))
 				// Wait.

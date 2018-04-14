@@ -1,4 +1,4 @@
-package iko
+package transaction
 
 import (
 	"errors"
@@ -7,59 +7,60 @@ import (
 
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
+	"github.com/kittycash/kittiverse/src/kitty"
 )
 
-type TxHash cipher.SHA256
+type ID cipher.SHA256
 
-func EmptyTxHash() TxHash {
-	return TxHash(cipher.SHA256{})
+func EmptyID() ID {
+	return ID(cipher.SHA256{})
 }
 
-func (h TxHash) Hex() string {
+func (h ID) Hex() string {
 	return cipher.SHA256(h).Hex()
 }
 
-type TxHashes []TxHash
+type IDs []ID
 
-func (h TxHashes) ToStringArray() []string {
-	out := make([]string, len(h))
-	for i, hash := range h {
-		out[i] = hash.Hex()
+func (ids IDs) ToStringArray() []string {
+	out := make([]string, len(ids))
+	for i, id := range ids {
+		out[i] = cipher.SHA256(id).Hex()
 	}
 	return out
 }
 
-type TxAction func(tx *Transaction) error
+type Action func(tx *Transaction) error
 
 // Transaction represents a kitty transaction.
 // For IKO, transaction and block are combined to formed one entity.
 type Transaction struct {
-	KittyID KittyID
-	In      TxHash
+	KittyID kitty.ID
+	In      ID
 	Out     cipher.Address
 	Sig     cipher.Sig
 }
 
-// TxMeta records meta information for a transaction.
-type TxMeta struct {
+// Meta records meta information for a transaction.
+type Meta struct {
 	Seq uint64
 	TS  int64
 }
 
-// TxWrapper wraps a transaction with it's meta information.
-type TxWrapper struct {
+// Wrapper wraps a transaction with it's meta information.
+type Wrapper struct {
 	Tx   Transaction
-	Meta TxMeta
+	Meta Meta
 }
 
 // NewGenTx creates a "generation" transaction.
 // This is where a kitty is created on the blockchain.
-func NewGenTx(kittyID KittyID, sk cipher.SecKey) *Transaction {
+func NewGenTx(kittyID kitty.ID, sk cipher.SecKey) *Transaction {
 	var (
 		address = cipher.AddressFromSecKey(sk)
 		tx      = &Transaction{
 			KittyID: kittyID,
-			In:      EmptyTxHash(),
+			In:      EmptyID(),
 			Out:     address,
 		}
 	)
@@ -90,8 +91,8 @@ func (tx Transaction) Serialize() []byte {
 	return encoder.Serialize(tx)
 }
 
-func (tx Transaction) Hash() TxHash {
-	return TxHash(cipher.SumSHA256(tx.Serialize()))
+func (tx Transaction) Hash() ID {
+	return ID(cipher.SumSHA256(tx.Serialize()))
 }
 
 func (tx Transaction) HashInner() cipher.SHA256 {
@@ -120,7 +121,7 @@ func (tx Transaction) VerifyWith(in *Transaction, genPK cipher.PubKey) error {
 
 	// Check input.
 	if isGen == true {
-		if exp := EmptyTxHash(); tx.In != exp {
+		if exp := EmptyID(); tx.In != exp {
 			return fmt.Errorf("generation tx expected 'in:%s', but we got 'in:%s'",
 				exp.Hex(), tx.In.Hex())
 		}
@@ -153,7 +154,7 @@ func (tx Transaction) IsKittyGen(pk cipher.PubKey) bool {
 		return is
 	}
 	// Check input tx hash is empty.
-	if tx.In != EmptyTxHash() {
+	if tx.In != EmptyID() {
 		return finish(false, "hash is empty")
 	}
 	// Check output address.

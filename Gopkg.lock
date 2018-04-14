@@ -20,10 +20,37 @@
   version = "0.2.0"
 
 [[projects]]
+  name = "github.com/go-xorm/builder"
+  packages = ["."]
+  revision = "a9b7ffcca3f0c6445c4e3b1bf72c01578817a6c3"
+  version = "v0.1.0"
+
+[[projects]]
+  name = "github.com/go-xorm/core"
+  packages = ["."]
+  revision = "f43c33d9a48db006417a7ac4c16b08897e3e1458"
+  version = "v0.5.8"
+
+[[projects]]
+  name = "github.com/go-xorm/xorm"
+  packages = ["."]
+  revision = "fc1b13e0d8e240788213230aa5747eb557f80f41"
+  version = "v0.6.6"
+
+[[projects]]
   branch = "master"
   name = "github.com/google/btree"
   packages = ["."]
   revision = "e89373fe6b4a7413d7acd6da1725b83ef713e6e4"
+
+[[projects]]
+  branch = "develop"
+  name = "github.com/kittycash/kittiverse"
+  packages = [
+    "src/kitty",
+    "src/utils"
+  ]
+  revision = "8e577025b5030ed1a0cffde25d287fa2f94c6dec"
 
 [[projects]]
   name = "github.com/klauspost/cpuid"
@@ -36,6 +63,12 @@
   packages = ["."]
   revision = "6bb6130ff6a76a904c1841707d65603aec9cc288"
   version = "v1.6"
+
+[[projects]]
+  name = "github.com/mattn/go-sqlite3"
+  packages = ["."]
+  revision = "6c771bb9887719704b210e87e934f08be014bdb1"
+  version = "v1.6.0"
 
 [[projects]]
   name = "github.com/op/go-logging"
@@ -68,7 +101,6 @@
   version = "v1.0.5"
 
 [[projects]]
-  branch = "master"
   name = "github.com/skycoin/cxo"
   packages = [
     "data",
@@ -81,7 +113,7 @@
     "skyobject/registry",
     "skyobject/statutil"
   ]
-  revision = "f87f9c197597bc78ec301d32b4678f50e9f52726"
+  revision = "d37028513af1d14208d82b5a0dd57cec7722c1cb"
 
 [[projects]]
   name = "github.com/skycoin/net"
@@ -129,7 +161,7 @@
     "pbkdf2",
     "ssh/terminal"
   ]
-  revision = "b2aa35443fbc700ab74c586ae79b81c171851023"
+  revision = "d6449816ce06963d9d136eee5a56fca5b0616e7e"
 
 [[projects]]
   branch = "master"
@@ -138,7 +170,7 @@
     "unix",
     "windows"
   ]
-  revision = "1d206c9fa8975fb4cf00df1dc8bf3283dc24ba0e"
+  revision = "f6f352972f061230a99fbf49d1eb8073ebdb36cb"
 
 [[projects]]
   name = "gopkg.in/sirupsen/logrus.v1"
@@ -155,6 +187,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2099ca85995e75acd17632e06f890c8cb27a9e032d300bb7de4f95ea684fc7ed"
+  inputs-digest = "a4ab1df75a6b7573c1d1212ff23fc4b040ff3e23eb1c8d9a9722e45a610e7d1e"
   solver-name = "gps-cdcl"
   solver-version = 1

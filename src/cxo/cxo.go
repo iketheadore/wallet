@@ -15,6 +15,7 @@ import (
 
 	"github.com/kittycash/wallet/src/iko"
 	"github.com/kittycash/wallet/src/util"
+	"github.com/kittycash/wallet/src/iko/transaction"
 )
 
 /*
@@ -63,8 +64,8 @@ type CXO struct {
 	l        *logrus.Logger
 	node     *node.Node
 	wg       sync.WaitGroup
-	received chan *iko.TxWrapper
-	accepted chan *iko.TxWrapper
+	received chan *transaction.Wrapper
+	accepted chan *transaction.Wrapper
 
 	len util.SafeInt
 }
@@ -82,8 +83,8 @@ func New(config *Config, modifyNC ...NodeConfigModifier) (*CXO, error) {
 	cxo := &CXO{
 		c:        config,
 		l:        log,
-		received: make(chan *iko.TxWrapper),
-		accepted: make(chan *iko.TxWrapper),
+		received: make(chan *transaction.Wrapper),
+		accepted: make(chan *transaction.Wrapper),
 	}
 	var modify NodeConfigModifier
 	if len(modifyNC) > 0 {
@@ -125,7 +126,7 @@ func (c *CXO) lock() func() {
 	return c.mux.Unlock
 }
 
-func (c *CXO) attemptPushAccepted(txWrap *iko.TxWrapper) {
+func (c *CXO) attemptPushAccepted(txWrap *transaction.Wrapper) {
 	select {
 	case c.accepted <- txWrap:
 	default:
@@ -210,7 +211,7 @@ func prepareNode(cxo *CXO, modifier NodeConfigModifier) error {
 
 			for i := c.len.Val(); i < rLen; i++ {
 
-				var wrapper = new(iko.TxWrapper)
+				var wrapper = new(transaction.Wrapper)
 
 				txHash, e := container.Txs.ValueByIndex(p, int(i), &wrapper.Tx)
 				if e != nil {
@@ -363,11 +364,11 @@ func (c *CXO) MasterInitChain() error {
 	return nil
 }
 
-func (c *CXO) Head() (iko.TxWrapper, error) {
+func (c *CXO) Head() (transaction.Wrapper, error) {
 	defer c.lock()()
 
 	var (
-		txWrap iko.TxWrapper
+		txWrap transaction.Wrapper
 		cLen   = c.len.Val()
 	)
 
@@ -393,7 +394,7 @@ func (c *CXO) Len() uint64 {
 	return uint64(c.len.Val())
 }
 
-func (c *CXO) AddTx(txWrap iko.TxWrapper, check iko.TxChecker) error {
+func (c *CXO) AddTx(txWrap transaction.Wrapper, check iko.TxChecker) error {
 
 	if c.c.MasterRooter == false {
 		return errors.New("not master node")
@@ -428,9 +429,9 @@ func (c *CXO) AddTx(txWrap iko.TxWrapper, check iko.TxChecker) error {
 	return nil
 }
 
-func (c *CXO) GetTxOfHash(hash iko.TxHash) (iko.TxWrapper, error) {
+func (c *CXO) GetTxOfHash(hash transaction.ID) (transaction.Wrapper, error) {
 	defer c.lock()()
-	var txWrap iko.TxWrapper
+	var txWrap transaction.Wrapper
 
 	store, _, p, e := c.getContainer(gsRead)
 	if e != nil {
@@ -446,9 +447,9 @@ func (c *CXO) GetTxOfHash(hash iko.TxHash) (iko.TxWrapper, error) {
 	return txWrap, nil
 }
 
-func (c *CXO) GetTxOfSeq(seq uint64) (iko.TxWrapper, error) {
+func (c *CXO) GetTxOfSeq(seq uint64) (transaction.Wrapper, error) {
 	defer c.lock()()
-	var txWrap iko.TxWrapper
+	var txWrap transaction.Wrapper
 
 	store, _, p, e := c.getContainer(gsRead)
 	if e != nil {
@@ -463,13 +464,13 @@ func (c *CXO) GetTxOfSeq(seq uint64) (iko.TxWrapper, error) {
 	return txWrap, nil
 }
 
-func (c *CXO) TxChan() <-chan *iko.TxWrapper {
+func (c *CXO) TxChan() <-chan *transaction.Wrapper {
 	return c.accepted
 }
 
-func (c *CXO) GetTxsOfSeqRange(startSeq uint64, pageSize uint64) ([]iko.TxWrapper, error) {
+func (c *CXO) GetTxsOfSeqRange(startSeq uint64, pageSize uint64) ([]transaction.Wrapper, error) {
 	defer c.lock()()
-	var txWraps []iko.TxWrapper
+	var txWraps []transaction.Wrapper
 
 	if pageSize == 0 {
 		return txWraps, fmt.Errorf("invalid pageSize: %d", pageSize)
@@ -481,7 +482,7 @@ func (c *CXO) GetTxsOfSeqRange(startSeq uint64, pageSize uint64) ([]iko.TxWrappe
 	if startSeq+pageSize > cLen {
 		diff := startSeq + pageSize - cLen
 		if pageSize-diff <= 0 {
-			return []iko.TxWrapper{}, nil
+			return []transaction.Wrapper{}, nil
 		}
 		pageSize -= diff
 	}
@@ -501,7 +502,7 @@ func (c *CXO) GetTxsOfSeqRange(startSeq uint64, pageSize uint64) ([]iko.TxWrappe
 	if e != nil {
 		return txWraps, e
 	}
-	txWraps = make([]iko.TxWrapper, refsLen)
+	txWraps = make([]transaction.Wrapper, refsLen)
 	e = txRefs.Ascend(p, func(i int, hash cipher.SHA256) error {
 		raw, _, e := c.node.Container().Get(hash, 0)
 		if e != nil {

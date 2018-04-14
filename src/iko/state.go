@@ -5,6 +5,8 @@ import (
 	"sync"
 
 	"github.com/skycoin/skycoin/src/cipher"
+	"github.com/kittycash/kittiverse/src/kitty"
+	"github.com/kittycash/wallet/src/iko/transaction"
 )
 
 // StateDB records the state of the blockchain.
@@ -15,12 +17,12 @@ type StateDB interface {
 	//		- The address that the kitty resides under.
 	//		- Transactions associated with the kitty.
 	// It should return false if kitty of specified ID does not exist.
-	GetKittyState(kittyID KittyID) (*KittyState, bool)
+	GetKittyState(kittyID kitty.ID) (*KittyState, bool)
 
 	// GetKittyUnspentTx obtains the unspent tx for the kitty.
 	// It should return false if the kitty does not exist.
 	// TODO (evanlinjin): test this.
-	GetKittyUnspentTx(kittyID KittyID) (TxHash, bool)
+	GetKittyUnspentTx(kittyID kitty.ID) (transaction.ID, bool)
 
 	// GetAddressState obtains the current state of an address.
 	// This consists of:
@@ -32,30 +34,30 @@ type StateDB interface {
 	// AddKitty adds a kitty to the state under the specified address.
 	// This should fail if:
 	// 		- kitty of specified ID already exists in state.
-	AddKitty(tx TxHash, kittyID KittyID, address cipher.Address) error
+	AddKitty(tx transaction.ID, kittyID kitty.ID, address cipher.Address) error
 
 	// MoveKitty moves a kitty from one address to another.
 	// This should fail if:
 	//		- kitty of specified ID already belongs to the address ('from' and 'to' addresses are the same).
 	//		- kitty of specified ID does not exist.
 	//		- kitty of specified ID does not originally belong to the 'from' address.
-	MoveKitty(tx TxHash, kittyID KittyID, from, to cipher.Address) error
+	MoveKitty(tx transaction.ID, kittyID kitty.ID, from, to cipher.Address) error
 }
 
 type MemoryState struct {
 	sync.Mutex
-	kitties   map[KittyID]*KittyState
+	kitties   map[kitty.ID]*KittyState
 	addresses map[cipher.Address]*AddressState
 }
 
 func NewMemoryState() *MemoryState {
 	return &MemoryState{
-		kitties:   make(map[KittyID]*KittyState),
+		kitties:   make(map[kitty.ID]*KittyState),
 		addresses: make(map[cipher.Address]*AddressState),
 	}
 }
 
-func (s *MemoryState) GetKittyState(kittyID KittyID) (*KittyState, bool) {
+func (s *MemoryState) GetKittyState(kittyID kitty.ID) (*KittyState, bool) {
 	s.Lock()
 	defer s.Unlock()
 
@@ -63,13 +65,13 @@ func (s *MemoryState) GetKittyState(kittyID KittyID) (*KittyState, bool) {
 	return kState, ok
 }
 
-func (s *MemoryState) GetKittyUnspentTx(kittyID KittyID) (TxHash, bool) {
+func (s *MemoryState) GetKittyUnspentTx(kittyID kitty.ID) (transaction.ID, bool) {
 	s.Lock()
 	defer s.Unlock()
 
 	kState, ok := s.kitties[kittyID]
 	if !ok {
-		return EmptyTxHash(), ok
+		return transaction.EmptyID(), ok
 	}
 
 	return kState.Transactions[len(kState.Transactions)-1], true
@@ -86,7 +88,7 @@ func (s *MemoryState) GetAddressState(address cipher.Address) *AddressState {
 	return aState
 }
 
-func (s *MemoryState) AddKitty(tx TxHash, kittyID KittyID, address cipher.Address) error {
+func (s *MemoryState) AddKitty(tx transaction.ID, kittyID kitty.ID, address cipher.Address) error {
 	s.Lock()
 	defer s.Unlock()
 
@@ -98,7 +100,7 @@ func (s *MemoryState) AddKitty(tx TxHash, kittyID KittyID, address cipher.Addres
 	if kState, ok := s.kitties[kittyID]; !ok {
 		s.kitties[kittyID] = &KittyState{
 			Address:      address,
-			Transactions: TxHashes{tx},
+			Transactions: transaction.IDs{tx},
 		}
 	} else {
 		kState.Address = address
@@ -107,8 +109,8 @@ func (s *MemoryState) AddKitty(tx TxHash, kittyID KittyID, address cipher.Addres
 
 	if aState, ok := s.addresses[address]; !ok {
 		s.addresses[address] = &AddressState{
-			Kitties:      KittyIDs{kittyID},
-			Transactions: TxHashes{tx},
+			Kitties:      kitty.IDs{kittyID},
+			Transactions: transaction.IDs{tx},
 		}
 	} else {
 		aState.Kitties.Add(kittyID)
@@ -118,7 +120,7 @@ func (s *MemoryState) AddKitty(tx TxHash, kittyID KittyID, address cipher.Addres
 	return nil
 }
 
-func (s *MemoryState) MoveKitty(tx TxHash, kittyID KittyID, from, to cipher.Address) error {
+func (s *MemoryState) MoveKitty(tx transaction.ID, kittyID kitty.ID, from, to cipher.Address) error {
 	s.Lock()
 	defer s.Unlock()
 
@@ -150,8 +152,8 @@ func (s *MemoryState) MoveKitty(tx TxHash, kittyID KittyID, from, to cipher.Addr
 
 	if toState, ok := s.addresses[to]; !ok {
 		s.addresses[to] = &AddressState{
-			Kitties:      KittyIDs{kittyID},
-			Transactions: TxHashes{tx},
+			Kitties:      kitty.IDs{kittyID},
+			Transactions: transaction.IDs{tx},
 		}
 	} else {
 		toState.Kitties.Add(kittyID)
