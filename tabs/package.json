@@ -9,7 +9,7 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "import-marketplace": "npm install && cd ./node_modules/kittycash-marketplace && npm install && npm run prepare-lib && npm run build-lib && cp -Rf ./src/assets/* ../../src/assets/ && ver=$(npm run package-lib | tail -n 1) && cd ../../ && npm install --no-save \"./node_modules/kittycash-marketplace/lib/$ver\""
+    "import-marketplace": "npm install --no-save git+https://github.com/kittycash/marketplace.git#integration && cd ./node_modules/kittycash-marketplace && npm install && npm run prepare-lib && npm run build-lib && cp -Rf ./src/assets/* ../../src/assets/ && ver=$(npm run package-lib | tail -n 1) && cd ../../ && npm install --no-save \"./node_modules/kittycash-marketplace/lib/$ver\" ./wallet-lib-0.0.0.tgz"
   },
   "private": true,
   "dependencies": {
@@ -25,7 +25,6 @@
     "@fortawesome/fontawesome-free-webfonts": "^1.0.4",
     "bootstrap": "4.0.0",
     "core-js": "^2.4.1",
-    "kittycash-marketplace": "git+https://github.com/kittycash/marketplace.git#integration",
     "rxjs": "^5.5.6",
     "zone.js": "^0.8.19"
   },

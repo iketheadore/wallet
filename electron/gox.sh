@@ -65,30 +65,30 @@ do
             OUT="${OUTPUT}${WIN32_OUT}"
             echo "mkdir $OUT"
             mkdir -p "$OUT"
-            mv "${OUTPUT}${CMD}_${s[0]}_${s[1]}.exe" "${OUT}/${PKG_NAME}.exe"
+            mv "${OUTPUT}${CMD}_${s[0]}_${s[1]}.exe" "${OUT}/wallet.exe"
         else
             OUT="${OUTPUT}${WIN64_OUT}"
             mkdir -p "${OUT}"
-            mv "${OUTPUT}${CMD}_${s[0]}_${s[1]}.exe" "${OUT}/${PKG_NAME}.exe"
+            mv "${OUTPUT}${CMD}_${s[0]}_${s[1]}.exe" "${OUT}/wallet.exe"
         fi
         ;;
     "darwin")
         OUT="${OUTPUT}${OSX64_OUT}"
         echo "mkdir ${OUT}"
         mkdir -p "${OUT}"
-        mv "${OUTPUT}${CMD}_${s[0]}_${s[1]}" "${OUT}/${PKG_NAME}"
+        mv "${OUTPUT}${CMD}_${s[0]}_${s[1]}" "${OUT}/wallet"
         ;;
     "linux")
         if [ "${s[1]}" = "amd64" ]; then
             OUT="${OUTPUT}${LNX64_OUT}"
             echo "mkdir ${OUT}"
             mkdir -p "${OUT}"
-            mv "${OUTPUT}${CMD}_${s[0]}_${s[1]}" "${OUT}/${PKG_NAME}"
+            mv "${OUTPUT}${CMD}_${s[0]}_${s[1]}" "${OUT}/wallet"
         elif [ "${s[1]}" = "arm" ]; then
             OUT="${OUTPUT}${LNX_ARM_OUT}"
             echo "mkdir ${OUT}"
             mkdir -p "${OUT}"
-            mv "${OUTPUT}${CMD}_${s[0]}_${s[1]}" "${OUT}/${PKG_NAME}"
+            mv "${OUTPUT}${CMD}_${s[0]}_${s[1]}" "${OUT}/wallet"
         fi
         ;;
     esac
