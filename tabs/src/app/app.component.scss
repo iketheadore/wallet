@@ -23,23 +23,10 @@
 	color: $kittyred !important;
 }
 
-.status {
-	width: 15px;
-	height: 15px;
-	border-radius: 50%;
-	background-color: purple;
-	display: inline-block;
-}
-
-.status.connected {
-	background-color: rgb(126, 211, 33);
-}
-
-.status-description {
-	text-transform: uppercase;
-	color: $kittygray;
-}
-
 .actions-bar {
 	color: $kittyred;
+}
+
+.actions-bar a {
+	cursor: pointer;
 }

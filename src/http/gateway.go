@@ -163,6 +163,7 @@ func sendJson(w http.ResponseWriter, status int, v interface{}) error {
 		return e
 	}
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.WriteHeader(status)
 	_, e = w.Write(data)
 	return e

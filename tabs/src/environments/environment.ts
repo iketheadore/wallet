@@ -5,5 +5,6 @@
 
 export const environment = {
   production: false,
-  serverUrl: 'https://dev.bradk.xyz'
+  serverUrl: 'https://dev.bradk.xyz',
+  walletUrl: 'http://127.0.0.1:6148/api'
 };
