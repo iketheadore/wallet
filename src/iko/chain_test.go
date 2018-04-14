@@ -11,6 +11,8 @@ import (
 	"github.com/stretchr/testify/require"
 
 	"github.com/kittycash/wallet/src/cxo"
+	"github.com/kittycash/kittiverse/src/kitty"
+	"github.com/kittycash/wallet/src/iko/transaction"
 )
 
 const (
@@ -68,11 +70,11 @@ func testChainDBPagination(t *testing.T, chainDB ChainDB, pageSize uint64) {
 	})
 }
 
-func addTxAlwaysApprove(tx *Transaction) error {
+func addTxAlwaysApprove(tx *transaction.Transaction) error {
 	return nil
 }
 
-func addTxAlwaysReject(tx *Transaction) error {
+func addTxAlwaysReject(tx *transaction.Transaction) error {
 	return errors.New("failure")
 }
 
@@ -84,7 +86,7 @@ func runChainDBTest(t *testing.T, chainDB ChainDB) {
 			"Should give us an error because there are no transactions yet")
 	})
 
-	nonexistentHash := TxHash(cipher.SumSHA256([]byte{3, 4, 5, 6}))
+	nonexistentHash := transaction.ID(cipher.SumSHA256([]byte{3, 4, 5, 6}))
 
 	t.Run("GetTxOfHash_NonexistentHash_01", func(t *testing.T) {
 		_, err := chainDB.GetTxOfHash(nonexistentHash)
@@ -102,14 +104,14 @@ func runChainDBTest(t *testing.T, chainDB ChainDB) {
 
 	t.Run("withTransactions", func(t *testing.T) {
 		var (
-			kittyID = KittyID(5)
+			kittyID = kitty.ID(5)
 			_, sk2  = cipher.GenerateDeterministicKeyPair([]byte("2nd tx seed"))
 			addr2   = cipher.AddressFromSecKey(sk2)
 		)
 
-		firstTxWrap := TxWrapper{
-			Tx: *NewGenTx(kittyID, GenSK),
-			Meta: TxMeta{
+		firstTxWrap := transaction.Wrapper{
+			Tx: *transaction.NewGenTx(kittyID, GenSK),
+			Meta: transaction.Meta{
 				Seq: 0,
 				TS:  time.Now().UnixNano(),
 			},
@@ -132,13 +134,13 @@ func runChainDBTest(t *testing.T, chainDB ChainDB) {
 				"Should correctly return the first transaction")
 		})
 
-		secondTx, err := NewTransferTx(
+		secondTx, err := transaction.NewTransferTx(
 			&firstTxWrap.Tx, addr2, GenSK)
 		require.NoError(t, err, "should create second tx with no error")
 
-		var secondTxWrap = TxWrapper{
+		var secondTxWrap = transaction.Wrapper{
 			Tx: *secondTx,
-			Meta: TxMeta{
+			Meta: transaction.Meta{
 				Seq: 1,
 				TS:  time.Now().UnixNano(),
 			},
@@ -148,7 +150,7 @@ func runChainDBTest(t *testing.T, chainDB ChainDB) {
 		require.NoError(t, err,
 			"We should be able to successfully add our second transaction")
 
-		txWraps := []TxWrapper{firstTxWrap, secondTxWrap}
+		txWraps := []transaction.Wrapper{firstTxWrap, secondTxWrap}
 
 		t.Run("Head_Success_02", func(t *testing.T) {
 			txWrap, err := chainDB.Head()
@@ -200,14 +202,14 @@ func runChainDBTest(t *testing.T, chainDB ChainDB) {
 		}
 
 		// adding a third transaction for an odd number of transactions
-		thirdTx, err := NewTransferTx(
+		thirdTx, err := transaction.NewTransferTx(
 			secondTx, cipher.AddressFromPubKey(GenPK), sk2)
 
 		require.NoError(t, err, "should create second tx with no error")
 
-		var thirdTxWrap = TxWrapper{
+		var thirdTxWrap = transaction.Wrapper{
 			Tx: *thirdTx,
-			Meta: TxMeta{
+			Meta: transaction.Meta{
 				Seq: 2,
 				TS:  time.Now().UnixNano(),
 			},
@@ -284,7 +286,7 @@ func newCXOChainDB(
 			return nil, err
 		}
 	}
-	return chainDB, chainDB.RunTxService(func(tx *Transaction) error {
+	return chainDB, chainDB.RunTxService(func(tx *transaction.Transaction) error {
 		return nil
 	})
 }

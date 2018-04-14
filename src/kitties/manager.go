@@ -13,6 +13,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/kittycash/wallet/src/iko"
+	"github.com/kittycash/kittiverse/src/kitty"
 )
 
 type ManagerConfig struct {
@@ -54,7 +55,7 @@ func (m *Manager) Count(req *http.Request) (*http.Response, error) {
 }
 
 type EntryOut struct {
-	Entry *iko.KittyEntry `json:"entry"`
+	Entry *kitty.ReadableKitty `json:"entry"`
 }
 
 func (m *Manager) Entry(bc *iko.BlockChain, req *http.Request) (*http.Response, error) {
@@ -65,11 +66,11 @@ func (m *Manager) Entry(bc *iko.BlockChain, req *http.Request) (*http.Response, 
 		if err := json.Unmarshal(body, out); err != nil {
 			return nil, errRespCorrupt(err)
 		}
-		state, ok := bc.GetKittyState(out.Entry.ID)
+		state, ok := bc.GetKittyState(out.Entry.Info.ID)
 		if !ok {
-			return nil, errNoStateInfo(out.Entry.ID)
+			return nil, errNoStateInfo(out.Entry.Info.ID)
 		}
-		out.Entry.Address = state.Address.String()
+		out.Entry.Meta.Address = state.Address.String()
 		body, _ = json.Marshal(out)
 		return body, nil
 	})
@@ -78,7 +79,7 @@ func (m *Manager) Entry(bc *iko.BlockChain, req *http.Request) (*http.Response, 
 type EntriesOut struct {
 	TotalCount int64             `json:"total_count"`
 	PageCount  int               `json:"page_count"`
-	Entries    []*iko.KittyEntry `json:"entries"`
+	Entries    []*kitty.ReadableKitty `json:"entries"`
 }
 
 func (m *Manager) Entries(bc *iko.BlockChain, req *http.Request) (*http.Response, error) {
@@ -90,12 +91,12 @@ func (m *Manager) Entries(bc *iko.BlockChain, req *http.Request) (*http.Response
 			return nil, errRespCorrupt(err)
 		}
 		for i, entry := range out.Entries {
-			state, ok := bc.GetKittyState(entry.ID)
+			state, ok := bc.GetKittyState(entry.Info.ID)
 			if !ok {
-				return nil, errors.WithMessage(errNoStateInfo(entry.ID),
+				return nil, errors.WithMessage(errNoStateInfo(entry.Info.ID),
 					fmt.Sprintf("failed at index %d", i))
 			}
-			out.Entries[i].Address = state.Address.String()
+			out.Entries[i].Meta.Address = state.Address.String()
 		}
 		body, _ = json.Marshal(out)
 		return body, nil
@@ -147,7 +148,7 @@ func errURLTransFail(err error) error {
 		"failed to transform URL")
 }
 
-func errNoStateInfo(kittyID iko.KittyID) error {
+func errNoStateInfo(kittyID kitty.ID) error {
 	return errors.Errorf(
 		"no state information for kitty of ID '%d'", kittyID)
 }

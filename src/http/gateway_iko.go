@@ -13,6 +13,8 @@ import (
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 
 	"github.com/kittycash/wallet/src/iko"
+	"github.com/kittycash/kittiverse/src/kitty"
+	"github.com/kittycash/wallet/src/iko/transaction"
 )
 
 func ikoGateway(m *http.ServeMux, g *iko.BlockChain) error {
@@ -27,14 +29,14 @@ func ikoGateway(m *http.ServeMux, g *iko.BlockChain) error {
 }
 
 type KittyReply struct {
-	KittyID      iko.KittyID `json:"kitty_id"`
+	KittyID      kitty.ID `json:"kitty_id"`
 	Address      string      `json:"address"`
 	Transactions []string    `json:"transactions"`
 }
 
 func getKitty(g *iko.BlockChain) HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, p *Path) error {
-		kittyID, e := iko.KittyIDFromString(p.Base)
+		kittyID, e := kitty.IDFromString(p.Base)
 		if e != nil {
 			return sendJson(w, http.StatusBadRequest,
 				e.Error())
@@ -63,7 +65,7 @@ func getKitty(g *iko.BlockChain) HandlerFunc {
 
 type AddressReply struct {
 	Address      string       `json:"address"`
-	Kitties      iko.KittyIDs `json:"kitties"`
+	Kitties      kitty.IDs `json:"kitties"`
 	Transactions []string     `json:"transactions,omitempty"`
 }
 
@@ -94,7 +96,7 @@ func getAddress(g *iko.BlockChain) HandlerFunc {
 
 type BalanceReply struct {
 	KittyCount int                     `json:"kitty_count"`
-	Kitties    iko.KittyIDs            `json:"kitties"`
+	Kitties    kitty.IDs            `json:"kitties"`
 	PerAddress map[string]BalanceReply `json:"per_address,omitempty"`
 }
 
@@ -109,7 +111,7 @@ func getBalance(g *iko.BlockChain) HandlerFunc {
 				fmt.Sprintf("Error: %s", e.Error()))
 		}
 		var reply = BalanceReply{
-			Kitties: make([]iko.KittyID, len(addrs)),
+			Kitties: make([]kitty.ID, len(addrs)),
 		}
 		for _, addr := range addrs {
 			aState := g.GetAddressState(addr)
@@ -129,7 +131,7 @@ type TxMeta struct {
 }
 
 type Tx struct {
-	KittyID iko.KittyID `json:"kitty_id"`
+	KittyID kitty.ID `json:"kitty_id"`
 	In      string      `json:"in"`
 	Out     string      `json:"out"`
 	Sig     string      `json:"sig"`
@@ -140,7 +142,7 @@ type TxReply struct {
 	Tx   Tx     `json:"transaction"`
 }
 
-func NewTxReplyOfTransaction(txWrap iko.TxWrapper) TxReply {
+func NewTxReplyOfTransaction(txWrap transaction.Wrapper) TxReply {
 	return TxReply{
 		Meta: TxMeta{
 			Hash: txWrap.Tx.Hash().Hex(),
@@ -159,7 +161,7 @@ func NewTxReplyOfTransaction(txWrap iko.TxWrapper) TxReply {
 
 func getTx(g *iko.BlockChain) HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request, p *Path) error {
-		var txWrap iko.TxWrapper
+		var txWrap transaction.Wrapper
 		ok, e := SwitchReqQuery(w, r, RqHash, ReqQueryActions{
 			RqHash: func() (bool, error) {
 				txHash, e := cipher.SHA256FromHex(p.Base)
@@ -167,7 +169,7 @@ func getTx(g *iko.BlockChain) HandlerFunc {
 					return false, sendJson(w, http.StatusBadRequest,
 						e.Error())
 				}
-				if txWrap, e = g.GetTxOfHash(iko.TxHash(txHash)); e != nil {
+				if txWrap, e = g.GetTxOfHash(transaction.ID(txHash)); e != nil {
 					return false, sendJson(w, http.StatusNotFound,
 						e.Error())
 				}
@@ -232,7 +234,7 @@ func injectTx(g *iko.BlockChain) HandlerFunc {
 			return sendJson(w, http.StatusBadRequest,
 				e.Error())
 		}
-		var tx = new(iko.Transaction)
+		var tx = new(transaction.Transaction)
 		switch contentType := r.Header.Get("Content-Type"); contentType {
 		case "application/json":
 			req := new(InjectTxRequest)

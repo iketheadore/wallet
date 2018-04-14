@@ -1,17 +1,20 @@
 package iko
 
-import "testing"
+import (
+	"testing"
+	"github.com/kittycash/kittiverse/src/kitty"
+)
 
 func TestKittyIDs_Sort(t *testing.T) {
-	ids := KittyIDs{
-		KittyID(65),
-		KittyID(2),
-		KittyID(20),
-		KittyID(23),
-		KittyID(12),
-		KittyID(3),
-		KittyID(94),
-		KittyID(24),
+	ids := kitty.IDs{
+		kitty.ID(65),
+		kitty.ID(2),
+		kitty.ID(20),
+		kitty.ID(23),
+		kitty.ID(12),
+		kitty.ID(3),
+		kitty.ID(94),
+		kitty.ID(24),
 	}
 	ids.Sort()
 	t.Log(ids)
