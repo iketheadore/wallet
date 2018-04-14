@@ -1,0 +1,35 @@
+@import "src/theme/theme-variables";
+
+.connection-status .status {
+	width: 15px;
+	height: 15px;
+	border-radius: 50%;
+	background-color: purple;
+	display: inline-block;
+}
+
+.connection-status .status.connected {
+	background-color: rgb(126, 211, 33);
+}
+
+.connection-status .status.disconnected {
+	background-color: red;
+}
+
+.connection-status .status.connecting {
+	background-color: yellow;
+}
+
+.connection-status .status-description {
+	text-transform: uppercase;
+	color: $kittygray;
+}
+
+.connection-status .status-reconnecting {
+	font-size: 30%;
+}
+
+.connection-status .status-reconnecting a{
+	cursor: pointer;
+	text-decoration: underline;
+}

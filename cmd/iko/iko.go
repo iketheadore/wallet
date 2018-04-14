@@ -12,6 +12,8 @@ import (
 	"github.com/kittycash/wallet/src/iko"
 	"github.com/kittycash/wallet/src/rpc"
 	"github.com/kittycash/wallet/src/util"
+	"github.com/kittycash/kittiverse/src/kitty"
+	"github.com/kittycash/wallet/src/iko/transaction"
 )
 
 const (
@@ -20,12 +22,12 @@ const (
 )
 
 const (
-	fInit      = "init"
-	fRootPK    = "root-pk"
-	fRootSK    = "root-sk"
-	fRootNc    = "root-nc"
-	fGenTxPK   = "tx-gen-pk"
-	fTranTxPKs = "tx-tran-pks"
+	fInit     = "init"
+	fRootPK   = "root-pk"
+	fRootSK   = "root-sk"
+	fRootNc   = "root-nc"
+	fGenTxPK  = "tx-gen-pk"
+	fTranTxPK = "tx-tran-pk"
 
 	fTestMode       = "test"
 	fTestTxGenCount = "test-tx-gen-count"
@@ -81,7 +83,7 @@ func init() {
 			Usage: "public key that is trusted for generation transactions",
 		},
 		cli.StringSliceFlag{
-			Name:  Flag(fTranTxPKs, "tpk"),
+			Name:  Flag(fTranTxPK, "tpk"),
 			Usage: "public keys that are trusted for transfer transactions",
 		},
 		cli.BoolFlag{
@@ -149,7 +151,7 @@ func action(ctx *cli.Context) error {
 		rootSK     = cipher.MustSecKeyFromHex(ctx.String(fRootSK))
 		rootNonce  = ctx.Uint64(fRootNc)
 		txGenPK    = cipher.MustPubKeyFromHex(ctx.String(fGenTxPK))
-		txTransPKs = util.MustPubKeysFromStrings(ctx.StringSlice(fTranTxPKs))
+		txTransPKs = util.MustPubKeysFromStrings(ctx.StringSlice(fTranTxPK))
 		doInit     = ctx.Bool(fInit)
 
 		testMode  = ctx.Bool(fTestMode)
@@ -196,7 +198,7 @@ func action(ctx *cli.Context) error {
 	bcConfig := &iko.BlockChainConfig{
 		GenerationPK: txGenPK,
 		TransferPKs:  txTransPKs,
-		TxAction: func(tx *iko.Transaction) error {
+		TxAction: func(tx *transaction.Transaction) error {
 			// TODO: Implement web-socket.
 			return nil
 		},
@@ -223,9 +225,9 @@ func action(ctx *cli.Context) error {
 
 	// Prepare test data.
 	if testMode {
-		var tx *iko.Transaction
+		var tx *transaction.Transaction
 		for i := 0; i < testCount; i++ {
-			tx = iko.NewGenTx(iko.KittyID(i), testSK)
+			tx = transaction.NewGenTx(kitty.ID(i), testSK)
 
 			log.WithField("tx", tx.String()).
 				Debugf("test:tx_inject(%d)", i)

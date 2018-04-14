@@ -34,7 +34,7 @@ go run ${GOPATH}/src/github.com/kittycash/wallet/cmd/iko/iko.go \
 --root-sk=190030fed87872ff67015974d4c1432910724d0c0d4bfbd29d3b593dba936155 \
 --root-nc=1234 \
 --tx-gen-pk=03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753 \
---tx-tran-pks=03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753 \
+--tx-tran-pk=03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753 \
 --init=true \
 --test=true \
 --test-tx-gen-count=100 \

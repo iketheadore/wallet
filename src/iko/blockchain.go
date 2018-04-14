@@ -10,19 +10,21 @@ import (
 	"gopkg.in/sirupsen/logrus.v1"
 
 	"github.com/kittycash/wallet/src/util"
+	"github.com/kittycash/kittiverse/src/kitty"
+	"github.com/kittycash/wallet/src/iko/transaction"
 )
 
 type BlockChainConfig struct {
 	GenerationPK cipher.PubKey
 	TransferPKs  []cipher.PubKey
-	TxAction     TxAction
+	TxAction     transaction.Action
 
 	transferAddrs *util.Addresses
 }
 
 func (cc *BlockChainConfig) Prepare() error {
 	if cc.TxAction == nil {
-		cc.TxAction = func(tx *Transaction) error {
+		cc.TxAction = func(tx *transaction.Transaction) error {
 			return nil
 		}
 	}
@@ -128,28 +130,28 @@ func (bc *BlockChain) service() {
 	}
 }
 
-func (bc *BlockChain) GetHeadTx() (TxWrapper, error) {
+func (bc *BlockChain) GetHeadTx() (transaction.Wrapper, error) {
 	bc.mux.RLock()
 	defer bc.mux.RUnlock()
 
 	return bc.chain.Head()
 }
 
-func (bc *BlockChain) GetTxOfHash(txHash TxHash) (TxWrapper, error) {
+func (bc *BlockChain) GetTxOfHash(txHash transaction.ID) (transaction.Wrapper, error) {
 	bc.mux.RLock()
 	defer bc.mux.RUnlock()
 
 	return bc.chain.GetTxOfHash(txHash)
 }
 
-func (bc *BlockChain) GetTxOfSeq(seq uint64) (TxWrapper, error) {
+func (bc *BlockChain) GetTxOfSeq(seq uint64) (transaction.Wrapper, error) {
 	bc.mux.RLock()
 	defer bc.mux.RUnlock()
 
 	return bc.chain.GetTxOfSeq(seq)
 }
 
-func (bc *BlockChain) GetKittyState(kittyID KittyID) (*KittyState, bool) {
+func (bc *BlockChain) GetKittyState(kittyID kitty.ID) (*KittyState, bool) {
 	bc.mux.RLock()
 	defer bc.mux.RUnlock()
 
@@ -163,7 +165,7 @@ func (bc *BlockChain) GetAddressState(address cipher.Address) *AddressState {
 	return bc.state.GetAddressState(address)
 }
 
-func (bc *BlockChain) InjectTx(tx *Transaction) (*TxMeta, error) {
+func (bc *BlockChain) InjectTx(tx *transaction.Transaction) (*transaction.Meta, error) {
 	bc.mux.Lock()
 	defer bc.mux.Unlock()
 
@@ -172,13 +174,13 @@ func (bc *BlockChain) InjectTx(tx *Transaction) (*TxMeta, error) {
 		seq = txWrap.Meta.Seq + 1
 	}
 
-	meta := TxMeta{
+	meta := transaction.Meta{
 		Seq: seq,
 		TS:  time.Now().UnixNano(),
 	}
 
 	return &meta, bc.chain.AddTx(
-		TxWrapper{
+		transaction.Wrapper{
 			Tx:   *tx,
 			Meta: meta,
 		},
@@ -187,9 +189,9 @@ func (bc *BlockChain) InjectTx(tx *Transaction) (*TxMeta, error) {
 }
 
 func MakeTxChecker(bc *BlockChain, disableTranCheck ...bool) TxChecker {
-	return func(tx *Transaction) error {
+	return func(tx *transaction.Transaction) error {
 
-		var unspent *Transaction
+		var unspent *transaction.Transaction
 		if tempHash, ok := bc.state.GetKittyUnspentTx(tx.KittyID); ok {
 			temp, e := bc.chain.GetTxOfHash(tempHash)
 			if e != nil {
@@ -235,7 +237,7 @@ func MakeTxChecker(bc *BlockChain, disableTranCheck ...bool) TxChecker {
 
 type PaginatedTransactions struct {
 	TotalPageCount uint64
-	Transactions   []TxWrapper
+	Transactions   []transaction.Wrapper
 }
 
 // totalPageCount is a helper function for calculating the number of pages given

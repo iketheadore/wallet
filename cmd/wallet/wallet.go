@@ -16,6 +16,7 @@ import (
 	"github.com/kittycash/wallet/src/kitties"
 	"github.com/kittycash/wallet/src/util"
 	"github.com/kittycash/wallet/src/wallet"
+	"github.com/kittycash/wallet/src/iko/transaction"
 )
 
 const (
@@ -234,7 +235,7 @@ func action(ctx *cli.Context) error {
 	// Prepare blockchain config.
 	bcConfig := &iko.BlockChainConfig{
 		GenerationPK: genPK,
-		TxAction: func(tx *iko.Transaction) error {
+		TxAction: func(tx *transaction.Transaction) error {
 			return nil
 		},
 	}

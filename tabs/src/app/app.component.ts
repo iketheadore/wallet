@@ -3,6 +3,8 @@ import {Http} from '@angular/http';
 import {Observable} from 'rxjs/Observable';
 import 'rxjs/add/operator/map'
 import 'rxjs/add/operator/catch'
+import { Component, HostListener } from '@angular/core';
+import { ErrorScreenService } from './error_screen/error_screen.service';
 
 @Component({
   selector: 'app-root',
@@ -17,6 +19,7 @@ export class AppComponent {
 
   constructor(
     private http: Http,
+    private errorScreenService: ErrorScreenService, 
   ) {
     // TODO(therealssj): set the version from somewhere
     this.version = "0.0.1";
@@ -51,5 +54,17 @@ export class AppComponent {
           this.updateAvailable = this.higherVersion(this.releaseVersion, this.version);
         }
       });
+  currentTab : string = 'marketplace';
+    
+  @HostListener('document:showGlobalError', ['$event'])
+	  onError(ev:any) {
+	  	ev.preventDefault();
+	    // send the error to the error screen service
+	    this.errorScreenService.setError(ev.detail.message);
+	  }
+
+  doRefresh() {
+    let event = new CustomEvent('refreshButtonClick', { cancelable: true, detail: {} });
+    document.dispatchEvent(event);
   }
 }

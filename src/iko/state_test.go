@@ -5,12 +5,14 @@ import (
 
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/stretchr/testify/require"
+	"github.com/kittycash/kittiverse/src/kitty"
+	"github.com/kittycash/wallet/src/iko/transaction"
 )
 
 func runStateDBTest(t *testing.T, stateDB StateDB) {
 	t.Run("GetKittyState_NoKittiesAvailable", func(t *testing.T) {
 		// since we don't have any kitties yet, GetKittyState should never give us a non-nil response at this point
-		kittyState, kittyExists := stateDB.GetKittyState(KittyID(0))
+		kittyState, kittyExists := stateDB.GetKittyState(kitty.ID(0))
 
 		require.Nil(t, kittyState, "No kitties available yet")
 		require.False(t, kittyExists, "No kitties available yet")
@@ -40,9 +42,9 @@ func runStateDBTest(t *testing.T, stateDB StateDB) {
 
 	t.Run("AddKitty_Success", func(t *testing.T) {
 		// let's add some kitties
-		txHash := TxHash(cipher.SumSHA256([]byte{3, 4, 5, 6}))
-		kID := KittyID(3)
-		noSuchKID := KittyID(6)
+		txHash := transaction.ID(cipher.SumSHA256([]byte{3, 4, 5, 6}))
+		kID := kitty.ID(3)
+		noSuchKID := kitty.ID(6)
 
 		err := stateDB.AddKitty(txHash, kID, anAddress)
 
@@ -62,13 +64,13 @@ func runStateDBTest(t *testing.T, stateDB StateDB) {
 			require.True(t, kittyExists, "Successfully fetched KittyState")
 
 			require.Equal(t, kittyState.Address, anAddress, "Address matches up")
-			require.Equal(t, kittyState.Transactions, TxHashes{txHash}, "Transaction hashes match up")
+			require.Equal(t, kittyState.Transactions, transaction.IDs{txHash}, "Transaction hashes match up")
 		})
 
 		t.Run("GetAddressState_Success", func(t *testing.T) {
 			// in preparation, let's add another kitty
-			secondTxHash := TxHash(cipher.SumSHA256([]byte{7, 8, 9, 10}))
-			secondKID := KittyID(2)
+			secondTxHash := transaction.ID(cipher.SumSHA256([]byte{7, 8, 9, 10}))
+			secondKID := kitty.ID(2)
 			err := stateDB.AddKitty(secondTxHash, secondKID, anAddress)
 
 			require.Nil(t, err, "Adding a second kitty should succeed")
@@ -78,14 +80,14 @@ func runStateDBTest(t *testing.T, stateDB StateDB) {
 
 			require.NotNil(t, addressState, "GetAddressState always returns a non-nil result")
 
-			require.Equal(t, addressState.Kitties, KittyIDs{secondKID, kID}, "Address should have two KittyIDs in ascending order")
+			require.Equal(t, addressState.Kitties, kitty.IDs{secondKID, kID}, "Address should have two KittyIDs in ascending order")
 
 			require.Contains(t, addressState.Transactions, txHash, "Address should have both transactions")
 			require.Contains(t, addressState.Transactions, secondTxHash, "Address should have both transactions")
 		})
 
 		// now let's shuffle some kitties around
-		secondTxHash := TxHash(cipher.SumSHA256([]byte{7, 8, 9, 10}))
+		secondTxHash := transaction.ID(cipher.SumSHA256([]byte{7, 8, 9, 10}))
 		anotherAddress := cipher.AddressFromSecKey(
 			cipher.SecKey([32]byte{
 				7, 8, 9, 10,

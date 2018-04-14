@@ -20,11 +20,11 @@
     </div>
     <div class="col-2 offset-2 actions-bar pt-3">
       <div class="mx-3" style="display: inline-block;">
-        <div class="status connected"></div> <span class="status-description">Connected</span>
+        <connection-status></connection-status>
       </div>
     </div>
     <div class="col-1 actions-bar pt-3">
-      <a><i class="fa fa-redo fa-lg px-2 pull-right"></i></a>
+      <a (click)="doRefresh()"><i class="fa fa-redo fa-lg px-2 pull-right"></i></a>
     </div>
   </div>
   <div class="row">
@@ -34,7 +34,7 @@
   </div>
   <div class="row" [ngSwitch]="currentTab">
     <div class="col-12" *ngSwitchCase="'wallet'">
-      <h1>Wallet stuff here</h1>
+      <app-wallet-root></app-wallet-root>
     </div>
     <div class="col-12" *ngSwitchCase="'marketplace'">
       <marketplace-root></marketplace-root>
@@ -45,3 +45,4 @@
     </div>
   </div>
 </div>
+<error-screen></error-screen>
