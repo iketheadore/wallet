@@ -9,9 +9,10 @@ import (
 	"github.com/skycoin/skycoin/src/cipher"
 	"gopkg.in/sirupsen/logrus.v1"
 
-	"github.com/kittycash/wallet/src/util"
 	"github.com/kittycash/kittiverse/src/kitty"
+
 	"github.com/kittycash/wallet/src/iko/transaction"
+	"github.com/kittycash/wallet/src/util"
 )
 
 type BlockChainConfig struct {

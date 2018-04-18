@@ -3,9 +3,9 @@ package transaction
 import (
 	"testing"
 
+	"github.com/kittycash/kittiverse/src/kitty"
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/stretchr/testify/require"
-	"github.com/kittycash/kittiverse/src/kitty"
 )
 
 func runTransactionVerifyTest(t *testing.T) {

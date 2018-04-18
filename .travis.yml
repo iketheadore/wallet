@@ -1,25 +1,35 @@
 sudo: required
 dist: trusty
 language: go
+
 go:
-  - "1.9.x"
-  - "1.10.x"
+- 1.9.x
+- 1.10.x
 
 matrix:
   include:
-    - os: linux
-    - os: osx
-      # Do not start osx build for PR
-      if: type != pull_request
+  - os: linux
+
+env:
+  global:
+  - GITHUB_USER=kittycashrobot
+  # GITHUB_KEY=...
+  - secure: E+il6j3ZsZ1Yy0Tg0MjDDQoQl4a32Jo73tdc+BM0WC04IBMBacL58WNwTANHNPj+5z2mIByfy8WiFfdA50PkIElgBi+TQn7eWjBOK7S69t/FXCso/FFnsDGsVtaWuEgR+A3p+pEO5jLgE2umoZayiPVYDgOR8Gzt/aiOTWA+kkc8aK15/zYeCgam9C1wspTcX3Fq/qm7own1v9yOuMLdByTwx8pfRyjSpMXP4bfa2MNiXvqXhN0GDUaXmhzZeoVCJoCd8MxEX7CLcayDqqGC6mTYVL02SJ9IfQVndZYNZy55yDIIURRKhC5bQPU2VD0PZ3A1te6AB+rirklKrlsgtx2Kfi5ND4WIlWepSaaZ0yDWrrNM6MDVGDfKsuM6XW78kI4wAtwYOuCCDC5d4Jz/ZbfVgyBkj6sTQGpkpHIOQ5QiZE5FY2aXufB4QNjriipTiGjSnemuTPfRs/VQ4/RsBejRYe9hFrHMpRQSiX5oWhg3lt7CJvBbYS+T21DRuvp23Yu/KEy1vTJDsBl7EwB4040d4EN8JSKLKEijNMTnh8rJ1SZTr8mYAQH+0Z+0Gptm9husE88xJDaIYlXF7kOwuFVyUqXhUc6kBuKwdOB4ETrhsBfUUiS8QouIn7BVGxwPW4tZh15/ttU6scdc2g2VCKSu46ILdsODBL5+4OPhfoQ=
 
 install:
-  # for test
-  - go get -t ./...
-  - make install-linters
+- npm install -g @angular/cli
+- echo -e "machine github.com\n  login $GITHUB_USER\n  password $GITHUB_KEY\n" > ~/.netrc
+- curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+- dep ensure -v
+- go get -t ./...
+- go get github.com/mitchellh/gox
+- make install-linters
 
 script:
-  - make lint
-  - make test
+- make lint
+- make test
+# TODO: get this working
+# - cd electron && ./build.sh
 
 notifications:
   email: false

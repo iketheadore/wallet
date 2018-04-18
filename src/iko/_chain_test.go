@@ -10,8 +10,9 @@ import (
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/stretchr/testify/require"
 
-	"github.com/kittycash/wallet/src/cxo"
 	"github.com/kittycash/kittiverse/src/kitty"
+
+	"github.com/kittycash/wallet/src/cxo"
 	"github.com/kittycash/wallet/src/iko/transaction"
 )
 
