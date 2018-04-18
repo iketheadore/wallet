@@ -2,6 +2,7 @@ package iko
 
 import (
 	"testing"
+
 	"github.com/kittycash/kittiverse/src/kitty"
 )
 

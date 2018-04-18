@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/kittycash/kittiverse/src/kitty"
+	"github.com/skycoin/skycoin/src/cipher"
+
 	"github.com/kittycash/wallet/src/iko/transaction"
 )
 

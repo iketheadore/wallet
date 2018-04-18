@@ -5,8 +5,9 @@ import (
 
 	"github.com/skycoin/skycoin/src/cipher"
 
-	"github.com/kittycash/wallet/src/iko"
 	"github.com/kittycash/kittiverse/src/kitty"
+
+	"github.com/kittycash/wallet/src/iko"
 	"github.com/kittycash/wallet/src/iko/transaction"
 )
 

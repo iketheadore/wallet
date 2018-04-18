@@ -12,8 +12,9 @@ import (
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 
-	"github.com/kittycash/wallet/src/iko"
 	"github.com/kittycash/kittiverse/src/kitty"
+
+	"github.com/kittycash/wallet/src/iko"
 	"github.com/kittycash/wallet/src/iko/transaction"
 )
 
@@ -30,8 +31,8 @@ func ikoGateway(m *http.ServeMux, g *iko.BlockChain) error {
 
 type KittyReply struct {
 	KittyID      kitty.ID `json:"kitty_id"`
-	Address      string      `json:"address"`
-	Transactions []string    `json:"transactions"`
+	Address      string   `json:"address"`
+	Transactions []string `json:"transactions"`
 }
 
 func getKitty(g *iko.BlockChain) HandlerFunc {
@@ -64,9 +65,9 @@ func getKitty(g *iko.BlockChain) HandlerFunc {
 }
 
 type AddressReply struct {
-	Address      string       `json:"address"`
+	Address      string    `json:"address"`
 	Kitties      kitty.IDs `json:"kitties"`
-	Transactions []string     `json:"transactions,omitempty"`
+	Transactions []string  `json:"transactions,omitempty"`
 }
 
 func getAddress(g *iko.BlockChain) HandlerFunc {
@@ -96,7 +97,7 @@ func getAddress(g *iko.BlockChain) HandlerFunc {
 
 type BalanceReply struct {
 	KittyCount int                     `json:"kitty_count"`
-	Kitties    kitty.IDs            `json:"kitties"`
+	Kitties    kitty.IDs               `json:"kitties"`
 	PerAddress map[string]BalanceReply `json:"per_address,omitempty"`
 }
 
@@ -132,9 +133,9 @@ type TxMeta struct {
 
 type Tx struct {
 	KittyID kitty.ID `json:"kitty_id"`
-	In      string      `json:"in"`
-	Out     string      `json:"out"`
-	Sig     string      `json:"sig"`
+	In      string   `json:"in"`
+	Out     string   `json:"out"`
+	Sig     string   `json:"sig"`
 }
 
 type TxReply struct {

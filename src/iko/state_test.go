@@ -3,9 +3,10 @@ package iko
 import (
 	"testing"
 
+	"github.com/kittycash/kittiverse/src/kitty"
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/stretchr/testify/require"
-	"github.com/kittycash/kittiverse/src/kitty"
+
 	"github.com/kittycash/wallet/src/iko/transaction"
 )
 

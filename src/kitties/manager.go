@@ -12,8 +12,9 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/kittycash/wallet/src/iko"
 	"github.com/kittycash/kittiverse/src/kitty"
+
+	"github.com/kittycash/wallet/src/iko"
 )
 
 type ManagerConfig struct {
@@ -77,8 +78,8 @@ func (m *Manager) Entry(bc *iko.BlockChain, req *http.Request) (*http.Response, 
 }
 
 type EntriesOut struct {
-	TotalCount int64             `json:"total_count"`
-	PageCount  int               `json:"page_count"`
+	TotalCount int64                  `json:"total_count"`
+	PageCount  int                    `json:"page_count"`
 	Entries    []*kitty.ReadableKitty `json:"entries"`
 }
 

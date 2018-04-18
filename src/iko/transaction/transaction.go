@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/kittycash/kittiverse/src/kitty"
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
-	"github.com/kittycash/kittiverse/src/kitty"
 )
 
 type ID cipher.SHA256

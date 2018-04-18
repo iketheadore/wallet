@@ -13,10 +13,10 @@ import (
 	"github.com/kittycash/wallet/src/cxo"
 	"github.com/kittycash/wallet/src/http"
 	"github.com/kittycash/wallet/src/iko"
+	"github.com/kittycash/wallet/src/iko/transaction"
 	"github.com/kittycash/wallet/src/kitties"
 	"github.com/kittycash/wallet/src/util"
 	"github.com/kittycash/wallet/src/wallet"
-	"github.com/kittycash/wallet/src/iko/transaction"
 )
 
 const (
