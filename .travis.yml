@@ -20,6 +20,8 @@ env:
 
 install:
 - echo -e "machine github.com\n  login $GITHUB_USER\n  password $GITHUB_KEY\n" > ~/.netrc
+- curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
+- dep ensure -v
 - go get -t ./...
 - make install-linters
 
