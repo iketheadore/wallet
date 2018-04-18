@@ -9,8 +9,6 @@ go:
 matrix:
   include:
   - os: linux
-  - os: osx
-    if: type != pull_request
 
 env:
   global:
