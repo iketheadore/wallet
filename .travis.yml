@@ -20,6 +20,7 @@ cache:
   - tabs/node_modules
   - electron/node_modules
   - electron/src/node_modules
+  - $HOME/.cache/electron-builder/
 
 env:
   global:
