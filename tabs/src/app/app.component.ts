@@ -57,7 +57,7 @@ export class AppComponent {
 
   @HostListener('document:showGlobalError', ['$event'])
     onError(ev:any) {
-    	ev.preventDefault();
+      ev.preventDefault();
       // send the error to the error screen service
       this.errorScreenService.setError(ev.detail.message);
     }
