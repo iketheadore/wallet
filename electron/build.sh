@@ -4,6 +4,9 @@ set -e -o pipefail
 #set electron envrionment variabls
 export ELECTRON_FORCE_WINDOW_MENU_BAR=true
 
+#create output directory
+mkdir $STL_OUTPUT
+
 # Builds both the electron, marketplace and standalone releases
 
 . build-conf.sh "$1"

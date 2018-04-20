@@ -9,6 +9,6 @@ SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 pushd "$SCRIPTDIR" >/dev/null
 
 cd ../tabs/
-yarn
-yarn run build
+npm install
+npm run build
 popd >/dev/null
