@@ -8,6 +8,8 @@
     "electron-debug": "^1.0.1",
     "electron-log": "^1.2.2",
     "express": "^4.16.2",
-    "express-http-proxy": "^1.1.0"
+    "express-http-proxy": "^1.1.0",
+    "electron": "^1.8.3",
+    "electron-builder": "^19.55.0"
   }
 }
