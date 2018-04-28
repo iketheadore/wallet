@@ -57,3 +57,12 @@ go run ${GOPATH}/src/github.com/kittycash/wallet/cmd/wallet/wallet.go \
 --http-address="127.0.0.1:6148" \
 --messenger-addresses=":8880"
 ```
+
+## Run Wallet
+
+```bash
+go run ${GOPATH}/src/github.com/kittycash/wallet/cmd/wallet/wallet.go \
+--cxo-address="127.0.0.1:6140" \
+--http-address="127.0.0.1:6148" \
+--messenger-addresses=":8880"
+```
