@@ -11,3 +11,61 @@
 
 // Theme customization
 @import "theme/theme";
+
+$base-size: 16px;
+
+.colored-frame {
+  background: linear-gradient(to bottom, #FF6889, #FA8265);
+  padding: 50px;
+}
+
+.cdk-overlay-container {
+	position: fixed;
+	top: 10%;
+	left: 0;
+	right: 0;
+  z-index: 2;
+}
+
+.cdk-overlay-pane {
+	margin: 0 auto;
+	background-color: white;
+}
+
+.mat-checkbox-layout .mat-checkbox-label {
+    line-height: 24px;
+}
+
+.mat-checkbox-label {
+    color: #9B9B9B;
+    margin-left: 16px;
+    white-space: normal !important;
+}
+
+
+.field {
+  margin-bottom: $base-size * 2;
+
+  label {
+    color: #4A4A4A;
+    display: block;
+    font-size: $base-size;
+    margin-bottom: $base-size;
+  }
+
+  input {
+    border: 1px solid $kittyred;
+    border-radius: $base-size / 4;
+    box-sizing: border-box;
+    color: black;
+    display: block;
+    font-size: $base-size;
+    line-height: $base-size * 3;
+    padding: 0 $base-size;
+    width: 100%;
+  }
+}
+
+button {
+  background-color: white;
+}

@@ -178,6 +178,12 @@ function createWindow(url) {
     webContents.setLayoutZoomLevelLimits(0, 0);
   });
 
+  webContents.on('new-window', function(event, url){
+    event.preventDefault();
+    let open = require("open");
+    open(url);
+  });
+
   // patch out eval
   win.eval = global.eval;
 
