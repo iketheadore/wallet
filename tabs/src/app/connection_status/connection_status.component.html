@@ -1,4 +1,4 @@
 <div class="connection-status">
   <div class="status" [ngClass]="{'connected': status.code === 0, 'disconnected': status.code === 1, 'connecting': status.code === 2, 'unkown': status.code === 3}"></div> <span class="status-description">{{status.name}}</span>
-  <span class="status-reconnecting">Reconnecting in {{status.retry_time}}s - <a (click)="doReconnect()">Reconnect</a></span>
+  <span class="status-reconnecting"><a (click)="doReconnect()">Reconnect ({{status.retry_time}}s)</a></span>
 </div>

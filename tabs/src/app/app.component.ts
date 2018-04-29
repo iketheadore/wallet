@@ -4,6 +4,8 @@ import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map'
 import 'rxjs/add/operator/catch'
 import { ErrorScreenService } from './error_screen/error_screen.service';
+import { MatDialog } from '@angular/material';
+import { SettingsComponent } from './settings/settings.component';
 
 @Component({
   selector: 'app-root',
@@ -14,14 +16,15 @@ export class AppComponent {
   version: string;
   releaseVersion: string;
   updateAvailable: boolean;
-  currentTab = 'marketplace';
+  currentTab = 'wallet';
 
   constructor(
     private http: Http,
     private errorScreenService: ErrorScreenService, 
+    public dialog: MatDialog
   ) {
     // TODO(therealssj): set the version from somewhere
-    this.version = "0.0.1";
+    this.version = "0.0.0";
     this.updateAvailable = false;
     this.retrieveReleaseVersion();
   }
@@ -65,5 +68,21 @@ export class AppComponent {
   doRefresh() {
     let event = new CustomEvent('refreshButtonClick', { cancelable: true, detail: {} });
     document.dispatchEvent(event);
+  }
+
+  doOpenSettings(){
+    this.dialog.open(SettingsComponent, { width: '700px' });
+  }
+
+  toggleBar() {
+    let sidebar = document.getElementById("wallet_sidebar");
+    if (sidebar.style.display == "none")
+    {
+      sidebar.style.display = "block";
+    }
+    else
+    {
+      sidebar.style.display = "none";
+    }
   }
 }
