@@ -100,10 +100,6 @@ function startKittyCash() {
 })()
 
   var args = [
-    '--test=true',
-    '--test-gen-pk=03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753',
-    '--test-root-pk=03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753',
-    '--test-root-nonce=1234',
     '--cxo-address=127.0.0.1:6140',
     '--http-address=127.0.0.1:6148',
     '--messenger-addresses=:8880',
