@@ -23,8 +23,14 @@ export class AppComponent {
     private errorScreenService: ErrorScreenService, 
     public dialog: MatDialog
   ) {
-    // TODO(therealssj): set the version from somewhere
+
+
     this.version = "0.0.0";
+    if (window['require'])
+    {
+      this.version = window['require']('electron').remote.app.getVersion();
+    }
+    
     this.updateAvailable = false;
     this.retrieveReleaseVersion();
   }
