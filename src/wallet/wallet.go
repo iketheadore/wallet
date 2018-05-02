@@ -20,6 +20,10 @@ type (
 	Extension string
 )
 
+var (
+	ErrInvalidPassword = errors.New("invalid password")
+)
+
 const (
 	// Version determines the wallet file's version.
 	Version uint64 = 0

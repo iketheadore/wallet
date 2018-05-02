@@ -6,6 +6,7 @@ import (
 	"os"
 	"sort"
 	"sync"
+	"fmt"
 )
 
 var (
@@ -139,6 +140,12 @@ func (m *Manager) DeleteWallet(label string) error {
 // Addresses ensures that wallet has at least the number of address entries.
 func (m *Manager) DisplayWallet(label, password string, addresses int) (*FloatingWallet, error) {
 	defer m.lock()()
+
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Printf("Failed to load wallet, due to error: '%s', wrong password given?\n", r)
+		}
+	}()
 
 	switch w, e := m.getWallet(label); e {
 	case nil:

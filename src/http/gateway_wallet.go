@@ -152,6 +152,9 @@ func getWallet(g *wallet.Manager) HandlerFunc {
 				if e != nil {
 					return false, sendJson(w, http.StatusBadRequest,
 						fmt.Sprintf("Error: %v", e))
+				} else if fw == nil {
+					return false, sendJson(w, http.StatusBadRequest,
+						fmt.Sprintf("Error: %v", wallet.ErrInvalidPassword))
 				}
 				return true, sendJson(w, http.StatusOK, fw)
 			},
