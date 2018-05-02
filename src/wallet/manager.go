@@ -45,7 +45,7 @@ func (m *Manager) Refresh() error {
 			return
 		}
 		var wallet *Wallet
-		if prefix.Encrypted() {
+		if prefix.Encrypted() == false {
 			var e error
 			if wallet, e = LoadFloatingWallet(f, label, ""); e != nil {
 				return
