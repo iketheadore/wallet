@@ -8,12 +8,6 @@
   version = "v1.1.0"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/google/btree"
-  packages = ["."]
-  revision = "e89373fe6b4a7413d7acd6da1725b83ef713e6e4"
-
-[[projects]]
   branch = "develop"
   name = "github.com/kittycash/kittiverse"
   packages = [
@@ -23,28 +17,10 @@
   revision = "8e577025b5030ed1a0cffde25d287fa2f94c6dec"
 
 [[projects]]
-  name = "github.com/klauspost/cpuid"
-  packages = ["."]
-  revision = "ae7887de9fa5d2db4eaa8174a7eff2c1ac00f2da"
-  version = "v1.1"
-
-[[projects]]
-  name = "github.com/klauspost/reedsolomon"
-  packages = ["."]
-  revision = "6bb6130ff6a76a904c1841707d65603aec9cc288"
-  version = "v1.6"
-
-[[projects]]
   name = "github.com/op/go-logging"
   packages = ["."]
   revision = "b2cb9fa56473e98db8caba80237377e83fe44db5"
   version = "v1"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/petar/GoLLRB"
-  packages = ["llrb"]
-  revision = "53be0d36a84c2a886ca057d34b6aa4468df9ccb4"
 
 [[projects]]
   name = "github.com/pkg/errors"
@@ -57,25 +33,6 @@
   packages = ["difflib"]
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
   version = "v1.0.0"
-
-[[projects]]
-  name = "github.com/sirupsen/logrus"
-  packages = ["."]
-  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
-  version = "v1.0.5"
-
-[[projects]]
-  name = "github.com/skycoin/net"
-  packages = [
-    "client",
-    "conn",
-    "factory",
-    "msg",
-    "server",
-    "skycoin-messenger/factory",
-    "util"
-  ]
-  revision = "4bcee2eb0c36a33dd22757247c83ab7e78c50834"
 
 [[projects]]
   name = "github.com/skycoin/skycoin"
@@ -136,6 +93,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "27712816a6bf586baa2f9c8dbcea70b6596ec18cb8d6df4dfde51466a94e68b2"
+  inputs-digest = "3e1f61d1580594b9d37aa9640ef0d2fd0313217e1669172b0eed57f5325dd0aa"
   solver-name = "gps-cdcl"
   solver-version = 1
