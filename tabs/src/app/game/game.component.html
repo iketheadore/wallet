@@ -1,5 +1,6 @@
 <div class="px-5">
-	<iframe id="gameFrame" [src]="gameUrl | safe" frameBorder="0" scrolling="no"></iframe>
+
+	<iframe id="gameFrame" [src]="gameUrl | safe" frameBorder="0" scrolling="no" [style.height.px]="iframeHeight"></iframe>
 	<div class="row">
       <div class="col-6">
         <h2>Top scores for {{span}}</h2>

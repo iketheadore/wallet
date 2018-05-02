@@ -1,30 +1,33 @@
 <div class="container tab">
   <div class="row py-4">
-    <div class="col-12 text-center">
-      <img class="img-fluid" src="assets/tab-logo.svg">
+    <div class="col-12 text-center header">
+      <img class="img-fluid" src="assets/round-logo.svg" style="width: 50px;">
+      <h4>KittyCash</h4>
     </div>
   </div>
   <div class="row">
     <div class="col-6">
       <ul class="nav">
+        <li class="nav-item">
+          <a class="nav-link" *ngIf="currentTab == 'wallet'" (click)="toggleBar()"><img src="assets/hamburger.svg"></a>
+        </li>
         <li class="nav-item" [ngClass]="{'active': currentTab == 'wallet'}">
-          <a class="nav-link" (click)="currentTab = 'wallet'">Wallet</a>
+          <a class="nav-link" (click)="currentTab = 'wallet'">Kittery</a>
         </li>
         <li class="nav-item" [ngClass]="{'active': currentTab == 'marketplace'}">
-          <a class="nav-link" (click)="currentTab = 'marketplace'">Marketplace</a>
+          <a class="nav-link" disabled="disabled">Marketplace</a>
         </li>
         <li class="nav-item" [ngClass]="{'active': currentTab == 'play'}">
           <a class="nav-link" (click)="currentTab = 'play'">Play</a>
         </li>
       </ul>
     </div>
-    <div class="col-2 offset-2 actions-bar pt-3">
-      <div class="mx-3" style="display: inline-block;">
+    <div class="col-6 actions-bar pt-3">
+      <a class="float-right px-3" (click)="doOpenSettings()"><i class="fa fa-sliders-h fa-lg"></i></a>
+      <a class="float-right px-3" (click)="doRefresh()"><i class="fa fa-redo fa-lg"></i></a>
+      <div class="mx-3 float-right" style="display: inline-block;">
         <connection-status></connection-status>
       </div>
-    </div>
-    <div class="col-1 actions-bar pt-3">
-      <a (click)="doRefresh()"><i class="fa fa-redo fa-lg px-2 pull-right"></i></a>
     </div>
   </div>
   <div class="row">
