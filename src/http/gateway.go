@@ -8,17 +8,17 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/kittycash/wallet/src/connectivity"
 	"github.com/kittycash/wallet/src/iko"
 	"github.com/kittycash/wallet/src/kitties"
 	"github.com/kittycash/wallet/src/wallet"
+	"github.com/kittycash/wallet/src/dummy"
 )
 
 type Gateway struct {
 	IKO    *iko.BlockChain
 	Wallet *wallet.Manager
 	Market *kitties.Manager
-	Conn   connectivity.Connectivity
+	Conn   *dummy.Dummy
 }
 
 func (g *Gateway) host(mux *http.ServeMux) error {
