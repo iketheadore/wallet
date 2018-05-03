@@ -9,11 +9,10 @@ import (
 )
 
 func initTempDir(t *testing.T) func() {
-	dir, e := ioutil.TempDir("", "kittycash_test")
-	require.Empty(t, e, "failed to create temp dir")
+	dir, err := ioutil.TempDir("", "kittycash_test")
+	require.Empty(t, err)
 
-	e = SetRootDir(dir)
-	require.Empty(t, e, "failed to set root dir")
+	require.Empty(t, SetRootDir(dir))
 
 	return func() {
 		os.RemoveAll(dir)
@@ -21,20 +20,19 @@ func initTempDir(t *testing.T) func() {
 }
 
 func saveWallet(t *testing.T, options *Options) {
-	fWallet, e := NewFloatingWallet(options)
-	require.Empty(t, e, "failed to create floating wallet")
+	fWallet, err := NewFloatingWallet(options)
+	require.Empty(t, err, "failed to create floating wallet")
 
-	e = fWallet.Save()
-	require.Empty(t, e, "failed to save wallet")
+	require.Empty(t, fWallet.Save(), "failed to save wallet")
 }
 
 func loadWallet(t *testing.T, label, pw string) *Wallet {
-	f, e := os.Open(LabelPath(label))
-	require.Nilf(t, e, "failed to open wallet of label '%s'", label)
+	f, err := os.Open(LabelPath(label))
+	require.Nilf(t, err, "failed to open wallet of label '%s'", label)
 	defer f.Close()
 
-	fw, e := LoadFloatingWallet(f, label, pw)
-	require.Empty(t, e, "failed to load floating wallet")
+	fw, err := LoadFloatingWallet(f, label, pw)
+	require.Empty(t, err, "failed to load floating wallet")
 
 	return fw
 }
@@ -43,17 +41,7 @@ func TestFloatingWallet_Save(t *testing.T) {
 	rmTemp := initTempDir(t)
 	defer rmTemp()
 
-	run := func(o *Options) {
-		saveWallet(t, o)
-		fw := loadWallet(t, o.Label, o.Password)
-		m := fw.Meta
-		require.Equal(t, m.Password, o.Password, "passwords do not match")
-		require.Equal(t, m.Encrypted, o.Encrypted, "encrypted does not match")
-		require.Equal(t, m.Label, o.Label, "label does not match")
-		require.Equal(t, m.Seed, o.Seed, "seed does not match")
-	}
-
-	cases := []Options{
+	cases := []*Options{
 		{
 			Label:     "wallet0",
 			Seed:      "secure seed",
@@ -69,7 +57,13 @@ func TestFloatingWallet_Save(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		run(&c)
+		saveWallet(t, c)
+		fw := loadWallet(t, c.Label, c.Password)
+		m := fw.Meta
+		require.Equal(t, m.Password, c.Password)
+		require.Equal(t, m.Encrypted, c.Encrypted)
+		require.Equal(t, m.Label, c.Label)
+		require.Equal(t, m.Seed, c.Seed)
 	}
 
 }

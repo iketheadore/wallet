@@ -8,8 +8,9 @@ import (
 	"time"
 
 	"github.com/skycoin/skycoin/src/cipher"
-	"github.com/skycoin/skycoin/src/cipher/encoder"
 	"github.com/skycoin/skycoin/src/util/file"
+	"fmt"
+	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 type (
@@ -39,6 +40,7 @@ const (
 	<<< TYPES >>>
 */
 
+// FloatingMeta represents the wallet meta that is not saved, but displayed in api.
 type FloatingMeta struct {
 	Version   uint64 `json:"version"`
 	Label     string `json:"label"`
@@ -48,25 +50,38 @@ type FloatingMeta struct {
 	Meta
 }
 
+// Meta represents the meta that is stored in file.
 type Meta struct {
 	AssetType AssetType `json:"type"`
 	Seed      string    `json:"seed"`
 	TS        int64     `json:"timestamp"`
 }
 
+// FloatingWallet represents the wallet that is not saved, but displayed in api.
 type FloatingWallet struct {
 	Meta    FloatingMeta     `json:"meta"`
 	Entries []*FloatingEntry `json:"entries"`
 }
 
+// Wallet represents the wallet that is stored in memory.
 type Wallet struct {
 	Meta    FloatingMeta
 	Entries []Entry
 }
 
+// File represents the wallet that is stored in file.
 type File struct {
 	Meta    Meta
 	Entries []Entry
+}
+
+// FileFromRaw extracts File from raw data.
+func FileFromRaw(b []byte) (File, error) {
+	var (
+		out File
+		err = encoder.DeserializeRaw(b, &out)
+	)
+	return out, err
 }
 
 func (w File) Serialize() []byte {
@@ -128,6 +143,10 @@ func LoadFloatingWallet(f io.Reader, label, password string) (*Wallet, error) {
 		return nil, e
 	}
 	encrypted := prefix.Encrypted()
+
+	fmt.Printf("WALLET: v(%v) e(%v) n(%v) \n",
+		prefix.Version(), prefix.Encrypted(), prefix.Nonce())
+
 	if encrypted {
 		pHash := cipher.SumSHA256([]byte(password))
 		data, e = cipher.Chacha20Decrypt(data, pHash[:], prefix.Nonce())
@@ -138,10 +157,11 @@ func LoadFloatingWallet(f io.Reader, label, password string) (*Wallet, error) {
 		password = ""
 	}
 
-	var wallet File
-	if e := encoder.DeserializeRaw(data, &wallet); e != nil {
-		return nil, e
+	wallet, err := FileFromRaw(data)
+	if err != nil {
+		return nil, err
 	}
+
 	return &Wallet{
 		Meta: FloatingMeta{
 			Version:   prefix.Version(),
