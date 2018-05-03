@@ -2,7 +2,6 @@ package wallet
 
 import (
 	"errors"
-	"io"
 	"os"
 	"sort"
 	"sync"
@@ -24,8 +23,8 @@ type Manager struct {
 // NewManager creates a new wallet manager.
 func NewManager() (*Manager, error) {
 	m := new(Manager)
-	if e := m.Refresh(); e != nil {
-		return nil, e
+	if err := m.Refresh(); err != nil {
+		return nil, err
 	}
 	return m, nil
 }
@@ -37,24 +36,25 @@ func (m *Manager) Refresh() error {
 
 	m.labels = make([]string, 0)
 	m.wallets = make(map[string]*Wallet)
-	e := RangeLabels(func(f io.Reader, label, fPath string, prefix Prefix) {
+	err := RangeLabels(func(raw []byte, label, fPath string, prefix Prefix) error {
 		if prefix.Version() != Version {
 			log.Warningf(
 				"wallet file `%s` is of version %v, while only version %v is supported",
 				label, prefix.Version(), Version)
-			return
+			return nil
 		}
 		var wallet *Wallet
-		if prefix.Encrypted() {
-			var e error
-			if wallet, e = LoadFloatingWallet(f, label, ""); e != nil {
-				return
+		if prefix.Encrypted() == false {
+			var err error
+			if wallet, err = LoadFloatingWallet(raw, label, ""); err != nil {
+				return err
 			}
 		}
 		m.append(label, wallet)
+		return nil
 	})
-	if e != nil {
-		return e
+	if err != nil {
+		return err
 	}
 	return m.sort()
 }
@@ -140,10 +140,10 @@ func (m *Manager) DeleteWallet(label string) error {
 func (m *Manager) DisplayWallet(label, password string, addresses int) (*FloatingWallet, error) {
 	defer m.lock()()
 
-	switch w, e := m.getWallet(label); e {
+	switch w, err := m.getWallet(label); err {
 	case nil:
-		if e := w.EnsureEntries(addresses); e != nil {
-			return nil, e
+		if err := w.EnsureEntries(addresses); err != nil {
+			return nil, err
 		}
 		return w.ToFloating(), nil
 
@@ -151,17 +151,16 @@ func (m *Manager) DisplayWallet(label, password string, addresses int) (*Floatin
 		return nil, ErrWalletNotFound
 
 	case ErrWalletLocked:
-		f, e := os.Open(LabelPath(label))
-		if e != nil {
-			return nil, e
+		raw, err := OpenAndReadAll(LabelPath(label))
+		if err != nil {
+			return nil, err
 		}
-		defer f.Close()
-		if w, e = LoadFloatingWallet(f, label, password); e != nil {
-			return nil, e
+		if w, err = LoadFloatingWallet(raw, label, password); err != nil {
+			return nil, err
 		}
 		m.wallets[label] = w
-		if e := w.EnsureEntries(addresses); e != nil {
-			return nil, e
+		if err := w.EnsureEntries(addresses); err != nil {
+			return nil, err
 		}
 		return w.ToFloating(), nil
 

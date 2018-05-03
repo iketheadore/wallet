@@ -2,10 +2,10 @@ package wallet
 
 import (
 	"errors"
-	"io"
-	"io/ioutil"
 	"os"
 	"time"
+
+	"fmt"
 
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
@@ -18,6 +18,10 @@ type (
 
 	// Extension determines a file's extension.
 	Extension string
+)
+
+var (
+	ErrInvalidPassword = errors.New("invalid password")
 )
 
 const (
@@ -35,6 +39,7 @@ const (
 	<<< TYPES >>>
 */
 
+// FloatingMeta represents the wallet meta that is not saved, but displayed in api.
 type FloatingMeta struct {
 	Version   uint64 `json:"version"`
 	Label     string `json:"label"`
@@ -44,25 +49,44 @@ type FloatingMeta struct {
 	Meta
 }
 
+// Meta represents the meta that is stored in file.
 type Meta struct {
 	AssetType AssetType `json:"type"`
 	Seed      string    `json:"seed"`
 	TS        int64     `json:"timestamp"`
 }
 
+// FloatingWallet represents the wallet that is not saved, but displayed in api.
 type FloatingWallet struct {
 	Meta    FloatingMeta     `json:"meta"`
 	Entries []*FloatingEntry `json:"entries"`
 }
 
+// Wallet represents the wallet that is stored in memory.
 type Wallet struct {
 	Meta    FloatingMeta
 	Entries []Entry
 }
 
+// File represents the wallet that is stored in file.
 type File struct {
 	Meta    Meta
 	Entries []Entry
+}
+
+// FileFromRaw extracts File from raw data.
+func FileFromRaw(b []byte) (*File, error) {
+	var (
+		out = new(File)
+		err error
+	)
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("failed to read wallet file: %v", r)
+		}
+	}()
+	err = encoder.DeserializeRaw(b, out)
+	return out, err
 }
 
 func (w File) Serialize() []byte {
@@ -94,8 +118,8 @@ func (o *Options) Verify() error {
 }
 
 func NewFloatingWallet(options *Options) (*Wallet, error) {
-	if e := options.Verify(); e != nil {
-		return nil, e
+	if err := options.Verify(); err != nil {
+		return nil, err
 	}
 
 	return &Wallet{
@@ -114,30 +138,33 @@ func NewFloatingWallet(options *Options) (*Wallet, error) {
 	}, nil
 }
 
-func LoadFloatingWallet(f io.Reader, label, password string) (*Wallet, error) {
-	raw, e := ioutil.ReadAll(f)
-	if e != nil {
-		return nil, e
-	}
-	prefix, data, e := ExtractPrefix(raw)
-	if e != nil {
-		return nil, e
+func LoadFloatingWallet(raw []byte, label, password string) (*Wallet, error) {
+	prefix, data, err := ExtractPrefix(raw)
+	if err != nil {
+		return nil, err
 	}
 	encrypted := prefix.Encrypted()
+
+	fmt.Printf("WALLET: v(%v) e(%v) n(%v) \n",
+		prefix.Version(), prefix.Encrypted(), prefix.Nonce())
+
 	if encrypted {
 		pHash := cipher.SumSHA256([]byte(password))
-		data, e = cipher.Chacha20Decrypt(data, pHash[:], prefix.Nonce())
-		if e != nil {
-			return nil, e
+		data, err = cipher.Chacha20Decrypt(data, pHash[:], prefix.Nonce())
+		if err != nil {
+			return nil, err
 		}
 	} else {
 		password = ""
 	}
 
-	var wallet File
-	if e := encoder.DeserializeRaw(data, &wallet); e != nil {
-		return nil, e
+	wallet, err := FileFromRaw(data)
+	if err != nil {
+		return nil, err
+	} else if wallet == nil {
+		return nil, errors.New("failed to read wallet file, maybe due to incorrect credentials")
 	}
+
 	return &Wallet{
 		Meta: FloatingMeta{
 			Version:   prefix.Version(),
@@ -162,20 +189,20 @@ func (w *Wallet) Save() error {
 
 	data := w.ToFile().Serialize()
 	if w.Meta.Encrypted {
-		var e error
+		var err error
 		pHash := cipher.SumSHA256([]byte(w.Meta.Password))
-		data, e = cipher.Chacha20Encrypt(data, pHash[:], nonce)
-		if e != nil {
-			return e
+		data, err = cipher.Chacha20Encrypt(data, pHash[:], nonce)
+		if err != nil {
+			return err
 		}
 	}
 
-	e := SaveBinary(
+	err := SaveBinary(
 		LabelPath(w.Meta.Label),
 		append(prefix[:], data...),
 	)
-	if e != nil {
-		return e
+	if err != nil {
+		return err
 	}
 
 	w.Meta.Saved = true

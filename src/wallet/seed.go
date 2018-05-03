@@ -12,13 +12,13 @@ const (
 )
 
 func NewSeed(seedBitSize int) (string, error) {
-	entropy, e := bip39.NewEntropy(seedBitSize)
-	if e != nil {
-		return "", e
+	entropy, err := bip39.NewEntropy(seedBitSize)
+	if err != nil {
+		return "", err
 	}
-	mnemonic, e := bip39.NewMnemonic(entropy)
-	if e != nil {
-		return "", e
+	mnemonic, err := bip39.NewMnemonic(entropy)
+	if err != nil {
+		return "", err
 	}
 	return mnemonic, nil
 }

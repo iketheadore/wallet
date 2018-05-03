@@ -2,28 +2,10 @@
 
 
 [[projects]]
-  name = "github.com/boltdb/bolt"
-  packages = ["."]
-  revision = "2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8"
-  version = "v1.3.1"
-
-[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
   version = "v1.1.0"
-
-[[projects]]
-  name = "github.com/disiqueira/gotree"
-  packages = ["."]
-  revision = "4c287e3603a85571820a6a8ad100a45002150053"
-  version = "0.2.0"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/google/btree"
-  packages = ["."]
-  revision = "e89373fe6b4a7413d7acd6da1725b83ef713e6e4"
 
 [[projects]]
   branch = "develop"
@@ -35,28 +17,10 @@
   revision = "8e577025b5030ed1a0cffde25d287fa2f94c6dec"
 
 [[projects]]
-  name = "github.com/klauspost/cpuid"
-  packages = ["."]
-  revision = "ae7887de9fa5d2db4eaa8174a7eff2c1ac00f2da"
-  version = "v1.1"
-
-[[projects]]
-  name = "github.com/klauspost/reedsolomon"
-  packages = ["."]
-  revision = "6bb6130ff6a76a904c1841707d65603aec9cc288"
-  version = "v1.6"
-
-[[projects]]
   name = "github.com/op/go-logging"
   packages = ["."]
   revision = "b2cb9fa56473e98db8caba80237377e83fe44db5"
   version = "v1"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/petar/GoLLRB"
-  packages = ["llrb"]
-  revision = "53be0d36a84c2a886ca057d34b6aa4468df9ccb4"
 
 [[projects]]
   name = "github.com/pkg/errors"
@@ -69,40 +33,6 @@
   packages = ["difflib"]
   revision = "792786c7400a136282c1664665ae0a8db921c6c2"
   version = "v1.0.0"
-
-[[projects]]
-  name = "github.com/sirupsen/logrus"
-  packages = ["."]
-  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
-  version = "v1.0.5"
-
-[[projects]]
-  name = "github.com/skycoin/cxo"
-  packages = [
-    "data",
-    "data/cxds",
-    "data/idxdb",
-    "node",
-    "node/log",
-    "node/msg",
-    "skyobject",
-    "skyobject/registry",
-    "skyobject/statutil"
-  ]
-  revision = "d37028513af1d14208d82b5a0dd57cec7722c1cb"
-
-[[projects]]
-  name = "github.com/skycoin/net"
-  packages = [
-    "client",
-    "conn",
-    "factory",
-    "msg",
-    "server",
-    "skycoin-messenger/factory",
-    "util"
-  ]
-  revision = "4bcee2eb0c36a33dd22757247c83ab7e78c50834"
 
 [[projects]]
   name = "github.com/skycoin/skycoin"
@@ -163,6 +93,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e7edd8766ce9415c709f8063b494bb8e03f84869fdb1fdcd004c05c407c548a7"
+  inputs-digest = "3e1f61d1580594b9d37aa9640ef0d2fd0313217e1669172b0eed57f5325dd0aa"
   solver-name = "gps-cdcl"
   solver-version = 1

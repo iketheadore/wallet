@@ -4,8 +4,6 @@ const { app, Menu, BrowserWindow, dialog } = require('electron');
 
 const userDataPath = app.getPath('userData');
 
-const cxo_dir = userDataPath + "/cxo";
-
 var log = require('electron-log');
 
 var fs = require('fs');
@@ -100,10 +98,7 @@ function startKittyCash() {
 })()
 
   var args = [
-    '--cxo-address=127.0.0.1:6140',
     '--http-address=127.0.0.1:6148',
-    '--messenger-addresses=:8880',
-    '--cxo-dir=' + cxo_dir,
     '--gui=true',
     '--gui-dir=' + gui_dir
   ];

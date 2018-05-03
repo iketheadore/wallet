@@ -152,6 +152,11 @@ func getWallet(g *wallet.Manager) HandlerFunc {
 				if e != nil {
 					return false, sendJson(w, http.StatusBadRequest,
 						fmt.Sprintf("Error: %v", e))
+				} else if fw == nil {
+					// WORKAROUND: happens only on panic within DisplayWallet function.
+					// 		panic should only happen when wrong password is given.
+					return false, sendJson(w, http.StatusBadRequest,
+						fmt.Sprintf("Error: %v", wallet.ErrInvalidPassword))
 				}
 				return true, sendJson(w, http.StatusOK, fw)
 			},
