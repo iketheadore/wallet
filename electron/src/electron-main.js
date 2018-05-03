@@ -117,8 +117,8 @@ function startKittyCash() {
   });
 
   kittycash.stdout.on('data', (data) => {
-    app.emit('kittycash-ready', { url: defaultURL });
     log.info(data.toString());
+    app.emit('kittycash-ready', { url: defaultURL });
   });
 
   kittycash.stderr.on('data', (data) => {
@@ -193,7 +193,7 @@ function createWindow(url) {
   // });
 
   win.loadURL(url);
-
+  
   // Open the DevTools.
   // win.webContents.openDevTools();
 
@@ -263,7 +263,7 @@ app.on('kittycash-ready', (e) => {
     kittyCashLoaded = true;
     setTimeout(function() {
       createWindow(e.url);
-    }, 1000);
+    });
   }
 
 });
@@ -285,10 +285,20 @@ app.on('activate', () => {
 }
 });
 
-app.on('will-quit', () => {
+app.on('will-quit', (evt) => {  
   if (kittycash) {
-    kittycash.kill('SIGINT');
-  }
+    //Prevent the app from quiting until we kill the wallet
+    evt.preventDefault();
+    let kill  = require('tree-kill');
+    kill(kittycash.pid, 'SIGTERM', function(err){
+      if (err)
+      {
+        log.error(err);
+      }
+      //Once the wallet is killed, kill the main electron process
+      process.exit(0);
+    });
+  } 
 });
 
 
