@@ -2,8 +2,6 @@ package wallet
 
 import (
 	"errors"
-	"io"
-	"io/ioutil"
 	"os"
 	"time"
 
@@ -139,11 +137,7 @@ func NewFloatingWallet(options *Options) (*Wallet, error) {
 	}, nil
 }
 
-func LoadFloatingWallet(f io.Reader, label, password string) (*Wallet, error) {
-	raw, e := ioutil.ReadAll(f)
-	if e != nil {
-		return nil, e
-	}
+func LoadFloatingWallet(raw []byte, label, password string) (*Wallet, error) {
 	prefix, data, e := ExtractPrefix(raw)
 	if e != nil {
 		return nil, e

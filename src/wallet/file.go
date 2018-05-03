@@ -2,7 +2,6 @@ package wallet
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"path"
@@ -10,6 +9,7 @@ import (
 	"strings"
 
 	"gopkg.in/sirupsen/logrus.v1"
+	"errors"
 )
 
 // This holds the root directory.
@@ -58,12 +58,12 @@ func ListLabels() ([]string, error) {
 	return out, nil
 }
 
-type LabelAction func(f io.Reader, label, fPath string, prefix Prefix)
+type LabelAction func(data []byte, label, fPath string, prefix Prefix) error
 
 func RangeLabels(action LabelAction) error {
-	list, e := ioutil.ReadDir(rootDir)
-	if e != nil {
-		return e
+	list, err := ioutil.ReadDir(rootDir)
+	if err != nil {
+		return err
 	}
 	for _, info := range list {
 		if info.IsDir() {
@@ -76,15 +76,27 @@ func RangeLabels(action LabelAction) error {
 		label := strings.TrimSuffix(name, string(FileExt))
 		fPath := LabelPath(label)
 
-		f, e := os.Open(fPath)
-		if e != nil {
-			return e
+		f, err := os.Open(fPath)
+		if err != nil {
+			return err
+		}
+
+		data, err := ioutil.ReadAll(f)
+		if err != nil {
+			return err
+		}
+		f.Close()
+
+		if len(data) < PrefixSize {
+			return errors.New("wallet file has invalid size")
 		}
 
 		var prefix Prefix
-		f.Read(prefix[:])
-		action(f, label, fPath, prefix)
-		f.Close()
+		copy(prefix[:PrefixSize], data[:PrefixSize])
+
+		if err := action(data, label, fPath, prefix); err != nil {
+			return errors.New("action failed with error: " + err.Error())
+		}
 	}
 	return nil
 }
