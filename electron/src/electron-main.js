@@ -291,6 +291,10 @@ app.on('will-quit', (evt) => {
     evt.preventDefault();
     let kill  = require('tree-kill');
     kill(kittycash.pid, 'SIGTERM', function(err){
+      if (err)
+      {
+        log.error(err);
+      }
       //Once the wallet is killed, kill the main electron process
       process.exit(0);
     });
