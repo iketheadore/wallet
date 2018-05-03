@@ -73,7 +73,7 @@ func TestFloatingWallet_Save(t *testing.T) {
 		}
 	})
 
-	cases1 := []struct{
+	cases1 := []struct {
 		Correct    *Options
 		FalsePass  string
 		ShouldPass bool

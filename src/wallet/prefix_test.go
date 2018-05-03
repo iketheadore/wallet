@@ -1,13 +1,14 @@
 package wallet
 
 import (
-	"testing"
-	"github.com/stretchr/testify/require"
-	"github.com/skycoin/skycoin/src/cipher"
-	"os"
-	"path/filepath"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path/filepath"
+	"testing"
+
+	"github.com/skycoin/skycoin/src/cipher"
+	"github.com/stretchr/testify/require"
 )
 
 func TestNewPrefix(t *testing.T) {
@@ -32,7 +33,7 @@ func TestNewPrefix(t *testing.T) {
 func TestExtractPrefix(t *testing.T) {
 	cases := []struct {
 		Prefix Prefix
-		Data  []byte
+		Data   []byte
 	}{
 		{NewPrefix(0, EmptyNonce()), cipher.RandByte(1)},
 		{NewPrefix(1, EmptyNonce()), cipher.RandByte(100)},
@@ -57,7 +58,7 @@ func TestExtractPrefix(t *testing.T) {
 			)
 			require.NoError(t, SaveBinary(fPath, raw))
 
-			func(){
+			func() {
 				f, err := os.Open(fPath)
 				require.NoError(t, err)
 				defer f.Close()

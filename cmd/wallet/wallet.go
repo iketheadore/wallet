@@ -10,17 +10,17 @@ import (
 	"gopkg.in/sirupsen/logrus.v1"
 	"gopkg.in/urfave/cli.v1"
 
+	"github.com/kittycash/wallet/src/dummy"
 	"github.com/kittycash/wallet/src/http"
 	"github.com/kittycash/wallet/src/iko"
 	"github.com/kittycash/wallet/src/iko/transaction"
 	"github.com/kittycash/wallet/src/util"
 	"github.com/kittycash/wallet/src/wallet"
-	"github.com/kittycash/wallet/src/dummy"
 )
 
 const (
 	// TODO: Define proper values for these!
-	TrustedGenPK     = "03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753"
+	TrustedGenPK = "03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753"
 
 	DefaultHttpAddress = "127.0.0.1:7908"
 
@@ -38,8 +38,8 @@ const (
 	fTLSCert     = "tls-cert"
 	fTLSKey      = "tls-key"
 
-	fTest          = "test"
-	fTestGenPK     = "test-gen-pk"
+	fTest      = "test"
+	fTestGenPK = "test-gen-pk"
 )
 
 func Flag(flag string, short ...string) string {
@@ -126,7 +126,7 @@ func action(ctx *cli.Context) error {
 	quit := util.CatchInterrupt()
 
 	var (
-		genPK     = cipher.MustPubKeyFromHex(TrustedGenPK)
+		genPK = cipher.MustPubKeyFromHex(TrustedGenPK)
 
 		walletDir = ctx.String(fWalletDir)
 

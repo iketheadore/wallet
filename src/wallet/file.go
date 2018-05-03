@@ -8,8 +8,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"gopkg.in/sirupsen/logrus.v1"
 	"errors"
+
+	"gopkg.in/sirupsen/logrus.v1"
 )
 
 // This holds the root directory.

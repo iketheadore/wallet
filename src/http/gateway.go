@@ -8,9 +8,9 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/kittycash/wallet/src/dummy"
 	"github.com/kittycash/wallet/src/iko"
 	"github.com/kittycash/wallet/src/wallet"
-	"github.com/kittycash/wallet/src/dummy"
 )
 
 type Gateway struct {

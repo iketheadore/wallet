@@ -1,9 +1,10 @@
 package dummy
 
 import (
-	"github.com/kittycash/wallet/src/iko/transaction"
 	"errors"
+
 	"github.com/kittycash/wallet/src/iko"
+	"github.com/kittycash/wallet/src/iko/transaction"
 )
 
 var (
