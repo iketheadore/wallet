@@ -76,11 +76,17 @@ type File struct {
 }
 
 // FileFromRaw extracts File from raw data.
-func FileFromRaw(b []byte) (File, error) {
+func FileFromRaw(b []byte) (*File, error) {
 	var (
-		out File
-		err = encoder.DeserializeRaw(b, &out)
+		out = new(File)
+		err error
 	)
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("failed to read wallet file: %v", r)
+		}
+	}()
+	err = encoder.DeserializeRaw(b, out)
 	return out, err
 }
 
@@ -160,6 +166,8 @@ func LoadFloatingWallet(f io.Reader, label, password string) (*Wallet, error) {
 	wallet, err := FileFromRaw(data)
 	if err != nil {
 		return nil, err
+	} else if wallet == nil {
+		return nil, errors.New("failed to read wallet file, maybe due to incorrect credentials")
 	}
 
 	return &Wallet{
