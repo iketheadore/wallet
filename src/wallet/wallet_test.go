@@ -33,7 +33,11 @@ func loadWallet(label, pw string) (*Wallet, error) {
 		return nil, err
 	}
 	defer f.Close()
-	return LoadFloatingWallet(f, label, pw)
+	raw, err := ioutil.ReadAll(f)
+	if err != nil {
+		return nil, err
+	}
+	return LoadFloatingWallet(raw, label, pw)
 }
 
 func TestFloatingWallet_Save(t *testing.T) {
