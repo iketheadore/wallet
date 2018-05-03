@@ -20,12 +20,12 @@ var (
 
 // SetRootDir sets the root directory.
 func SetRootDir(r string) error {
-	var e error
-	if rootDir, e = filepath.Abs(r); e != nil {
-		return e
+	var err error
+	if rootDir, err = filepath.Abs(r); err != nil {
+		return err
 	}
-	if e = os.MkdirAll(rootDir, os.FileMode(0700)); e != nil {
-		return e
+	if err = os.MkdirAll(rootDir, os.FileMode(0700)); err != nil {
+		return err
 	}
 	return nil
 }
@@ -76,16 +76,10 @@ func RangeLabels(action LabelAction) error {
 		label := strings.TrimSuffix(name, string(FileExt))
 		fPath := LabelPath(label)
 
-		f, err := os.Open(fPath)
+		data, err := OpenAndReadAll(fPath)
 		if err != nil {
 			return err
 		}
-
-		data, err := ioutil.ReadAll(f)
-		if err != nil {
-			return err
-		}
-		f.Close()
 
 		if len(data) < PrefixSize {
 			return errors.New("wallet file has invalid size")
@@ -99,4 +93,13 @@ func RangeLabels(action LabelAction) error {
 		}
 	}
 	return nil
+}
+
+func OpenAndReadAll(path string) ([]byte, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	return ioutil.ReadAll(f)
 }

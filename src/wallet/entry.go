@@ -22,8 +22,8 @@ type Entry struct {
 
 // NewEntry creates a new wallet entry.
 func NewEntry(sk cipher.SecKey) (*Entry, error) {
-	if e := sk.Verify(); e != nil {
-		return nil, e
+	if err := sk.Verify(); err != nil {
+		return nil, err
 	}
 	return &Entry{
 		Address: cipher.AddressFromSecKey(sk),

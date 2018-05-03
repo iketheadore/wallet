@@ -5,7 +5,6 @@ import (
 	"os"
 	"sort"
 	"sync"
-	"io/ioutil"
 )
 
 var (
@@ -24,8 +23,8 @@ type Manager struct {
 // NewManager creates a new wallet manager.
 func NewManager() (*Manager, error) {
 	m := new(Manager)
-	if e := m.Refresh(); e != nil {
-		return nil, e
+	if err := m.Refresh(); err != nil {
+		return nil, err
 	}
 	return m, nil
 }
@@ -152,16 +151,10 @@ func (m *Manager) DisplayWallet(label, password string, addresses int) (*Floatin
 		return nil, ErrWalletNotFound
 
 	case ErrWalletLocked:
-		f, err := os.Open(LabelPath(label))
+		raw, err := OpenAndReadAll(LabelPath(label))
 		if err != nil {
 			return nil, err
 		}
-		raw, err := ioutil.ReadAll(f)
-		if err != nil {
-			return nil, err
-		}
-		f.Close()
-
 		if w, err = LoadFloatingWallet(raw, label, password); err != nil {
 			return nil, err
 		}

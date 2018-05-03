@@ -117,8 +117,8 @@ func (o *Options) Verify() error {
 }
 
 func NewFloatingWallet(options *Options) (*Wallet, error) {
-	if e := options.Verify(); e != nil {
-		return nil, e
+	if err := options.Verify(); err != nil {
+		return nil, err
 	}
 
 	return &Wallet{
@@ -138,9 +138,9 @@ func NewFloatingWallet(options *Options) (*Wallet, error) {
 }
 
 func LoadFloatingWallet(raw []byte, label, password string) (*Wallet, error) {
-	prefix, data, e := ExtractPrefix(raw)
-	if e != nil {
-		return nil, e
+	prefix, data, err := ExtractPrefix(raw)
+	if err != nil {
+		return nil, err
 	}
 	encrypted := prefix.Encrypted()
 
@@ -149,9 +149,9 @@ func LoadFloatingWallet(raw []byte, label, password string) (*Wallet, error) {
 
 	if encrypted {
 		pHash := cipher.SumSHA256([]byte(password))
-		data, e = cipher.Chacha20Decrypt(data, pHash[:], prefix.Nonce())
-		if e != nil {
-			return nil, e
+		data, err = cipher.Chacha20Decrypt(data, pHash[:], prefix.Nonce())
+		if err != nil {
+			return nil, err
 		}
 	} else {
 		password = ""
@@ -188,20 +188,20 @@ func (w *Wallet) Save() error {
 
 	data := w.ToFile().Serialize()
 	if w.Meta.Encrypted {
-		var e error
+		var err error
 		pHash := cipher.SumSHA256([]byte(w.Meta.Password))
-		data, e = cipher.Chacha20Encrypt(data, pHash[:], nonce)
-		if e != nil {
-			return e
+		data, err = cipher.Chacha20Encrypt(data, pHash[:], nonce)
+		if err != nil {
+			return err
 		}
 	}
 
-	e := SaveBinary(
+	err := SaveBinary(
 		LabelPath(w.Meta.Label),
 		append(prefix[:], data...),
 	)
-	if e != nil {
-		return e
+	if err != nil {
+		return err
 	}
 
 	w.Meta.Saved = true
