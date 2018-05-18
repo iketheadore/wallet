@@ -16,12 +16,15 @@ type Gateway struct {
 }
 
 func (g *Gateway) host(mux *http.ServeMux) error {
-	if e := marketKitties(mux); e != nil {
-		return e
+	if err := marketKitties(mux); err != nil {
+		return err
+	}
+	if err := toolsGateway(mux); err != nil {
+		return err
 	}
 	if g.Wallet != nil {
-		if e := walletGateway(mux, g.Wallet); e != nil {
-			return e
+		if err := walletGateway(mux, g.Wallet); err != nil {
+			return err
 		}
 	}
 	return nil
