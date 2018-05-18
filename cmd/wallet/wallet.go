@@ -5,22 +5,17 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/skycoin/skycoin/src/util/file"
 	"gopkg.in/sirupsen/logrus.v1"
 	"gopkg.in/urfave/cli.v1"
 
-	"github.com/kittycash/wallet/src/dummy"
 	"github.com/kittycash/wallet/src/http"
-	"github.com/kittycash/wallet/src/iko"
-	"github.com/kittycash/wallet/src/iko/transaction"
 	"github.com/kittycash/wallet/src/util"
 	"github.com/kittycash/wallet/src/wallet"
 )
 
 const (
 	// TODO: Define proper values for these!
-	TrustedGenPK = "03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753"
 
 	DefaultHttpAddress = "127.0.0.1:7908"
 
@@ -114,10 +109,6 @@ func init() {
 			Name:  Flag(fTest),
 			Usage: "whether to run wallet in test mode",
 		},
-		cli.StringFlag{
-			Name:  Flag(fTestGenPK),
-			Usage: "test mode trusted gen tx public key",
-		},
 	}
 	app.Action = cli.ActionFunc(action)
 }
@@ -126,8 +117,6 @@ func action(ctx *cli.Context) error {
 	quit := util.CatchInterrupt()
 
 	var (
-		genPK = cipher.MustPubKeyFromHex(TrustedGenPK)
-
 		walletDir = ctx.String(fWalletDir)
 
 		httpAddress = ctx.String(fHttpAddress)
@@ -142,8 +131,6 @@ func action(ctx *cli.Context) error {
 
 	// Test mode changes.
 	if test {
-		genPK = cipher.MustPubKeyFromHex(ctx.String(fTestGenPK))
-
 		tempDir, err := ioutil.TempDir(os.TempDir(), "kc_wallet")
 		if err != nil {
 			return err
@@ -151,27 +138,6 @@ func action(ctx *cli.Context) error {
 		defer os.RemoveAll(tempDir)
 		walletDir = tempDir
 	}
-
-	// Prepare StateDB.
-	stateDB := iko.NewMemoryState()
-
-	// Prepare ChainDB.
-	chainDB := new(dummy.Dummy)
-
-	// Prepare blockchain config.
-	bcConfig := &iko.BlockChainConfig{
-		GenerationPK: genPK,
-		TxAction: func(tx *transaction.Transaction) error {
-			return nil
-		},
-	}
-
-	// Prepare blockchain.
-	bc, err := iko.NewBlockChain(bcConfig, chainDB, stateDB)
-	if err != nil {
-		return err
-	}
-	defer bc.Close()
 
 	log.Info("finished preparing blockchain")
 
@@ -195,9 +161,7 @@ func action(ctx *cli.Context) error {
 			TLSKeyFile:  tlsKey,
 		},
 		&http.Gateway{
-			IKO:    bc,
 			Wallet: walletManager,
-			Conn:   new(dummy.Dummy),
 		},
 	)
 	if err != nil {
