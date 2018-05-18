@@ -9,7 +9,7 @@ import (
 )
 
 func toolsGateway(m *http.ServeMux) error {
-	Handle(m, "/api/tools/sign_transfer_params", "GET", signTransferParams())
+	Handle(m, "/api/tools/sign_transfer_params", "POST", signTransferParams())
 	return nil
 }
 
@@ -26,20 +26,27 @@ func signTransferParams() HandlerFunc {
 					vSecretKey       = r.PostFormValue("secretKey")
 				)
 
-				var kittyID kitty.ID
-				{
-					v, err := strconv.ParseUint(vKittyID, 10, 64)
-					if err != nil {
-						return false, sendJson(w, http.StatusBadRequest,
-							fmt.Sprintf("Error: %s", err))
-					}
-					kittyID = kitty.ID(v)
+				kittyID, err := strconv.ParseUint(vKittyID, 10, 64)
+				if err != nil {
+					return false, sendJson(w, http.StatusBadRequest,
+						fmt.Sprintf("Error: %s", err))
 				}
 
-				tools.SignTransferParams()
+				out, err := tools.SignTransferParams(r.Context(), &tools.SignTransferParamsIn{
+					KittyID:         kitty.ID(kittyID),
+					LastTransferSig: vLastTransferSig,
+					ToAddress:       vToAddress,
+					SecretKey:       vSecretKey,
+				})
+
+				if err != nil {
+					return false, sendJson(w, http.StatusBadRequest,
+						fmt.Sprintf("Error: %s", err))
+				}
+
+				return true, sendJson(w, http.StatusOK, out)
 			},
 		})
-
-		return nil
+		return err
 	}
 }

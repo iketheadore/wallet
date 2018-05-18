@@ -242,379 +242,57 @@
 			]
 		},
 		{
-			"name": "IKO",
+			"name": "Tools",
 			"description": "",
 			"item": [
 				{
-					"name": "Get Kitty",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {},
-						"url": {
-							"raw": "{{domain}}/api/iko/kitty/0?type=json",
-							"host": [
-								"{{domain}}"
-							],
-							"path": [
-								"api",
-								"iko",
-								"kitty",
-								"0"
-							],
-							"query": [
-								{
-									"key": "type",
-									"value": "json",
-									"description": "Type of output. \"json\" or \"enc\""
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Address",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {},
-						"url": {
-							"raw": "{{domain}}/api/iko/address/2fzr9thfdgHCWe8Hp9btr3nNEVTaAmkDk7?type=json",
-							"host": [
-								"{{domain}}"
-							],
-							"path": [
-								"api",
-								"iko",
-								"address",
-								"2fzr9thfdgHCWe8Hp9btr3nNEVTaAmkDk7"
-							],
-							"query": [
-								{
-									"key": "type",
-									"value": "json",
-									"description": "Type of output. \"json\" or \"enc\""
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Tx",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {},
-						"url": {
-							"raw": "{{domain}}/api/iko/tx/0?type=json&request=seq",
-							"host": [
-								"{{domain}}"
-							],
-							"path": [
-								"api",
-								"iko",
-								"tx",
-								"0"
-							],
-							"query": [
-								{
-									"key": "type",
-									"value": "json",
-									"description": "Type of output. \"json\" or \"enc\""
-								},
-								{
-									"key": "request",
-									"value": "seq",
-									"description": "Type of request. \"hash\" or \"seq\""
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Head Tx",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {},
-						"url": {
-							"raw": "{{domain}}/api/iko/head_tx?type=json",
-							"host": [
-								"{{domain}}"
-							],
-							"path": [
-								"api",
-								"iko",
-								"head_tx"
-							],
-							"query": [
-								{
-									"key": "type",
-									"value": "json",
-									"description": "Type of output. \"json\" or \"enc\""
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Txs",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {},
-						"url": {
-							"raw": "{{domain}}/api/iko/txs?current_page=0&per_page=10",
-							"host": [
-								"{{domain}}"
-							],
-							"path": [
-								"api",
-								"iko",
-								"txs"
-							],
-							"query": [
-								{
-									"key": "current_page",
-									"value": "0",
-									"description": "Current page index."
-								},
-								{
-									"key": "per_page",
-									"value": "10",
-									"description": "Number of items per page."
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Inject Tx",
+					"name": "Sign Transfer Params",
 					"request": {
 						"method": "POST",
 						"header": [
 							{
 								"key": "Content-Type",
-								"value": "application/json"
+								"value": "application/x-www-form-urlencoded"
 							}
 						],
 						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"hex\": \"8c9a7b5e9b578110388399b275fd010a8906e9637ac082e9cdeb1339f333319414000000000000001e43ab6754ea18151400000000000000000427fcd0f0b9461c5c516cd66a4b5ac413978272000427fcd0f0b9461c5c516cd66a4b5ac4139782725d743acc0b8b40b0be6466d6b84a5a980e64358f153b7af4e676708e95c79d3628ae9a1111c0aaa040aac5e054f81a45588bafac6dee2cdae05457475498301a01\"\n}"
-						},
-						"url": {
-							"raw": "{{domain}}/api/iko/inject_tx",
-							"host": [
-								"{{domain}}"
-							],
-							"path": [
-								"api",
-								"iko",
-								"inject_tx"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Balance",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {},
-						"url": {
-							"raw": "{{domain}}/api/iko/balance?addrs=2fzr9thfdgHCWe8Hp9btr3nNEVTaAmkDk7",
-							"host": [
-								"{{domain}}"
-							],
-							"path": [
-								"api",
-								"iko",
-								"balance"
-							],
-							"query": [
+							"mode": "urlencoded",
+							"urlencoded": [
 								{
-									"key": "addrs",
-									"value": "2fzr9thfdgHCWe8Hp9btr3nNEVTaAmkDk7"
-								}
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Conn",
-			"description": "",
-			"item": [
-				{
-					"name": "All Statuses",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {},
-						"url": {
-							"raw": "{{domain}}/api/conn/all_statuses",
-							"host": [
-								"{{domain}}"
-							],
-							"path": [
-								"api",
-								"conn",
-								"all_statuses"
-							]
-						},
-						"description": "Lists all possible connection statuses"
-					},
-					"response": []
-				},
-				{
-					"name": "Status",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {},
-						"url": {
-							"raw": "{{domain}}/api/conn/status",
-							"host": [
-								"{{domain}}"
-							],
-							"path": [
-								"api",
-								"conn",
-								"status"
-							]
-						},
-						"description": "Returns the current status code."
-					},
-					"response": []
-				},
-				{
-					"name": "Reconnect",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {},
-						"url": {
-							"raw": "{{domain}}/api/conn/reconnect",
-							"host": [
-								"{{domain}}"
-							],
-							"path": [
-								"api",
-								"conn",
-								"reconnect"
-							]
-						},
-						"description": "Manually reconnect."
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Re-Served API",
-			"description": "",
-			"item": [
-				{
-					"name": "Count",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {},
-						"url": {
-							"raw": "{{domain}}/api/count",
-							"host": [
-								"{{domain}}"
-							],
-							"path": [
-								"api",
-								"count"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Entry",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {},
-						"url": {
-							"raw": "{{domain}}/api/entry?kitty_id=4",
-							"host": [
-								"{{domain}}"
-							],
-							"path": [
-								"api",
-								"entry"
-							],
-							"query": [
-								{
-									"key": "kitty_id",
-									"value": "4"
-								},
-								{
-									"key": "kitty_dna",
-									"value": "dna0",
-									"disabled": true
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Entries",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"body": {},
-						"url": {
-							"raw": "{{domain}}/api/entries?offset=0&page_size=10",
-							"host": [
-								"{{domain}}"
-							],
-							"path": [
-								"api",
-								"entries"
-							],
-							"query": [
-								{
-									"key": "filter_price",
-									"value": "0,233334,btc",
-									"description": "RANGE: If set, filters kitties of price in given range. \"{min},{max},{coin}\"",
-									"disabled": true
-								},
-								{
-									"key": "filter_date",
-									"value": "30,12345",
-									"description": "RANGE: same as price_btc but for sky.",
-									"disabled": true
-								},
-								{
-									"key": "order",
-									"value": "-price_btc",
-									"description": "LIST: The way we order the results. Possible values: \"kitty_id\", \"name\", \"price_btc\", \"price_sky\", \"-kitty_id\", \"-name\", \"-price_btc\", \"-price_sky\".",
-									"disabled": true
-								},
-								{
-									"key": "offset",
+									"key": "kittyID",
 									"value": "0",
-									"description": "INT: Offset for results."
+									"description": "Kitty ID.",
+									"type": "text"
 								},
 								{
-									"key": "page_size",
-									"value": "10",
-									"description": "INT: Results per page."
+									"key": "lastTransferSig",
+									"value": "",
+									"description": "Can be empty if kitty has yet to be transfered.",
+									"type": "text"
+								},
+								{
+									"key": "toAddress",
+									"value": "mjjsGFXhUJG3Enwsd1bVuizMPzEWk7h5LC",
+									"description": "Destination address.",
+									"type": "text"
+								},
+								{
+									"key": "secretKey",
+									"value": "8b3dd7a8cf59d8a2a7f07489a6ce57dd2fa38aa47f2334bbf416f2fa4e02217a",
+									"description": "Secret key of current owner.",
+									"type": "text"
 								}
+							]
+						},
+						"url": {
+							"raw": "{{domain}}/api/tools/sign_transfer_params",
+							"host": [
+								"{{domain}}"
+							],
+							"path": [
+								"api",
+								"tools",
+								"sign_transfer_params"
 							]
 						}
 					},
