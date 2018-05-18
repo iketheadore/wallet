@@ -1,10 +1,12 @@
 package http
 
 import (
-	"net/http"
-	"github.com/kittycash/kittiverse/src/kitty"
-	"strconv"
 	"fmt"
+	"net/http"
+	"strconv"
+
+	"github.com/kittycash/kittiverse/src/kitty"
+
 	"github.com/kittycash/wallet/src/tools"
 )
 

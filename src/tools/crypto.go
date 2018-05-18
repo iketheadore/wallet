@@ -2,9 +2,10 @@ package tools
 
 import (
 	"context"
+
 	"github.com/kittycash/kittiverse/src/kitty"
-	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/pkg/errors"
+	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 

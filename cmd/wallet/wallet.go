@@ -33,8 +33,7 @@ const (
 	fTLSCert     = "tls-cert"
 	fTLSKey      = "tls-key"
 
-	fTest      = "test"
-	fTestGenPK = "test-gen-pk"
+	fTest = "test"
 )
 
 func Flag(flag string, short ...string) string {
