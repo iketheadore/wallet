@@ -1,0 +1,304 @@
+{
+	"info": {
+		"_postman_id": "ebf88441-92d2-4b9e-b1dd-77a6f8064a4b",
+		"name": "Wallet",
+		"description": "Endpoints of where the Kitties are stored.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Wallets",
+			"description": null,
+			"item": [
+				{
+					"name": "Refresh",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {},
+						"url": {
+							"raw": "{{wallet_domain}}/api/wallets/refresh",
+							"host": [
+								"{{wallet_domain}}"
+							],
+							"path": [
+								"api",
+								"wallets",
+								"refresh"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "List",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{wallet_domain}}/api/wallets/list",
+							"host": [
+								"{{wallet_domain}}"
+							],
+							"path": [
+								"api",
+								"wallets",
+								"list"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "New",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "label",
+									"value": "test_wallet4",
+									"description": "Label that the new wallet should have.",
+									"type": "text"
+								},
+								{
+									"key": "seed",
+									"value": "secure seed",
+									"description": "Wallet seed.",
+									"type": "text"
+								},
+								{
+									"key": "aCount",
+									"value": "1",
+									"description": "Number of addresses to generate.",
+									"type": "text"
+								},
+								{
+									"key": "encrypted",
+									"value": "false",
+									"description": "Whether wallet should be encrypted.",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "securepass",
+									"description": "Password to encrypt wallet with (only needed if encrypted == true).",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "{{wallet_domain}}/api/wallets/new",
+							"host": [
+								"{{wallet_domain}}"
+							],
+							"path": [
+								"api",
+								"wallets",
+								"new"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "label",
+									"value": "test_wallet4",
+									"description": "Label of wallet of delete.",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{wallet_domain}}/api/wallets/delete",
+							"host": [
+								"{{wallet_domain}}"
+							],
+							"path": [
+								"api",
+								"wallets",
+								"delete"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "label",
+									"value": "test_wallet",
+									"description": "Label of wallet to get.",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "",
+									"description": "Password of wallet (if wallet is encrypted and locked).",
+									"type": "text"
+								},
+								{
+									"key": "aCount",
+									"value": "20",
+									"description": "number of addresses to show (at least).",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{wallet_domain}}/api/wallets/get",
+							"host": [
+								"{{wallet_domain}}"
+							],
+							"path": [
+								"api",
+								"wallets",
+								"get"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Seed",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{wallet_domain}}/api/wallets/seed",
+							"host": [
+								"{{wallet_domain}}"
+							],
+							"path": [
+								"api",
+								"wallets",
+								"seed"
+							]
+						}
+					},
+					"response": []
+				}
+			],
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"id": "ce346f9c-7818-4eab-96b0-5a9c2d45d4f7",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				},
+				{
+					"listen": "test",
+					"script": {
+						"id": "b768603e-ca7d-4d88-a686-2534511d3b8a",
+						"type": "text/javascript",
+						"exec": [
+							""
+						]
+					}
+				}
+			]
+		},
+		{
+			"name": "Tools",
+			"description": "",
+			"item": [
+				{
+					"name": "Sign Transfer Params",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "kittyID",
+									"value": "0",
+									"description": "Kitty ID.",
+									"type": "text"
+								},
+								{
+									"key": "lastTransferSig",
+									"value": "",
+									"description": "Can be empty if kitty has yet to be transfered.",
+									"type": "text"
+								},
+								{
+									"key": "toAddress",
+									"value": "mjjsGFXhUJG3Enwsd1bVuizMPzEWk7h5LC",
+									"description": "Destination address.",
+									"type": "text"
+								},
+								{
+									"key": "secretKey",
+									"value": "8b3dd7a8cf59d8a2a7f07489a6ce57dd2fa38aa47f2334bbf416f2fa4e02217a",
+									"description": "Secret key of current owner.",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{wallet_domain}}/api/tools/sign_transfer_params",
+							"host": [
+								"{{wallet_domain}}"
+							],
+							"path": [
+								"api",
+								"tools",
+								"sign_transfer_params"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
