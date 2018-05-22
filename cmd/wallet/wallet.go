@@ -12,16 +12,21 @@ import (
 	"github.com/kittycash/wallet/src/http"
 	"github.com/kittycash/wallet/src/util"
 	"github.com/kittycash/wallet/src/wallet"
+	"github.com/kittycash/wallet/src/proxy"
 )
 
 const (
-	DefaultHttpAddress = "127.0.0.1:7908"
-	DirRoot            = ".kittycash"
-	DirChildWallets    = "wallets"
+	DefaultHttpAddress  = "127.0.0.1:7908"
+	DefaultProxyAddress = "api.kittycash.com"
+	DirRoot             = ".kittycash"
+	DirChildWallets     = "wallets"
 )
 
 const (
 	fWalletDir = "wallet-dir"
+
+	fProxyDomain = "proxy-domain"
+	fProxyTLS    = "proxy-tls"
 
 	fHttpAddress = "http-address"
 	fGUI         = "gui"
@@ -70,6 +75,18 @@ func init() {
 			Value: filepath.Join(homeDir, DirRoot, DirChildWallets),
 		},
 		/*
+			<<< PROXY CONFIG >>>
+		*/
+		cli.StringFlag{
+			Name:  Flag(fProxyDomain),
+			Usage: "domain to proxy kitty-api requests to",
+			Value: DefaultProxyAddress,
+		},
+		cli.BoolTFlag{
+			Name:  Flag(fProxyTLS),
+			Usage: "whether to use TLS to communicate to kitty-api domain",
+		},
+		/*
 			<<< HTTP SERVER >>>
 		*/
 		cli.StringFlag{
@@ -115,6 +132,9 @@ func action(ctx *cli.Context) error {
 	var (
 		walletDir = ctx.String(fWalletDir)
 
+		proxyDomain = ctx.String(fProxyDomain)
+		proxyTLS    = ctx.BoolT(fProxyTLS)
+
 		httpAddress = ctx.String(fHttpAddress)
 		gui         = ctx.BoolT(fGUI)
 		guiDir      = ctx.String(fGUIDir)
@@ -135,8 +155,6 @@ func action(ctx *cli.Context) error {
 		walletDir = tempDir
 	}
 
-	log.Info("finished preparing blockchain")
-
 	// Prepare wallet.
 	if err := wallet.SetRootDir(walletDir); err != nil {
 		return err
@@ -145,6 +163,19 @@ func action(ctx *cli.Context) error {
 	if err != nil {
 		return err
 	}
+	log.Printf("INIT: wallet directory is '%s' (TEST:%v).",
+		walletDir, test)
+
+	// Prepare proxy.
+	proxyManager, err := proxy.New(&proxy.Config{
+		Domain: proxyDomain,
+		TLS:    proxyTLS,
+	})
+	if err != nil {
+		return err
+	}
+	log.Printf("INIT: proxy is relaying requests to '%s' (TLS:%v).",
+		proxyDomain, proxyTLS)
 
 	// Prepare http server.
 	httpServer, err := http.NewServer(
@@ -158,12 +189,15 @@ func action(ctx *cli.Context) error {
 		},
 		&http.Gateway{
 			Wallet: walletManager,
+			Proxy:  proxyManager,
 		},
 	)
 	if err != nil {
 		return err
 	}
 	defer httpServer.Close()
+	log.Printf("INIT: http server is serving on '%s' (TLS:%v).",
+		httpAddress, tls)
 
 	<-quit
 	return nil

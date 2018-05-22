@@ -9,15 +9,22 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/kittycash/wallet/src/wallet"
+	"github.com/kittycash/wallet/src/proxy"
 )
 
 type Gateway struct {
 	Wallet *wallet.Manager
+	Proxy *proxy.Proxy
 }
 
 func (g *Gateway) host(mux *http.ServeMux) error {
 	if err := toolsGateway(mux); err != nil {
 		return err
+	}
+	if g.Proxy != nil {
+		if err := proxyGateway(mux, g.Proxy); err != nil {
+			return err
+		}
 	}
 	if g.Wallet != nil {
 		if err := walletGateway(mux, g.Wallet); err != nil {
