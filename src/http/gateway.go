@@ -16,9 +16,6 @@ type Gateway struct {
 }
 
 func (g *Gateway) host(mux *http.ServeMux) error {
-	if err := marketKitties(mux); err != nil {
-		return err
-	}
 	if err := toolsGateway(mux); err != nil {
 		return err
 	}

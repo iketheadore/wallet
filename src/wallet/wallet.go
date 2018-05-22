@@ -58,8 +58,9 @@ type Meta struct {
 
 // FloatingWallet represents the wallet that is not saved, but displayed in api.
 type FloatingWallet struct {
-	Meta    FloatingMeta     `json:"meta"`
-	Entries []*FloatingEntry `json:"entries"`
+	Meta       FloatingMeta     `json:"meta"`
+	EntryCount int              `json:"entry_count"`
+	Entries    []*FloatingEntry `json:"entries"`
 }
 
 // Wallet represents the wallet that is stored in memory.
@@ -117,7 +118,7 @@ func (o *Options) Verify() error {
 	return nil
 }
 
-func NewFloatingWallet(options *Options) (*Wallet, error) {
+func NewWallet(options *Options) (*Wallet, error) {
 	if err := options.Verify(); err != nil {
 		return nil, err
 	}
@@ -138,7 +139,7 @@ func NewFloatingWallet(options *Options) (*Wallet, error) {
 	}, nil
 }
 
-func LoadFloatingWallet(raw []byte, label, password string) (*Wallet, error) {
+func LoadWallet(raw []byte, label, password string) (*Wallet, error) {
 	prefix, data, err := ExtractPrefix(raw)
 	if err != nil {
 		return nil, err
@@ -239,9 +240,11 @@ func (w *Wallet) ToFile() *File {
 }
 
 func (w *Wallet) ToFloating() *FloatingWallet {
+	count := len(w.Entries)
 	fw := &FloatingWallet{
-		Meta:    w.Meta,
-		Entries: make([]*FloatingEntry, len(w.Entries)),
+		Meta:       w.Meta,
+		EntryCount: count,
+		Entries:    make([]*FloatingEntry, count),
 	}
 	for i, entry := range w.Entries {
 		fw.Entries[i] = entry.ToFloating()

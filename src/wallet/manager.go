@@ -46,7 +46,7 @@ func (m *Manager) Refresh() error {
 		var wallet *Wallet
 		if prefix.Encrypted() == false {
 			var err error
-			if wallet, err = LoadFloatingWallet(raw, label, ""); err != nil {
+			if wallet, err = LoadWallet(raw, label, ""); err != nil {
 				return err
 			}
 		}
@@ -110,7 +110,7 @@ func (m *Manager) NewWallet(opts *Options, addresses int) error {
 		return ErrLabelAlreadyExists
 	}
 
-	fw, e := NewFloatingWallet(opts)
+	fw, e := NewWallet(opts)
 	if e != nil {
 		return e
 	}
@@ -155,7 +155,7 @@ func (m *Manager) DisplayWallet(label, password string, addresses int) (*Floatin
 		if err != nil {
 			return nil, err
 		}
-		if w, err = LoadFloatingWallet(raw, label, password); err != nil {
+		if w, err = LoadWallet(raw, label, password); err != nil {
 			return nil, err
 		}
 		m.wallets[label] = w

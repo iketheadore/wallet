@@ -9,12 +9,12 @@ import (
 )
 
 func walletGateway(m *http.ServeMux, g *wallet.Manager) error {
-	Handle(m, "/api/wallets/refresh", "GET", refreshWallets(g))
-	Handle(m, "/api/wallets/list", "GET", listWallets(g))
-	Handle(m, "/api/wallets/new", "POST", newWallet(g))
-	Handle(m, "/api/wallets/delete", "POST", deleteWallet(g))
-	Handle(m, "/api/wallets/get", "POST", getWallet(g))
-	Handle(m, "/api/wallets/seed", "POST", newSeed())
+	Handle(m, "/v1/wallets/refresh", "GET", refreshWallets(g))
+	Handle(m, "/v1/wallets/list", "GET", listWallets(g))
+	Handle(m, "/v1/wallets/new", "POST", newWallet(g))
+	Handle(m, "/v1/wallets/delete", "POST", deleteWallet(g))
+	Handle(m, "/v1/wallets/get", "POST", getWallet(g))
+	Handle(m, "/v1/wallets/seed", "POST", newSeed())
 	return nil
 }
 

@@ -11,7 +11,7 @@ import (
 )
 
 func toolsGateway(m *http.ServeMux) error {
-	Handle(m, "/api/tools/sign_transfer_params", "POST", signTransferParams())
+	Handle(m, "/v1/tools/sign_transfer_params", "POST", signTransferParams())
 	return nil
 }
 
