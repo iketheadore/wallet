@@ -22,12 +22,12 @@
 						],
 						"body": {},
 						"url": {
-							"raw": "{{wallet_domain}}/api/wallets/refresh",
+							"raw": "{{wallet_domain}}/v1/wallets/refresh",
 							"host": [
 								"{{wallet_domain}}"
 							],
 							"path": [
-								"api",
+								"v1",
 								"wallets",
 								"refresh"
 							]
@@ -42,12 +42,12 @@
 						"header": [],
 						"body": {},
 						"url": {
-							"raw": "{{wallet_domain}}/api/wallets/list",
+							"raw": "{{wallet_domain}}/v1/wallets/list",
 							"host": [
 								"{{wallet_domain}}"
 							],
 							"path": [
-								"api",
+								"v1",
 								"wallets",
 								"list"
 							]
@@ -70,7 +70,7 @@
 							"urlencoded": [
 								{
 									"key": "label",
-									"value": "test_wallet4",
+									"value": "test_wallet",
 									"description": "Label that the new wallet should have.",
 									"type": "text"
 								},
@@ -102,12 +102,12 @@
 							]
 						},
 						"url": {
-							"raw": "{{wallet_domain}}/api/wallets/new",
+							"raw": "{{wallet_domain}}/v1/wallets/new",
 							"host": [
 								"{{wallet_domain}}"
 							],
 							"path": [
-								"api",
+								"v1",
 								"wallets",
 								"new"
 							]
@@ -137,12 +137,12 @@
 							]
 						},
 						"url": {
-							"raw": "{{wallet_domain}}/api/wallets/delete",
+							"raw": "{{wallet_domain}}/v1/wallets/delete",
 							"host": [
 								"{{wallet_domain}}"
 							],
 							"path": [
-								"api",
+								"v1",
 								"wallets",
 								"delete"
 							]
@@ -179,17 +179,18 @@
 									"key": "aCount",
 									"value": "20",
 									"description": "number of addresses to show (at least).",
-									"type": "text"
+									"type": "text",
+									"disabled": true
 								}
 							]
 						},
 						"url": {
-							"raw": "{{wallet_domain}}/api/wallets/get",
+							"raw": "{{wallet_domain}}/v1/wallets/get",
 							"host": [
 								"{{wallet_domain}}"
 							],
 							"path": [
-								"api",
+								"v1",
 								"wallets",
 								"get"
 							]
@@ -204,12 +205,12 @@
 						"header": [],
 						"body": {},
 						"url": {
-							"raw": "{{wallet_domain}}/api/wallets/seed",
+							"raw": "{{wallet_domain}}/v1/wallets/seed",
 							"host": [
 								"{{wallet_domain}}"
 							],
 							"path": [
-								"api",
+								"v1",
 								"wallets",
 								"seed"
 							]
@@ -285,12 +286,12 @@
 							]
 						},
 						"url": {
-							"raw": "{{wallet_domain}}/api/tools/sign_transfer_params",
+							"raw": "{{wallet_domain}}/v1/tools/sign_transfer_params",
 							"host": [
 								"{{wallet_domain}}"
 							],
 							"path": [
-								"api",
+								"v1",
 								"tools",
 								"sign_transfer_params"
 							]
