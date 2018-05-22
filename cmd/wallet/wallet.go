@@ -10,9 +10,9 @@ import (
 	"gopkg.in/urfave/cli.v1"
 
 	"github.com/kittycash/wallet/src/http"
+	"github.com/kittycash/wallet/src/proxy"
 	"github.com/kittycash/wallet/src/util"
 	"github.com/kittycash/wallet/src/wallet"
-	"github.com/kittycash/wallet/src/proxy"
 )
 
 const (

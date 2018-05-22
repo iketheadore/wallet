@@ -1,13 +1,13 @@
 package proxy
 
 import (
+	"bytes"
+	"io/ioutil"
+	"net/http"
 	"net/url"
 	"path"
 	"strings"
-	"net/http"
 	"time"
-	"io/ioutil"
-	"bytes"
 )
 
 type Config struct {
@@ -21,7 +21,7 @@ func (c *Config) TransformURL(originalURL *url.URL) string {
 		c.Domain = strings.TrimPrefix(c.Domain, s)
 	}
 
-	out := path.Join(c.Domain, originalURL.EscapedPath())+
+	out := path.Join(c.Domain, originalURL.EscapedPath()) +
 		"?" + originalURL.Query().Encode()
 
 	if c.TLS {
@@ -53,7 +53,6 @@ func (p *Proxy) Call(req *http.Request) (*http.Response, error) {
 /*
 	<<< HELPER FUNCTIONS >>>
 */
-
 
 type Changer func(body []byte, header http.Header) ([]byte, error)
 

@@ -8,13 +8,13 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/kittycash/wallet/src/wallet"
 	"github.com/kittycash/wallet/src/proxy"
+	"github.com/kittycash/wallet/src/wallet"
 )
 
 type Gateway struct {
 	Wallet *wallet.Manager
-	Proxy *proxy.Proxy
+	Proxy  *proxy.Proxy
 }
 
 func (g *Gateway) host(mux *http.ServeMux) error {
