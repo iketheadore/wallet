@@ -15,12 +15,9 @@ import (
 )
 
 const (
-	// TODO: Define proper values for these!
-
 	DefaultHttpAddress = "127.0.0.1:7908"
-
-	DirRoot         = ".kittycash"
-	DirChildWallets = "wallets"
+	DirRoot            = ".kittycash"
+	DirChildWallets    = "wallets"
 )
 
 const (
