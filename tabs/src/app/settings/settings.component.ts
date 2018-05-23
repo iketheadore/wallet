@@ -1,6 +1,8 @@
 import { Component, OnInit, Directive, ElementRef, HostListener, HostBinding, Renderer, Input, Renderer2 } from '@angular/core';
 import { finalize } from 'rxjs/operators';
 import { MatDialogRef } from '@angular/material';
+import { SettingsService } from './settings.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-settings',
@@ -9,8 +11,12 @@ import { MatDialogRef } from '@angular/material';
 })
 export class SettingsComponent implements OnInit {
  
- 
-  constructor(private dialogRef:MatDialogRef<SettingsComponent>, private renderer: Renderer2) { }
+  restore_name: string;
+  restore_seed: string;
+
+  constructor(private dialogRef:MatDialogRef<SettingsComponent>, 
+              private renderer: Renderer2,
+              private settingsService: SettingsService) { }
 
  
   ngOnInit() {
@@ -25,7 +31,17 @@ export class SettingsComponent implements OnInit {
   }
 
   doRestore() {
-    alert("Restore isn't functioning yet");
+    let params = {
+      label: this.restore_name,
+      seed: this.restore_seed,
+      aCount: 1,
+      encrypted: false
+    };
+    this.settingsService.restoreSeed(params).subscribe((result: any) => { 
+      let refresh_event = new CustomEvent('refreshButtonClick', { cancelable: true, detail: {} });
+      document.dispatchEvent(refresh_event);
+      this.dialogRef.close();
+    });
   }
 
   toggleFrame() {

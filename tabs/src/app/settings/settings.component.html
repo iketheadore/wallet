@@ -19,8 +19,9 @@
 		<label>Restore Wallet:</label>
 	</div>
 	<div class="col-9">
+		<input type="text" class="form-control" [(ngModel)]="restore_name" placeholder="Enter Wallet Name">
 		<div class="input-group">
-			<input type="text" class="form-control" placeholder="Enter Seed Here">
+			<input type="text" class="form-control"  [(ngModel)]="restore_seed" placeholder="Enter Seed Here">
 			<span class="input-group-btn">
 		    	<button class="btn btn-primary" type="button" (click)="doRestore()">Restore</button>
 		    </span>
