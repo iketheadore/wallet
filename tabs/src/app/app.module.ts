@@ -12,7 +12,9 @@ import { ConnectionStatusService } from "./connection_status/connection_status.s
 import { SettingsComponent } from "./settings/settings.component";
 import { AppComponent } from './app.component';
 import { SafePipe } from './game/safe.pipe';
+import { SettingsService } from "./settings/settings.service";
 import { MatDialogModule } from '@angular/material/dialog';
+import { FormsModule } from '@angular/forms';
 
 @NgModule({
   declarations: [
@@ -31,12 +33,14 @@ import { MatDialogModule } from '@angular/material/dialog';
     BrowserModule,
     MarketplaceAppModule,
     WalletAppModule,
-    MatDialogModule
+    MatDialogModule,
+    FormsModule
   ],
   providers: [
   	ScoreboardService,
     ErrorScreenService,
-    ConnectionStatusService
+    ConnectionStatusService,
+    SettingsService
   ],
   bootstrap: [AppComponent]
 })
