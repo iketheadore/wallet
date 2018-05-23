@@ -50,6 +50,10 @@ func (p *Proxy) Call(req *http.Request) (*http.Response, error) {
 	return call(p, req, nil)
 }
 
+func (p *Proxy) Redirect(w http.ResponseWriter, r *http.Request) {
+	http.Redirect(w, r, p.c.TransformURL(r.URL), http.StatusMovedPermanently)
+}
+
 /*
 	<<< HELPER FUNCTIONS >>>
 */
