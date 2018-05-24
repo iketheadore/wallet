@@ -7,73 +7,54 @@ import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { environment } from '../../environments/environment';
 
 const routes = {
-  all_statuses: () => `${environment.walletUrl}/conn/all_statuses`,
-  status: () => `${environment.walletUrl}/conn/status`,
-  reconnect: () => `${environment.walletUrl}/conn/reconnect`,
+  status: () => `${environment.walletUrl}/ping`,
 };
 
 @Injectable()
 export class ConnectionStatusService {
 
-  private all_statuses: any = false;
 
   private statusSource = new BehaviorSubject<any>(false);
   status = this.statusSource.asObservable();
 
   constructor(private httpClient: HttpClient) { 
-    this.getAllStatuses().subscribe((statuses: any) => { 
-      this.all_statuses = statuses;
-        this.checkStatus();
-    });
+    this.checkStatus();
   }
 
   private checkStatus()
   {
     //Now get the status
-    this.getStatus().subscribe((status_code: number) => {
-      this.statusSource.next(this.lookupStatus(status_code));
+    this.getStatus().subscribe((response: any) => {
+
+      let status = {connected: response.success, timer: 0, retry_time: 30};
+
+      clearInterval(status.timer);
+      if (!status.connected)
+      {
+        let __this = this;
+        //Set a timer
+        status.retry_time = 30;
+        status.timer = setInterval(() => { 
+          status.retry_time = status.retry_time - 1;
+          if (status.retry_time <= 0)
+          {
+            clearInterval(status.timer);
+            __this.doReconnect();
+            return;
+          }
+        }, 1000);
+      }
+
+      this.statusSource.next(status);
     });
   }
 
   doReconnect()
   {
-    this.reconnect().subscribe((res: any) => {
-      this.checkStatus();
-      return;
-    });
+    this.checkStatus();
   }
 
-  private lookupStatus(status_code: number)
-  {
-    let status = this.all_statuses.find(status => status.code === status_code);
-    let __this = this;
-    clearInterval(status.timer);
-    if (status.code === 1)
-    {
-      //Set a timer
-      status.retry_time = 30;
-      status.timer = setInterval(() => { 
-        status.retry_time = status.retry_time - 1;
-        if (status.retry_time <= 0)
-        {
-          clearInterval(status.timer);
-          __this.doReconnect();
-          return;
-        }
-      }, 1000);
-    }
-    return status;
-  }
-
-  private reconnect(): Observable<any> {
-    return this.httpClient
-      .get(routes.reconnect())
-      .pipe(
-        map((body: any) => body),
-        catchError(() => of('Error, could not reconnect :-('))
-      );
-  }
-
+ 
   private getStatus(): Observable<any> {
     return this.httpClient
       .get(routes.status())
@@ -82,14 +63,4 @@ export class ConnectionStatusService {
         catchError(() => of('Error, could not load status :-('))
       );
   }
-
-  private getAllStatuses(): Observable<any> {
-    return this.httpClient
-      .get(routes.all_statuses())
-      .pipe(
-        map((body: any) => body),
-        catchError(() => of('Error, could not load all_statuses :-('))
-      );
-  }
-
 }
