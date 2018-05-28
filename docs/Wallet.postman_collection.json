@@ -199,6 +199,60 @@
 					"response": []
 				},
 				{
+					"name": "Get (Paginated)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "label",
+									"value": "test_wallet",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "",
+									"description": "",
+									"type": "text",
+									"disabled": true
+								},
+								{
+									"key": "startIndex",
+									"value": "10",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "pageSize",
+									"value": "10",
+									"description": "",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{wallet_domain}}/v1/wallets/get_paginated",
+							"host": [
+								"{{wallet_domain}}"
+							],
+							"path": [
+								"v1",
+								"wallets",
+								"get_paginated"
+							]
+						}
+					},
+					"response": []
+				},
+				{
 					"name": "Seed",
 					"request": {
 						"method": "GET",
