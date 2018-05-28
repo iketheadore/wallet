@@ -63,6 +63,15 @@ type FloatingWallet struct {
 	Entries    []*FloatingEntry `json:"entries"`
 }
 
+type PaginatedFloatingWallet struct {
+	Meta       FloatingMeta     `json:"meta"`
+	StartIndex int              `json:"start_index"`
+	PageSize   int              `json:"page_size"`
+	LastPage   bool             `json:"last_page"`
+	TotalCount int              `json:"total_count"`
+	Entries    []*FloatingEntry `json:"entries"`
+}
+
 // Wallet represents the wallet that is stored in memory.
 type Wallet struct {
 	Meta    FloatingMeta
@@ -252,6 +261,118 @@ func (w *Wallet) ToFloating() *FloatingWallet {
 	return fw
 }
 
+func (w *Wallet) ToPaginatedFloating(startIndex, pageSize int) (*PaginatedFloatingWallet, error) {
+	totalCount := len(w.Entries)
+	p, err := CheckPaginated(startIndex, pageSize, totalCount)
+	if err != nil {
+		return nil, err
+	}
+	out := PaginatedFloatingWallet{
+		Meta: w.Meta,
+		StartIndex: startIndex,
+		PageSize:   p.NewPageSize,
+		LastPage:   p.LastPage,
+		TotalCount: totalCount,
+		Entries: make([]*FloatingEntry, p.NewPageSize),
+	}
+	for i, j := 0, startIndex; i < p.NewPageSize; i, j = i+1, j+1 {
+		out.Entries[i] = w.Entries[j].ToFloating()
+	}
+	return &out, nil
+}
+
+type ErrValueNotInRange struct {
+	ValName string
+	HasMin  bool
+	HasMax  bool
+	ExpMin  int
+	ExpMax  int
+	Extra   []int
+	Got     int
+}
+
+func (err ErrValueNotInRange) Error() string {
+	var (
+		out string
+	)
+	if err.ExpMax != 0 {
+		err.HasMax = true
+	}
+	if err.ExpMin != 0 {
+		err.HasMin = true
+	}
+	switch {
+	case err.HasMin && err.HasMax:
+		out += fmt.Sprintf(
+			"expected '%s' to have a value between '%d' and '%d' inclusive",
+			err.ValName, err.ExpMin, err.ExpMax,
+		)
+	case err.HasMin && !err.HasMax:
+		out += fmt.Sprintf(
+			"expected '%s' to be '%d' or greater",
+			err.ValName, err.ExpMin,
+		)
+	case !err.HasMin && err.HasMax:
+		out += fmt.Sprintf(
+			"expected '%s' to be '%d' or below",
+			err.ValName, err.ExpMax,
+		)
+	default:
+		out += fmt.Sprintf(
+			"expected value '%s' to be of range",
+			err.ValName,
+		)
+	}
+	if len(err.Extra) > 0 {
+		out += fmt.Sprintf(", or of the following values '%v'", err.Extra)
+	}
+	out += fmt.Sprintf(", but we got '%d'", err.Got)
+	return out
+}
+
+type CheckPaginatedOut struct {
+	LastPage    bool
+	NewPageSize int
+}
+
+func CheckPaginated(startIndex, pageSize, totalCount int) (*CheckPaginatedOut, error) {
+	// Check start index.
+	if startIndex < 0 || startIndex >= totalCount {
+		return nil, ErrValueNotInRange{
+			ValName: "start_index",
+			HasMin: true,
+			HasMax: true,
+			ExpMin:  0,
+			ExpMax:  totalCount - 1,
+			Got:     startIndex,
+		}
+	}
+	// Check page size.
+	//	- 'page_size' of '-1' shows everything.
+	if pageSize != -1 && pageSize < 1 {
+		return nil, ErrValueNotInRange{
+			ValName: "page_size",
+			HasMin: true,
+			HasMax: false,
+			ExpMin: 1,
+			Extra: []int{-1},
+			Got: pageSize,
+		}
+	}
+	// Prepare changes.
+	if diff := totalCount - (startIndex + pageSize); diff <= 0 {
+		return &CheckPaginatedOut{
+			LastPage:    true,
+			NewPageSize: pageSize - diff,
+		}, nil
+	} else {
+		return &CheckPaginatedOut{
+			LastPage:    false,
+			NewPageSize: pageSize,
+		}, nil
+	}
+}
+
 /*
 	<<< HELPERS >>>
 */
@@ -259,3 +380,4 @@ func (w *Wallet) ToFloating() *FloatingWallet {
 func SaveBinary(fn string, data []byte) error {
 	return file.SaveBinary(fn, data, os.FileMode(0600))
 }
+

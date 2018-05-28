@@ -24,7 +24,3 @@ func tunnel(p *proxy.Proxy) HandlerFunc {
 		return nil
 	}
 }
-
-/*
-	<<< HELPER FUNCTIONS >>>
-*/
