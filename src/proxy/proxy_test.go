@@ -1,13 +1,14 @@
 package proxy
 
 import (
-	"testing"
 	"net/url"
+	"testing"
+
 	"github.com/stretchr/testify/require"
 )
 
 func TestConfig_TransformURL(t *testing.T) {
-	cases := []struct{
+	cases := []struct {
 		Config Config
 		URL    string
 		Exp    string

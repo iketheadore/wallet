@@ -88,6 +88,18 @@ $base-size: 16px;
   }
 }
 
+.pointer {
+  cursor: pointer !important;
+}
+
 button {
   background-color: white;
+}
+
+button:hover img{
+    -webkit-filter: brightness(0) invert(1);  
+}
+
+.no-hover img {
+  -webkit-filter: none !important;  
 }
