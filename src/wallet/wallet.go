@@ -340,8 +340,8 @@ func CheckPaginated(startIndex, pageSize, totalCount int) (*CheckPaginatedOut, e
 	if startIndex < 0 || startIndex >= totalCount {
 		return nil, ErrValueNotInRange{
 			ValName: "start_index",
-			HasMin: true,
-			HasMax: true,
+			HasMin:  true,
+			HasMax:  true,
 			ExpMin:  0,
 			ExpMax:  totalCount - 1,
 			Got:     startIndex,
@@ -352,11 +352,11 @@ func CheckPaginated(startIndex, pageSize, totalCount int) (*CheckPaginatedOut, e
 	if pageSize != -1 && pageSize < 1 {
 		return nil, ErrValueNotInRange{
 			ValName: "page_size",
-			HasMin: true,
-			HasMax: false,
-			ExpMin: 1,
-			Extra: []int{-1},
-			Got: pageSize,
+			HasMin:  true,
+			HasMax:  false,
+			ExpMin:  1,
+			Extra:   []int{-1},
+			Got:     pageSize,
 		}
 	}
 	// Prepare changes.
@@ -380,4 +380,3 @@ func CheckPaginated(startIndex, pageSize, totalCount int) (*CheckPaginatedOut, e
 func SaveBinary(fn string, data []byte) error {
 	return file.SaveBinary(fn, data, os.FileMode(0600))
 }
-

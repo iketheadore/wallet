@@ -14,7 +14,7 @@ func walletGateway(m *http.ServeMux, g *wallet.Manager) error {
 	Handle(m, "/v1/wallets/new", "POST", newWallet(g))
 	Handle(m, "/v1/wallets/delete", "POST", deleteWallet(g))
 	Handle(m, "/v1/wallets/get", "POST", getWallet(g))
-	Handle(m , "/v1/wallets/get_paginated", "POST", getWalletPaginated(g))
+	Handle(m, "/v1/wallets/get_paginated", "POST", getWalletPaginated(g))
 	Handle(m, "/v1/wallets/seed", "POST", newSeed())
 	return nil
 }
