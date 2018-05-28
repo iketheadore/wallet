@@ -14,6 +14,7 @@ func walletGateway(m *http.ServeMux, g *wallet.Manager) error {
 	Handle(m, "/v1/wallets/new", "POST", newWallet(g))
 	Handle(m, "/v1/wallets/delete", "POST", deleteWallet(g))
 	Handle(m, "/v1/wallets/get", "POST", getWallet(g))
+	Handle(m , "/v1/wallets/get_paginated", "POST", getWalletPaginated(g))
 	Handle(m, "/v1/wallets/seed", "POST", newSeed())
 	return nil
 }
@@ -162,6 +163,55 @@ func getWallet(g *wallet.Manager) HandlerFunc {
 			},
 		})
 		return e
+	}
+}
+
+func getWalletPaginated(g *wallet.Manager) HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request, p *Path) error {
+
+		// Only allow 'Content-Type' of 'application/x-www-form-urlencoded'.
+		_, err := SwitchContType(w, r, ContTypeActions{
+			CtApplicationForm: func() (bool, error) {
+				var (
+					vLabel      = r.PostFormValue("label")
+					vPassword   = r.PostFormValue("password") // Optional.
+					vStartIndex = r.PostFormValue("startIndex")
+					vPageSize   = r.PostFormValue("pageSize")
+				)
+				if r.Body == nil {
+					return false, sendJson(w, http.StatusBadRequest,
+						fmt.Sprint("request body missing"))
+				}
+				var startIndex int
+				if vStartIndex != "" {
+					var err error
+					if startIndex, err = strconv.Atoi(vStartIndex); err != nil {
+						return false, sendJson(w, http.StatusBadRequest,
+							fmt.Sprintf("invalid startIndex: %s", err))
+					}
+				}
+				var pageSize int
+				if vPageSize != "" {
+					var err error
+					if pageSize, err = strconv.Atoi(vPageSize); err != nil {
+						return false, sendJson(w, http.StatusBadRequest,
+							fmt.Sprintf("invalid pageSize: %s", err))
+					}
+				}
+				fw, err := g.DisplayPaginatedWallet(vLabel, vPassword, startIndex, pageSize)
+				if err != nil {
+					return false, sendJson(w, http.StatusBadRequest,
+						fmt.Sprintf("Error: %v", err))
+				} else if fw == nil {
+					// WORKAROUND: happens only on panic within DisplayWallet function.
+					// 		panic should only happen when wrong password is given.
+					return false, sendJson(w, http.StatusBadRequest,
+						fmt.Sprintf("Error: %v", wallet.ErrInvalidPassword))
+				}
+				return true, sendJson(w, http.StatusOK, fw)
+			},
+		})
+		return err
 	}
 }
 

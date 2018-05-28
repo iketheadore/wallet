@@ -169,6 +169,38 @@ func (m *Manager) DisplayWallet(label, password string, addresses int) (*Floatin
 	}
 }
 
+func (m *Manager) DisplayPaginatedWallet(label, password string, startIndex, pageSize int) (*PaginatedFloatingWallet, error) {
+	defer m.lock()()
+
+	switch w, err := m.getWallet(label); err {
+	case nil:
+		if err := w.EnsureEntries(startIndex + pageSize); err != nil {
+			return nil, err
+		}
+		return w.ToPaginatedFloating(startIndex, pageSize)
+
+	case ErrWalletNotFound:
+		return nil, ErrWalletNotFound
+
+	case ErrWalletLocked:
+		raw, err := OpenAndReadAll(LabelPath(label))
+		if err != nil {
+			return nil, err
+		}
+		if w, err = LoadWallet(raw, label, password); err != nil {
+			return nil, err
+		}
+		m.wallets[label] = w
+		if err := w.EnsureEntries(startIndex + pageSize); err != nil {
+			return nil, err
+		}
+		return w.ToPaginatedFloating(startIndex, pageSize)
+
+	default:
+		return nil, errors.New("unknown error")
+	}
+}
+
 /*
 	<<< HELPER FUNCTIONS >>>
 */

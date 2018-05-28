@@ -268,12 +268,12 @@ func (w *Wallet) ToPaginatedFloating(startIndex, pageSize int) (*PaginatedFloati
 		return nil, err
 	}
 	out := PaginatedFloatingWallet{
-		Meta: w.Meta,
+		Meta:       w.Meta,
 		StartIndex: startIndex,
 		PageSize:   p.NewPageSize,
 		LastPage:   p.LastPage,
 		TotalCount: totalCount,
-		Entries: make([]*FloatingEntry, p.NewPageSize),
+		Entries:    make([]*FloatingEntry, p.NewPageSize),
 	}
 	for i, j := 0, startIndex; i < p.NewPageSize; i, j = i+1, j+1 {
 		out.Entries[i] = w.Entries[j].ToFloating()
