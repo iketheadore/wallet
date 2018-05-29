@@ -43,7 +43,9 @@ GLOBAL OPTIONS:
 go run ${GOPATH}/src/github.com/kittycash/wallet/cmd/wallet/wallet.go
 ```
 
-To run the frontend, refer to [/electron/README.md](/electron/README.md). 
+**Run the wallet frontend.**
+
+Refer to [/electron/README.md](/electron/README.md). 
 
 ## Test wallet
 
@@ -59,3 +61,7 @@ go run ${GOPATH}/src/github.com/kittycash/wallet/cmd/wallet/wallet.go \
 --proxy-tls=true \
 --http-address="127.0.0.1:6148"
 ```
+
+## Endpoints documentation
+
+Refer to the [Postman](https://www.getpostman.com) collection located at [/docs/Wallet.postman_collection.json](/docs/Wallet.postman_collection.json) .
