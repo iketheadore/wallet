@@ -26,7 +26,7 @@
     "src/kitty",
     "src/utils"
   ]
-  revision = "9e7ef28e3d298d6d5514aaf6b4221e909c825406"
+  revision = "5a3636fa012a867e1a7303e3deac2bfcd42cc176"
 
 [[projects]]
   name = "github.com/op/go-logging"
@@ -67,6 +67,7 @@
     "src/util/droplet",
     "src/util/fee",
     "src/util/file",
+    "src/util/iputil",
     "src/util/logging",
     "src/util/utc",
     "src/visor",
@@ -94,7 +95,7 @@
     "pbkdf2",
     "ssh/terminal"
   ]
-  revision = "1a580b3eff7814fc9b40602fd35256c63b50f491"
+  revision = "ab813273cd59e1333f7ae7bff5d027d4aadf528c"
 
 [[projects]]
   branch = "master"
@@ -103,7 +104,7 @@
     "unix",
     "windows"
   ]
-  revision = "7c87d13f8e835d2fb3a70a2912c811ed0c1d241b"
+  revision = "c11f84a56e43e20a78cee75a7c034031ecf57d1f"
 
 [[projects]]
   name = "gopkg.in/sirupsen/logrus.v1"
@@ -120,6 +121,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1d8884bb301798ba35ad0984d29efacc65b6ab8b3ce4ae86af02195546e975a8"
+  inputs-digest = "2209d12509cf38a28de65ea287de6cc5770403f5d0c29f7149ee14f9fc46f0bd"
   solver-name = "gps-cdcl"
   solver-version = 1
