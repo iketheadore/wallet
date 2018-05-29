@@ -157,7 +157,9 @@ func (s *Server) Close() {
 
 func HostCheck(log *logrus.Logger, a *SplitAddressOut, mux *http.ServeMux) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Host != "" && a.Localhost && r.Host != fmt.Sprintf("127.0.0.1:%d", a.Port) && r.Host != fmt.Sprintf("localhost:%d", a.Port) {
+		if r.Host != "" && a.Localhost &&
+			r.Host != fmt.Sprintf("127.0.0.1:%d", a.Port) &&
+			r.Host != fmt.Sprintf("localhost:%d", a.Port) {
 			err := fmt.Sprintf("Detected DNS rebind attempt - configured-host=%s header-host=%s", r.Host, r.Host)
 			log.Warn(err)
 			http.Error(w, err, http.StatusForbidden)
