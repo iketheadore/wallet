@@ -5,8 +5,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"path"
-	"time"
 	"strings"
+	"time"
+
 	"github.com/pkg/errors"
 
 	"github.com/skycoin/skycoin/src/util/iputil"
