@@ -6,6 +6,11 @@ import (
 	"net/http"
 	"path"
 	"time"
+	"strings"
+	"github.com/pkg/errors"
+
+	"github.com/skycoin/skycoin/src/util/iputil"
+	"gopkg.in/sirupsen/logrus.v1"
 )
 
 const (
@@ -27,6 +32,38 @@ func (sc *ServerConfig) APIPath(elem ...string) string {
 		[]string{sc.KittyAPIDomain, "api"}, elem...)...)
 }
 
+type SplitAddressOut struct {
+	Address   string
+	Port      uint16
+	Localhost bool
+}
+
+func (sc *ServerConfig) SplitAddress() (*SplitAddressOut, error) {
+	var (
+		addr = sc.Address
+		port = uint16(0)
+	)
+	if strings.Contains(sc.Address, ":") {
+		var err error
+		addr, port, err = iputil.SplitAddr(sc.Address)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	localhost := iputil.IsLocalhost(addr)
+
+	if localhost && port == 0 {
+		return nil, errors.New("localhost with no port specified is unsupported")
+	}
+
+	return &SplitAddressOut{
+		Address:   addr,
+		Port:      port,
+		Localhost: localhost,
+	}, nil
+}
+
 type Server struct {
 	c    *ServerConfig
 	srv  *http.Server
@@ -45,14 +82,18 @@ func NewServer(config *ServerConfig, api *Gateway) (*Server, error) {
 	if e := server.prepareMux(); e != nil {
 		return nil, e
 	}
-	go server.serve()
+	a, err := config.SplitAddress()
+	if err != nil {
+		return nil, errors.WithMessage(err, "provided address not supported")
+	}
+	go server.serve(a)
 	return server, nil
 }
 
-func (s *Server) serve() {
+func (s *Server) serve(a *SplitAddressOut) {
 	s.srv = &http.Server{
 		Addr:    s.c.Address,
-		Handler: s.mux,
+		Handler: HostCheck(logrus.New(), a, s.mux),
 	}
 	if s.c.EnableTLS {
 		for {
@@ -111,4 +152,16 @@ func (s *Server) Close() {
 			s.srv.Close()
 		}
 	}
+}
+
+func HostCheck(log *logrus.Logger, a *SplitAddressOut, mux *http.ServeMux) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Host != "" && a.Localhost && r.Host != fmt.Sprintf("127.0.0.1:%d", a.Port) && r.Host != fmt.Sprintf("localhost:%d", a.Port) {
+			err := fmt.Sprintf("Detected DNS rebind attempt - configured-host=%s header-host=%s", r.Host, r.Host)
+			log.Warn(err)
+			http.Error(w, err, http.StatusForbidden)
+			return
+		}
+		mux.ServeHTTP(w, r)
+	})
 }
