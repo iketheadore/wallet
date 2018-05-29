@@ -6,7 +6,9 @@ import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 const routes = {
-  new_wallet: (s: WalletContext) => `http://127.0.0.1:6148/api/wallets/new`
+  new_wallet: (s: WalletContext) => `http://127.0.0.1:6148/v1/wallets/new`,
+  list_wallets: () => `http://127.0.0.1:6148/v1/wallets/list`,
+  get_wallet: () => `http://127.0.0.1:6148/v1/wallets/get`
 };
 
 export interface WalletContext {
@@ -28,6 +30,58 @@ export class SettingsService {
         map((body: any) => body),
         catchError(() => of('Error, could not restore seed :-('))
       );
+  }
+
+  getBackupFile(): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+      this.getWalletList().then(wallets => {
+
+        let promises = [];
+
+        for (let i = 0; i < wallets.length; i++)
+        {
+          let wallet = wallets[i];
+          promises.push(this.getWalletDetails(wallet.label));
+        }
+        Promise.all(promises).then(wallets=> {
+          resolve(wallets);
+        })
+      });
+    });
+  }
+
+  private getWalletList(): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+      this.httpClient
+      .get(routes.list_wallets(), this.getOptions()).subscribe((wallets:any) => {
+
+        if (wallets && wallets.wallets)
+        {
+          resolve(wallets.wallets);
+        }
+        else
+        {
+          reject("No wallets found");
+        }
+        
+      });
+    });
+  }
+
+  private getWalletDetails(label: string): Promise<any> {
+    return new Promise<any>((resolve, reject) => {
+      this.httpClient
+      .post(routes.get_wallet(), this.getQueryString({label: label}), this.getOptions()).subscribe((wallet:any) => {
+        if (wallet && wallet.entry_count && wallet.entry_count > 0)
+        {
+          resolve(wallet);
+        }        
+        else
+        {
+          reject("Wallet not found");
+        }
+      });
+    });
   }
 
   private getQueryString(parameters:any = null) {

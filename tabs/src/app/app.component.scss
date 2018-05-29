@@ -4,12 +4,22 @@
 	background: linear-gradient(to bottom, rgb(255, 255, 255), rgb(251, 251, 251));
 	background-repeat: no-repeat;
 	border-radius: 15px;
-	width:100%;
-	max-width:none;
 	padding:0;
-	overflow-x: hidden;
+	position: absolute;
+	top: 50px;
+	bottom: 50px;
+	left: 0;
+	right: 0;
+	overflow: hidden;
+	z-index:1;
 }
 
+.container-inner {
+	display: -webkit-flex;
+  	display: flex;
+  	flex-direction: column; 
+  	height: 100%;
+}
 .header h4 {
 	color: $kittyred;
 	font-family: 'Montserrat-Bold', sans-serif;
@@ -48,4 +58,12 @@
     text-decoration: none;
     color: #FFEBEE;
   }
+}
+
+
+.current-tab {
+	overflow-y: scroll;
+	overflow-x: hidden;
+	height: 100%;
+	position: relative;
 }

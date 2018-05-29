@@ -16,7 +16,10 @@ $base-size: 16px;
 
 .colored-frame {
   background: linear-gradient(to bottom, #FF6889, #FA8265);
-  padding: 50px;
+  padding-top: 50px;
+  padding-bottom: 50px;
+  padding-right: 100px;
+  padding-left: 100px;
 }
 
 .cdk-overlay-container {
@@ -44,6 +47,7 @@ $base-size: 16px;
 
 .mat-dialog-container {
   position: relative !important;
+  border-radius: 25px !important;
 }
 
 .cdk-overlay-backdrop.cdk-overlay-backdrop-showing {

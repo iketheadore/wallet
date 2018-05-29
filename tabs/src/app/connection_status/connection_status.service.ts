@@ -54,7 +54,6 @@ export class ConnectionStatusService {
     this.checkStatus();
   }
 
- 
   private getStatus(): Observable<any> {
     return this.httpClient
       .get(routes.status())

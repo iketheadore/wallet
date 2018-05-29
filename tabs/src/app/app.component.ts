@@ -1,4 +1,4 @@
-import { Component, HostListener } from '@angular/core';
+import { Component, HostListener, ViewChild } from '@angular/core';
 import { Http } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map'
@@ -6,6 +6,7 @@ import 'rxjs/add/operator/catch'
 import { ErrorScreenService } from './error_screen/error_screen.service';
 import { MatDialog } from '@angular/material';
 import { SettingsComponent } from './settings/settings.component';
+import { WalletAppModule } from 'wallet-lib';
 
 @Component({
   selector: 'app-root',
@@ -21,11 +22,12 @@ export class AppComponent {
   constructor(
     private http: Http,
     private errorScreenService: ErrorScreenService, 
-    public dialog: MatDialog
+    public dialog: MatDialog,
+    private appMod: WalletAppModule
   ) {
 
-
     this.version = "0.0.0";
+
     if (window['require'])
     {
       this.version = window['require']('electron').remote.app.getVersion();
@@ -69,7 +71,7 @@ export class AppComponent {
       ev.preventDefault();
       // send the error to the error screen service
       this.errorScreenService.setError(ev.detail.message);
-    }
+  }
 
   doRefresh() {
     let event = new CustomEvent('refreshButtonClick', { cancelable: true, detail: {} });
