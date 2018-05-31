@@ -28,11 +28,6 @@ type ServerConfig struct {
 	TLSKeyFile     string
 }
 
-func (sc *ServerConfig) APIPath(elem ...string) string {
-	return path.Join(append(
-		[]string{sc.KittyAPIDomain, "api"}, elem...)...)
-}
-
 type SplitAddressOut struct {
 	Address   string
 	Port      uint16

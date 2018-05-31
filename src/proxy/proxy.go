@@ -5,9 +5,8 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"path"
-	"strings"
 	"time"
+	"github.com/kittycash/wallet/src/tools"
 )
 
 type Config struct {
@@ -16,19 +15,7 @@ type Config struct {
 }
 
 func (c *Config) TransformURL(originalURL *url.URL) string {
-
-	for _, s := range []string{"http://", "https://"} {
-		c.Domain = strings.TrimPrefix(c.Domain, s)
-	}
-
-	out := path.Join(c.Domain, originalURL.EscapedPath()) +
-		"?" + originalURL.Query().Encode()
-
-	if c.TLS {
-		return "https://" + out
-	} else {
-		return "http://" + out
-	}
+	return tools.TransformURL(originalURL, c.Domain, c.TLS)
 }
 
 type Proxy struct {
