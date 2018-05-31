@@ -56,7 +56,6 @@ This is so that nothing gets written to disk. We have also set proxy domain to `
 ```
 go run ${GOPATH}/src/github.com/kittycash/wallet/cmd/wallet/wallet.go \
 --test=true \
---test-gen-pk=03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753 \
 --proxy-domain="staging-api.kittycash.com" \
 --proxy-tls=true \
 --http-address="127.0.0.1:6148"

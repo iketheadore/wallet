@@ -145,6 +145,11 @@ func (m *Manager) DisplayWallet(label, password string, addresses int) (*Floatin
 		if err := w.EnsureEntries(addresses); err != nil {
 			return nil, err
 		}
+		if !w.Meta.Saved {
+			if err := w.Save(); err != nil {
+				return nil, err
+			}
+		}
 		return w.ToFloating(), nil
 
 	case ErrWalletNotFound:
@@ -162,6 +167,11 @@ func (m *Manager) DisplayWallet(label, password string, addresses int) (*Floatin
 		if err := w.EnsureEntries(addresses); err != nil {
 			return nil, err
 		}
+		if !w.Meta.Saved {
+			if err := w.Save(); err != nil {
+				return nil, err
+			}
+		}
 		return w.ToFloating(), nil
 
 	default:
@@ -176,6 +186,11 @@ func (m *Manager) DisplayPaginatedWallet(label, password string, startIndex, pag
 		if forceTotal != -1 {
 			if err := w.EnsureEntries(forceTotal); err != nil {
 				return nil, err
+			}
+			if !w.Meta.Saved {
+				if err := w.Save(); err != nil {
+					return nil, err
+				}
 			}
 		}
 		return w.ToPaginatedFloating(startIndex, pageSize)
