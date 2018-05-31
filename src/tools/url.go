@@ -2,8 +2,8 @@ package tools
 
 import (
 	"net/url"
-	"strings"
 	"path"
+	"strings"
 )
 
 func TransformURL(original *url.URL, newDomain string, useTLS bool) string {
