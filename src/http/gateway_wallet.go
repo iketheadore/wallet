@@ -177,6 +177,7 @@ func getWalletPaginated(g *wallet.Manager) HandlerFunc {
 					vPassword   = r.PostFormValue("password") // Optional.
 					vStartIndex = r.PostFormValue("startIndex")
 					vPageSize   = r.PostFormValue("pageSize")
+					vForceTotal = r.PostFormValue("forceTotal")
 				)
 				if r.Body == nil {
 					return false, sendJson(w, http.StatusBadRequest,
@@ -187,7 +188,7 @@ func getWalletPaginated(g *wallet.Manager) HandlerFunc {
 					var err error
 					if startIndex, err = strconv.Atoi(vStartIndex); err != nil {
 						return false, sendJson(w, http.StatusBadRequest,
-							fmt.Sprintf("invalid startIndex: %s", err))
+							fmt.Sprintf("invalid startIndex: %s", err.Error()))
 					}
 				}
 				var pageSize int
@@ -195,10 +196,21 @@ func getWalletPaginated(g *wallet.Manager) HandlerFunc {
 					var err error
 					if pageSize, err = strconv.Atoi(vPageSize); err != nil {
 						return false, sendJson(w, http.StatusBadRequest,
-							fmt.Sprintf("invalid pageSize: %s", err))
+							fmt.Sprintf("invalid pageSize: %s", err.Error()))
 					}
 				}
-				fw, err := g.DisplayPaginatedWallet(vLabel, vPassword, startIndex, pageSize)
+				var forceTotal int
+				if vForceTotal != "" {
+					var err error
+					if forceTotal, err = strconv.Atoi(vForceTotal); err != nil {
+						return false, sendJson(w, http.StatusBadRequest,
+							fmt.Sprintf("invalid forceTotal: %s", err.Error()))
+					}
+				} else {
+					forceTotal = -1
+				}
+
+				fw, err := g.DisplayPaginatedWallet(vLabel, vPassword, startIndex, pageSize, forceTotal)
 				if err != nil {
 					return false, sendJson(w, http.StatusBadRequest,
 						fmt.Sprintf("Error: %v", err))

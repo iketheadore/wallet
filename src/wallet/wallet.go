@@ -263,10 +263,17 @@ func (w *Wallet) ToFloating() *FloatingWallet {
 
 func (w *Wallet) ToPaginatedFloating(startIndex, pageSize int) (*PaginatedFloatingWallet, error) {
 	totalCount := len(w.Entries)
+
+	log.Infof("start(%d) page(%d) total(%d)",
+		startIndex, pageSize, totalCount)
+
 	p, err := CheckPaginated(startIndex, pageSize, totalCount)
 	if err != nil {
 		return nil, err
 	}
+
+	log.Info(p)
+
 	out := PaginatedFloatingWallet{
 		Meta:       w.Meta,
 		StartIndex: startIndex,
@@ -363,7 +370,7 @@ func CheckPaginated(startIndex, pageSize, totalCount int) (*CheckPaginatedOut, e
 	if diff := totalCount - (startIndex + pageSize); diff <= 0 {
 		return &CheckPaginatedOut{
 			LastPage:    true,
-			NewPageSize: pageSize - diff,
+			NewPageSize: pageSize + diff,
 		}, nil
 	} else {
 		return &CheckPaginatedOut{
