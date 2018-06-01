@@ -178,8 +178,7 @@ function createWindow(url) {
 
   webContents.on('new-window', function(event, url){
     event.preventDefault();
-    let open = require("open");
-    open(url);
+    require('electron').shell.openExternal(url);
   });
 
   // patch out eval

@@ -37,15 +37,17 @@ export class SettingsComponent implements OnInit {
       for (let i = 0; i < wallets.length; i++)
       {
         let wallet = wallets[i];
-        console.log(wallet);
-        let obj = {
-          label: wallet.meta.label, 
-          seed: wallet.meta.seed, 
-          version: wallet.meta.version, 
-          aCount: wallet.entry_count, 
-          encrypted: wallet.meta.encrypted
-        };
-        data.push(obj);
+        if (wallet)
+        {
+          let obj = {
+            label: wallet.meta.label, 
+            seed: wallet.meta.seed, 
+            version: wallet.meta.version, 
+            aCount: wallet.entry_count, 
+            encrypted: wallet.meta.encrypted
+          };
+          data.push(obj);
+        } 
       }
 
       var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data));
