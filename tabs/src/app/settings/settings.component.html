@@ -7,20 +7,26 @@
 
 <div class="row mt-5">
 	<div class="col-3">
-		<label>Backup Wallet:</label>
+		<label>Backup / Restore:</label>
 	</div>
-	<div class="col-9">
-		<button class="btn btn-outline-primary" (click)="doBackup()">Backup Now</button>
+	<div class="col-3">
+		<button class="btn btn-block btn-outline-primary" (click)="doBackup()">Backup</button>
+	</div>
+	<div class="col-3">
+		<label class="btn btn-block btn-outline-primary">
+			Restore<input type="file" multiple="false" (change)="doRestoreBackup()" id="restoreBackupFile" style="display:none;">
+		</label>
 	</div>
 </div>
 
 <div class="row mt-2 mb-5">
 	<div class="col-3">
-		<label>Restore Wallet:</label>
+		<label>Restore From Seed:</label>
 	</div>
 	<div class="col-9">
+		<input type="text" class="form-control" [(ngModel)]="restore_name" placeholder="Enter Wallet Name">
 		<div class="input-group">
-			<input type="text" class="form-control" placeholder="Enter Seed Here">
+			<input type="text" class="form-control"  [(ngModel)]="restore_seed" placeholder="Enter Seed Here">
 			<span class="input-group-btn">
 		    	<button class="btn btn-primary" type="button" (click)="doRestore()">Restore</button>
 		    </span>

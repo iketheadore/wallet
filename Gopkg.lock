@@ -2,10 +2,22 @@
 
 
 [[projects]]
+  name = "github.com/boltdb/bolt"
+  packages = ["."]
+  revision = "2f1ce7a837dcb8da3ec595b1dac9d0632f0f99e8"
+  version = "v1.3.1"
+
+[[projects]]
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   revision = "346938d642f2ec3594ed81d874461961cd0faa76"
   version = "v1.1.0"
+
+[[projects]]
+  name = "github.com/go-errors/errors"
+  packages = ["."]
+  revision = "a6af135bd4e28680facf08a3d206b454abc877a4"
+  version = "v1.0.1"
 
 [[projects]]
   branch = "develop"
@@ -14,7 +26,7 @@
     "src/kitty",
     "src/utils"
   ]
-  revision = "8e577025b5030ed1a0cffde25d287fa2f94c6dec"
+  revision = "5a3636fa012a867e1a7303e3deac2bfcd42cc176"
 
 [[projects]]
   name = "github.com/op/go-logging"
@@ -35,6 +47,12 @@
   version = "v1.0.0"
 
 [[projects]]
+  name = "github.com/shopspring/decimal"
+  packages = ["."]
+  revision = "69b3a8ad1f5f2c8bd855cb6506d18593064a346b"
+  version = "1.0.1"
+
+[[projects]]
   name = "github.com/skycoin/skycoin"
   packages = [
     "src/cipher",
@@ -45,8 +63,18 @@
     "src/cipher/ripemd160",
     "src/cipher/secp256k1-go",
     "src/cipher/secp256k1-go/secp256k1-go2",
+    "src/coin",
+    "src/util/droplet",
+    "src/util/fee",
     "src/util/file",
-    "src/util/logging"
+    "src/util/iputil",
+    "src/util/logging",
+    "src/util/utc",
+    "src/visor",
+    "src/visor/blockdb",
+    "src/visor/bucket",
+    "src/visor/historydb",
+    "src/wallet"
   ]
   revision = "84098d9ef5cdfa86d325509cf200dd7e45b4a1b4"
   version = "v0.22.0"
@@ -67,7 +95,7 @@
     "pbkdf2",
     "ssh/terminal"
   ]
-  revision = "d6449816ce06963d9d136eee5a56fca5b0616e7e"
+  revision = "ab813273cd59e1333f7ae7bff5d027d4aadf528c"
 
 [[projects]]
   branch = "master"
@@ -76,7 +104,7 @@
     "unix",
     "windows"
   ]
-  revision = "f6f352972f061230a99fbf49d1eb8073ebdb36cb"
+  revision = "c11f84a56e43e20a78cee75a7c034031ecf57d1f"
 
 [[projects]]
   name = "gopkg.in/sirupsen/logrus.v1"
@@ -93,6 +121,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3e1f61d1580594b9d37aa9640ef0d2fd0313217e1669172b0eed57f5325dd0aa"
+  inputs-digest = "2209d12509cf38a28de65ea287de6cc5770403f5d0c29f7149ee14f9fc46f0bd"
   solver-name = "gps-cdcl"
   solver-version = 1

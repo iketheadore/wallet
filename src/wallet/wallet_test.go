@@ -20,7 +20,7 @@ func initTempDir(t *testing.T) func() {
 }
 
 func saveWallet(options *Options) error {
-	fWallet, err := NewFloatingWallet(options)
+	fWallet, err := NewWallet(options)
 	if err != nil {
 		return err
 	}
@@ -37,7 +37,7 @@ func loadWallet(label, pw string) (*Wallet, error) {
 	if err != nil {
 		return nil, err
 	}
-	return LoadFloatingWallet(raw, label, pw)
+	return LoadWallet(raw, label, pw)
 }
 
 func TestFloatingWallet_Save(t *testing.T) {

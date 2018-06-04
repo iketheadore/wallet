@@ -6,5 +6,5 @@
 export const environment = {
   production: false,
   serverUrl: 'http://localhost:3000',
-  walletUrl: 'http://127.0.0.1:6148/api'
+  walletUrl: 'http://127.0.0.1:6148/v1'
 };

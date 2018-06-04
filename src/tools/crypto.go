@@ -29,7 +29,7 @@ type TransferParams struct {
 	DestAddress           string
 }
 
-func SignTransferParams(ctx context.Context, in *SignTransferParamsIn) (*SignTransferParamsOut, error) {
+func SignTransferParams(_ context.Context, in *SignTransferParamsIn) (*SignTransferParamsOut, error) {
 
 	// Obtain last sig.
 	var lastSig string

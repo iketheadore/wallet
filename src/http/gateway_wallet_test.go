@@ -51,9 +51,9 @@ func TestWalletGateway(t *testing.T) {
 		responseCode  int
 		checkResponse ResponseChecker
 	}{
-		/* /api/wallets/seed tests */
+		/* /v1/wallets/seed tests */
 		{
-			endpoint:      "/api/wallets/seed",
+			endpoint:      "/v1/wallets/seed",
 			name:          "No seedBitSize provided",
 			method:        http.MethodPost,
 			headers:       CTApplicationFormHeaders,
@@ -61,7 +61,7 @@ func TestWalletGateway(t *testing.T) {
 			checkResponse: validSeedChecker,
 		},
 		{
-			endpoint:      "/api/wallets/seed",
+			endpoint:      "/v1/wallets/seed",
 			name:          "Non-default seedBitSize provided",
 			method:        http.MethodPost,
 			body:          "seedBitSize=256",
@@ -70,7 +70,7 @@ func TestWalletGateway(t *testing.T) {
 			checkResponse: validSeedChecker,
 		},
 		{
-			endpoint:      "/api/wallets/seed",
+			endpoint:      "/v1/wallets/seed",
 			name:          "Invalid seedBitSize provided",
 			method:        http.MethodPost,
 			body:          "seedBitSize=23",

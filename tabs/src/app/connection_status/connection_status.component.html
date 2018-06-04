@@ -1,4 +1,6 @@
 <div class="connection-status">
-  <div class="status" [ngClass]="{'connected': status.code === 0, 'disconnected': status.code === 1, 'connecting': status.code === 2, 'unkown': status.code === 3}"></div> <span class="status-description">{{status.name}}</span>
-  <span class="status-reconnecting"><a (click)="doReconnect()">Reconnect ({{status.retry_time}}s)</a></span>
+  <div class="status" [ngClass]="{'connected': status.connected, 'disconnected': !status.connected}"></div> 
+  <span class="status-description" *ngIf="status.connected">CONNECTED</span>
+  <span class="status-description" *ngIf="!status.connected">DISCONNECTED</span>
+  <span class="status-reconnecting" *ngIf="!status.connected"><a (click)="doReconnect()">Reconnect ({{status.retry_time}}s)</a></span>
 </div>

@@ -105,6 +105,7 @@ function startKittyCash() {
 
   if (isDev())
   {
+    args.unshift("--proxy-domain=staging-api.kittycash.com");
     args.unshift("../cmd/wallet/wallet.go");
     args.unshift("run");
   }
@@ -156,6 +157,8 @@ function createWindow(url) {
   win = new BrowserWindow({
     width: 1200,
     height: 900,
+    minWidth: 1200,
+    minHeight: 600,
     title: 'KittyCash',
     icon: iconPath,
     nodeIntegration: false,
@@ -175,8 +178,7 @@ function createWindow(url) {
 
   webContents.on('new-window', function(event, url){
     event.preventDefault();
-    let open = require("open");
-    open(url);
+    require('electron').shell.openExternal(url);
   });
 
   // patch out eval
@@ -215,6 +217,7 @@ function createWindow(url) {
           dialog.showMessageBox({ type: 'info', title: 'About KittyCash', message: 'KittyCash version: ' + appVersion });
         }
       },
+      { label: "Hide KittyCash", accelerator: "Cmd+H", selector: "hide:" },
       { label: "Quit", accelerator: "Command+Q", click: function() { app.quit(); } }
     ]
   }, {
