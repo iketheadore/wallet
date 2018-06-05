@@ -105,7 +105,7 @@ function startKittyCash() {
 
   if (isDev())
   {
-    args.unshift("--proxy-domain=staging-api.kittycash.com");
+    // args.unshift("--proxy-domain=staging-api.kittycash.com");
     args.unshift("../cmd/wallet/wallet.go");
     args.unshift("run");
   }
