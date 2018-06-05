@@ -52,10 +52,46 @@ html, body {
     border-color: $kittyred;
 }
 
+.btn-outline-primary:disabled {
+    color: $kittyred;
+}
+
 .qrcode img {
     width: 100%;
 }
 
 .ngx-pagination .current {
     background: $kittyred !important;
+}
+
+.mat-button {
+    background: none !important;
+}
+
+.cdk-visually-hidden {
+    visibility: hidden;
+}
+
+.mat-checkbox-frame {
+    background-color: $kittyred !important;
+}
+
+.mat-dialog-container {
+  background-color: #fcfcfc;
+}
+
+.btn-close-modal {
+  color: $kittyred !important;
+  float: right;
+  cursor: pointer;
+}
+
+.pointer {
+  cursor: pointer !important;
+}
+
+h3 {
+  font-size: 34px;
+  color: $kittyred;
+  text-align: center;
 }

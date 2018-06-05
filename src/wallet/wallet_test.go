@@ -9,51 +9,42 @@ import (
 )
 
 func initTempDir(t *testing.T) func() {
-	dir, e := ioutil.TempDir("", "kittycash_test")
-	require.Empty(t, e, "failed to create temp dir")
+	dir, err := ioutil.TempDir("", "kittycash_test")
+	require.Empty(t, err)
 
-	e = SetRootDir(dir)
-	require.Empty(t, e, "failed to set root dir")
+	require.Empty(t, SetRootDir(dir))
 
 	return func() {
 		os.RemoveAll(dir)
 	}
 }
 
-func saveWallet(t *testing.T, options *Options) {
-	fWallet, e := NewFloatingWallet(options)
-	require.Empty(t, e, "failed to create floating wallet")
-
-	e = fWallet.Save()
-	require.Empty(t, e, "failed to save wallet")
+func saveWallet(options *Options) error {
+	fWallet, err := NewWallet(options)
+	if err != nil {
+		return err
+	}
+	return fWallet.Save()
 }
 
-func loadWallet(t *testing.T, label, pw string) *Wallet {
-	f, e := os.Open(LabelPath(label))
-	require.Nilf(t, e, "failed to open wallet of label '%s'", label)
+func loadWallet(label, pw string) (*Wallet, error) {
+	f, err := os.Open(LabelPath(label))
+	if err != nil {
+		return nil, err
+	}
 	defer f.Close()
-
-	fw, e := LoadFloatingWallet(f, label, pw)
-	require.Empty(t, e, "failed to load floating wallet")
-
-	return fw
+	raw, err := ioutil.ReadAll(f)
+	if err != nil {
+		return nil, err
+	}
+	return LoadWallet(raw, label, pw)
 }
 
 func TestFloatingWallet_Save(t *testing.T) {
 	rmTemp := initTempDir(t)
 	defer rmTemp()
 
-	run := func(o *Options) {
-		saveWallet(t, o)
-		fw := loadWallet(t, o.Label, o.Password)
-		m := fw.Meta
-		require.Equal(t, m.Password, o.Password, "passwords do not match")
-		require.Equal(t, m.Encrypted, o.Encrypted, "encrypted does not match")
-		require.Equal(t, m.Label, o.Label, "label does not match")
-		require.Equal(t, m.Seed, o.Seed, "seed does not match")
-	}
-
-	cases := []Options{
+	cases0 := []*Options{
 		{
 			Label:     "wallet0",
 			Seed:      "secure seed",
@@ -67,9 +58,38 @@ func TestFloatingWallet_Save(t *testing.T) {
 			Password:  "",
 		},
 	}
+	t.Run("correct_credentials", func(t *testing.T) {
+		for _, c := range cases0 {
+			require.NoError(t, saveWallet(c))
 
-	for _, c := range cases {
-		run(&c)
+			fw, err := loadWallet(c.Label, c.Password)
+			require.NoError(t, err)
+
+			m := fw.Meta
+			require.Equal(t, m.Password, c.Password)
+			require.Equal(t, m.Encrypted, c.Encrypted)
+			require.Equal(t, m.Label, c.Label)
+			require.Equal(t, m.Seed, c.Seed)
+		}
+	})
+
+	cases1 := []struct {
+		Correct    *Options
+		FalsePass  string
+		ShouldPass bool
+	}{
+		{cases0[0], "wrong", false},
+		{cases0[1], "wrong", true},
 	}
+	t.Run("wrong_credentials", func(t *testing.T) {
+		for _, c := range cases1 {
+			require.NoError(t, saveWallet(c.Correct))
 
+			if _, err := loadWallet(c.Correct.Label, c.FalsePass); c.ShouldPass {
+				require.NoError(t, err)
+			} else {
+				require.Error(t, err)
+			}
+		}
+	})
 }

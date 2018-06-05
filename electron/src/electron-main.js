@@ -4,8 +4,6 @@ const { app, Menu, BrowserWindow, dialog } = require('electron');
 
 const userDataPath = app.getPath('userData');
 
-const cxo_dir = userDataPath + "/cxo";
-
 var log = require('electron-log');
 
 var fs = require('fs');
@@ -100,20 +98,14 @@ function startKittyCash() {
 })()
 
   var args = [
-    '--test=true',
-    '--test-gen-pk=03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753',
-    '--test-root-pk=03429869e7e018840dbf5f94369fa6f2ee4b380745a722a84171757a25ac1bb753',
-    '--test-root-nonce=1234',
-    '--cxo-address=127.0.0.1:6140',
     '--http-address=127.0.0.1:6148',
-    '--messenger-addresses=:8880',
-    '--cxo-dir=' + cxo_dir,
     '--gui=true',
     '--gui-dir=' + gui_dir
   ];
 
   if (isDev())
   {
+    args.unshift("--proxy-domain=staging-api.kittycash.com");
     args.unshift("../cmd/wallet/wallet.go");
     args.unshift("run");
   }
@@ -126,8 +118,8 @@ function startKittyCash() {
   });
 
   kittycash.stdout.on('data', (data) => {
-    app.emit('kittycash-ready', { url: defaultURL });
     log.info(data.toString());
+    app.emit('kittycash-ready', { url: defaultURL });
   });
 
   kittycash.stderr.on('data', (data) => {
@@ -165,6 +157,8 @@ function createWindow(url) {
   win = new BrowserWindow({
     width: 1200,
     height: 900,
+    minWidth: 1200,
+    minHeight: 600,
     title: 'KittyCash',
     icon: iconPath,
     nodeIntegration: false,
@@ -182,6 +176,11 @@ function createWindow(url) {
     webContents.setLayoutZoomLevelLimits(0, 0);
   });
 
+  webContents.on('new-window', function(event, url){
+    event.preventDefault();
+    require('electron').shell.openExternal(url);
+  });
+
   // patch out eval
   win.eval = global.eval;
 
@@ -196,7 +195,7 @@ function createWindow(url) {
   // });
 
   win.loadURL(url);
-
+  
   // Open the DevTools.
   // win.webContents.openDevTools();
 
@@ -218,6 +217,7 @@ function createWindow(url) {
           dialog.showMessageBox({ type: 'info', title: 'About KittyCash', message: 'KittyCash version: ' + appVersion });
         }
       },
+      { label: "Hide KittyCash", accelerator: "Cmd+H", selector: "hide:" },
       { label: "Quit", accelerator: "Command+Q", click: function() { app.quit(); } }
     ]
   }, {
@@ -266,7 +266,7 @@ app.on('kittycash-ready', (e) => {
     kittyCashLoaded = true;
     setTimeout(function() {
       createWindow(e.url);
-    }, 1000);
+    });
   }
 
 });
@@ -288,10 +288,20 @@ app.on('activate', () => {
 }
 });
 
-app.on('will-quit', () => {
+app.on('will-quit', (evt) => {  
   if (kittycash) {
-    kittycash.kill('SIGINT');
-  }
+    //Prevent the app from quiting until we kill the wallet
+    evt.preventDefault();
+    let kill  = require('tree-kill');
+    kill(kittycash.pid, 'SIGTERM', function(err){
+      if (err)
+      {
+        log.error(err);
+      }
+      //Once the wallet is killed, kill the main electron process
+      process.exit(0);
+    });
+  } 
 });
 
 

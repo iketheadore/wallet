@@ -1,47 +1,55 @@
 <div class="container tab">
-  <div class="row py-4">
-    <div class="col-12 text-center">
-      <img class="img-fluid" src="assets/tab-logo.svg">
-    </div>
-  </div>
-  <div class="row">
-    <div class="col-6">
-      <ul class="nav">
-        <li class="nav-item" [ngClass]="{'active': currentTab == 'wallet'}">
-          <a class="nav-link" (click)="currentTab = 'wallet'">Wallet</a>
-        </li>
-        <li class="nav-item" [ngClass]="{'active': currentTab == 'marketplace'}">
-          <a class="nav-link" (click)="currentTab = 'marketplace'">Marketplace</a>
-        </li>
-        <li class="nav-item" [ngClass]="{'active': currentTab == 'play'}">
-          <a class="nav-link" (click)="currentTab = 'play'">Play</a>
-        </li>
-      </ul>
-    </div>
-    <div class="col-2 offset-2 actions-bar pt-3">
-      <div class="mx-3" style="display: inline-block;">
-        <connection-status></connection-status>
+  <div class="container-inner">
+    <div class="flex-row py-4">
+      <div class="col-12 text-center header">
+        <img class="img-fluid" src="assets/round-logo.svg" style="width: 50px;">
       </div>
     </div>
-    <div class="col-1 actions-bar pt-3">
-      <a (click)="doRefresh()"><i class="fa fa-redo fa-lg px-2 pull-right"></i></a>
+    <div class="flex-row nav-bar">
+      <div class="row">
+        <div class="col-6">
+          <ul class="nav">
+            <li class="nav-item">
+              <a class="nav-link" *ngIf="currentTab == 'wallet'" (click)="toggleBar()"><img src="assets/hamburger.svg"></a>
+            </li>
+            <li class="nav-item" [ngClass]="{'active': currentTab == 'wallet'}">
+              <a class="nav-link" (click)="currentTab = 'wallet'">Kittery</a>
+            </li>
+            <li class="nav-item" [ngClass]="{'active': currentTab == 'marketplace'}">
+              <a class="nav-link" disabled="disabled">Marketplace</a>
+            </li>
+            <li class="nav-item" [ngClass]="{'active': currentTab == 'play'}">
+              <a class="nav-link" (click)="currentTab = 'play'">Play</a>
+            </li>
+          </ul>
+        </div>
+        <div class="col-6 actions-bar pt-3">
+          <a class="float-right px-3" (click)="doOpenSettings()"><i class="fa fa-sliders-h fa-lg"></i></a>
+          <a class="float-right px-3" (click)="doRefresh()"><i class="fa fa-redo fa-lg"></i></a>
+          <div class="mx-3 float-right" style="display: inline-block;">
+            <connection-status></connection-status>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-  <div class="row">
-    <div class="col-12 notification-bar" *ngIf="updateAvailable">
-      Wallet update <a href="https://www.kittycash.com/downloads/" target="_blank">v{{ releaseVersion }}</a>  available.
+    <div class="flex-row">
+      <div class="col-12 notification-bar" *ngIf="updateAvailable">
+        Wallet update <a href="https://www.kittycash.com/downloads/" target="_blank">v{{ releaseVersion }}</a> available.
+      </div>
     </div>
-  </div>
-  <div class="row" [ngSwitch]="currentTab">
-    <div class="col-12" *ngSwitchCase="'wallet'">
-      <app-wallet-root></app-wallet-root>
-    </div>
-    <div class="col-12" *ngSwitchCase="'marketplace'">
-      <marketplace-root></marketplace-root>
-    </div>
-    <div class="col-12" *ngSwitchCase="'play'">
-      <h1 class="text-center">More to come soon!</h1>
-      <game></game>
+    <div class="flex-row" style="overflow-x: hidden; overflow-y: scroll;">
+         <div class="row" [ngSwitch]="currentTab">
+          <div class="col-12" *ngSwitchCase="'wallet'">
+            <app-wallet-root></app-wallet-root>
+          </div>
+          <div class="col-12" *ngSwitchCase="'marketplace'">
+            <marketplace-root></marketplace-root>
+          </div>
+          <div class="col-12" *ngSwitchCase="'play'">
+            <h1 class="text-center">More to come soon!</h1>
+            <game></game>
+          </div>
+        </div>
     </div>
   </div>
 </div>

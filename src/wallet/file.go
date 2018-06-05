@@ -2,12 +2,13 @@ package wallet
 
 import (
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
+
+	"errors"
 
 	"gopkg.in/sirupsen/logrus.v1"
 )
@@ -20,12 +21,12 @@ var (
 
 // SetRootDir sets the root directory.
 func SetRootDir(r string) error {
-	var e error
-	if rootDir, e = filepath.Abs(r); e != nil {
-		return e
+	var err error
+	if rootDir, err = filepath.Abs(r); err != nil {
+		return err
 	}
-	if e = os.MkdirAll(rootDir, os.FileMode(0700)); e != nil {
-		return e
+	if err = os.MkdirAll(rootDir, os.FileMode(0700)); err != nil {
+		return err
 	}
 	return nil
 }
@@ -58,12 +59,12 @@ func ListLabels() ([]string, error) {
 	return out, nil
 }
 
-type LabelAction func(f io.Reader, label, fPath string, prefix Prefix)
+type LabelAction func(data []byte, label, fPath string, prefix Prefix) error
 
 func RangeLabels(action LabelAction) error {
-	list, e := ioutil.ReadDir(rootDir)
-	if e != nil {
-		return e
+	list, err := ioutil.ReadDir(rootDir)
+	if err != nil {
+		return err
 	}
 	for _, info := range list {
 		if info.IsDir() {
@@ -76,15 +77,30 @@ func RangeLabels(action LabelAction) error {
 		label := strings.TrimSuffix(name, string(FileExt))
 		fPath := LabelPath(label)
 
-		f, e := os.Open(fPath)
-		if e != nil {
-			return e
+		data, err := OpenAndReadAll(fPath)
+		if err != nil {
+			return err
+		}
+
+		if len(data) < PrefixSize {
+			return errors.New("wallet file has invalid size")
 		}
 
 		var prefix Prefix
-		f.Read(prefix[:])
-		action(f, label, fPath, prefix)
-		f.Close()
+		copy(prefix[:PrefixSize], data[:PrefixSize])
+
+		if err := action(data, label, fPath, prefix); err != nil {
+			return errors.New("action failed with error: " + err.Error())
+		}
 	}
 	return nil
+}
+
+func OpenAndReadAll(path string) ([]byte, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	return ioutil.ReadAll(f)
 }

@@ -1,0 +1,18 @@
+
+<svg width="34px" height="34px" viewBox="0 0 34 34" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 49.3 (51167) - http://www.bohemiancoding.com/sketch -->
+    <desc>Created with Sketch.</desc>
+    <defs></defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Inventory-Wallet" transform="translate(-566.000000, -367.000000)" stroke="#FF7E76">
+            <g id="Group-2-Copy" transform="translate(567.000000, 368.000000)">
+                <circle id="Oval-3" cx="16" cy="16" r="16"></circle>
+                <g id="Group-11" transform="translate(6.000000, 8.000000)" stroke-linecap="round">
+                    <path d="M9.63865031,6.10212989 L0.290184197,11.8990173 C0.0511000779,12.0459308 -0.0553798497,12.3203567 0.0282204994,12.5741646 C0.111820849,12.8279725 0.365704396,13.0010591 0.652829045,12.9999951 L19.347171,12.9999951 C19.6342956,13.0010591 19.8881792,12.8279725 19.9717795,12.5741646 C20.0553798,12.3203567 19.9488999,12.0459308 19.7098158,11.8990173 L10.36394,6.10212989 C10.1446362,5.9659567 9.85795413,5.9659567 9.63865031,6.10212989 Z" id="Shape"></path>
+                    <path d="M8,1.5 C8,0.67274168 8.89142857,0 10,0 C11.1085714,0 12,0.667987322 12,1.5 C12,2.33201268 11.1085714,3 10,3" id="Shape"></path>
+                    <path d="M10,3 L10,5" id="Shape"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

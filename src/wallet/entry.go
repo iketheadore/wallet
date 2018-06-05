@@ -20,9 +20,10 @@ type Entry struct {
 	SecKey  cipher.SecKey
 }
 
+// NewEntry creates a new wallet entry.
 func NewEntry(sk cipher.SecKey) (*Entry, error) {
-	if e := sk.Verify(); e != nil {
-		return nil, e
+	if err := sk.Verify(); err != nil {
+		return nil, err
 	}
 	return &Entry{
 		Address: cipher.AddressFromSecKey(sk),
@@ -31,6 +32,7 @@ func NewEntry(sk cipher.SecKey) (*Entry, error) {
 	}, nil
 }
 
+// ToFloating converts a wallet entry to a readable format.
 func (we *Entry) ToFloating() *FloatingEntry {
 	return &FloatingEntry{
 		Address: we.Address.String(),

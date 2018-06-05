@@ -8,38 +8,27 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/kittycash/wallet/src/connectivity"
-	"github.com/kittycash/wallet/src/iko"
-	"github.com/kittycash/wallet/src/kitties"
+	"github.com/kittycash/wallet/src/proxy"
 	"github.com/kittycash/wallet/src/wallet"
 )
 
 type Gateway struct {
-	IKO    *iko.BlockChain
 	Wallet *wallet.Manager
-	Market *kitties.Manager
-	Conn   connectivity.Connectivity
+	Proxy  *proxy.Proxy
 }
 
 func (g *Gateway) host(mux *http.ServeMux) error {
-	if g.IKO != nil {
-		if e := ikoGateway(mux, g.IKO); e != nil {
-			return e
-		}
-		if g.Market != nil {
-			if e := marketKitties(mux, g.Market, g.IKO); e != nil {
-				return e
-			}
+	if err := toolsGateway(mux); err != nil {
+		return err
+	}
+	if g.Proxy != nil {
+		if err := proxyGateway(mux, g.Proxy); err != nil {
+			return err
 		}
 	}
 	if g.Wallet != nil {
-		if e := walletGateway(mux, g.Wallet); e != nil {
-			return e
-		}
-	}
-	if g.Conn != nil {
-		if e := connGateway(mux, g.Conn); e != nil {
-			return e
+		if err := walletGateway(mux, g.Wallet); err != nil {
+			return err
 		}
 	}
 	return nil

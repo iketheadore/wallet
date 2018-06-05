@@ -1,10 +1,12 @@
-import {Component} from '@angular/core';
-import {Http} from '@angular/http';
-import {Observable} from 'rxjs/Observable';
+import { Component, HostListener, ViewChild } from '@angular/core';
+import { Http } from '@angular/http';
+import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map'
 import 'rxjs/add/operator/catch'
-import { Component, HostListener } from '@angular/core';
 import { ErrorScreenService } from './error_screen/error_screen.service';
+import { MatDialog } from '@angular/material';
+import { SettingsComponent } from './settings/settings.component';
+import { WalletAppModule } from 'wallet-lib';
 
 @Component({
   selector: 'app-root',
@@ -15,14 +17,22 @@ export class AppComponent {
   version: string;
   releaseVersion: string;
   updateAvailable: boolean;
-  currentTab = 'marketplace';
+  currentTab = 'wallet';
 
   constructor(
     private http: Http,
     private errorScreenService: ErrorScreenService, 
+    public dialog: MatDialog,
+    private appMod: WalletAppModule
   ) {
-    // TODO(therealssj): set the version from somewhere
-    this.version = "0.0.1";
+
+    this.version = "0.0.0";
+
+    if (window['require'])
+    {
+      this.version = window['require']('electron').remote.app.getVersion();
+    }
+    
     this.updateAvailable = false;
     this.retrieveReleaseVersion();
   }
@@ -54,17 +64,33 @@ export class AppComponent {
           this.updateAvailable = this.higherVersion(this.releaseVersion, this.version);
         }
       });
-  currentTab : string = 'marketplace';
-    
+  }
+
   @HostListener('document:showGlobalError', ['$event'])
-	  onError(ev:any) {
-	  	ev.preventDefault();
-	    // send the error to the error screen service
-	    this.errorScreenService.setError(ev.detail.message);
-	  }
+    onError(ev:any) {
+      ev.preventDefault();
+      // send the error to the error screen service
+      this.errorScreenService.setError(ev.detail.message);
+  }
 
   doRefresh() {
     let event = new CustomEvent('refreshButtonClick', { cancelable: true, detail: {} });
     document.dispatchEvent(event);
+  }
+
+  doOpenSettings(){
+    this.dialog.open(SettingsComponent, { width: '700px' });
+  }
+
+  toggleBar() {
+    let sidebar = document.getElementById("wallet_sidebar");
+    if (sidebar.style.display == "none")
+    {
+      sidebar.style.display = "block";
+    }
+    else
+    {
+      sidebar.style.display = "none";
+    }
   }
 }

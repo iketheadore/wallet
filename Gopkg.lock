@@ -14,34 +14,10 @@
   version = "v1.1.0"
 
 [[projects]]
-  name = "github.com/disiqueira/gotree"
+  name = "github.com/go-errors/errors"
   packages = ["."]
-  revision = "4c287e3603a85571820a6a8ad100a45002150053"
-  version = "0.2.0"
-
-[[projects]]
-  name = "github.com/go-xorm/builder"
-  packages = ["."]
-  revision = "a9b7ffcca3f0c6445c4e3b1bf72c01578817a6c3"
-  version = "v0.1.0"
-
-[[projects]]
-  name = "github.com/go-xorm/core"
-  packages = ["."]
-  revision = "f43c33d9a48db006417a7ac4c16b08897e3e1458"
-  version = "v0.5.8"
-
-[[projects]]
-  name = "github.com/go-xorm/xorm"
-  packages = ["."]
-  revision = "fc1b13e0d8e240788213230aa5747eb557f80f41"
-  version = "v0.6.6"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/google/btree"
-  packages = ["."]
-  revision = "e89373fe6b4a7413d7acd6da1725b83ef713e6e4"
+  revision = "a6af135bd4e28680facf08a3d206b454abc877a4"
+  version = "v1.0.1"
 
 [[projects]]
   branch = "develop"
@@ -50,37 +26,13 @@
     "src/kitty",
     "src/utils"
   ]
-  revision = "8e577025b5030ed1a0cffde25d287fa2f94c6dec"
-
-[[projects]]
-  name = "github.com/klauspost/cpuid"
-  packages = ["."]
-  revision = "ae7887de9fa5d2db4eaa8174a7eff2c1ac00f2da"
-  version = "v1.1"
-
-[[projects]]
-  name = "github.com/klauspost/reedsolomon"
-  packages = ["."]
-  revision = "6bb6130ff6a76a904c1841707d65603aec9cc288"
-  version = "v1.6"
-
-[[projects]]
-  name = "github.com/mattn/go-sqlite3"
-  packages = ["."]
-  revision = "6c771bb9887719704b210e87e934f08be014bdb1"
-  version = "v1.6.0"
+  revision = "5a3636fa012a867e1a7303e3deac2bfcd42cc176"
 
 [[projects]]
   name = "github.com/op/go-logging"
   packages = ["."]
   revision = "b2cb9fa56473e98db8caba80237377e83fe44db5"
   version = "v1"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/petar/GoLLRB"
-  packages = ["llrb"]
-  revision = "53be0d36a84c2a886ca057d34b6aa4468df9ccb4"
 
 [[projects]]
   name = "github.com/pkg/errors"
@@ -95,38 +47,10 @@
   version = "v1.0.0"
 
 [[projects]]
-  name = "github.com/sirupsen/logrus"
+  name = "github.com/shopspring/decimal"
   packages = ["."]
-  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
-  version = "v1.0.5"
-
-[[projects]]
-  name = "github.com/skycoin/cxo"
-  packages = [
-    "data",
-    "data/cxds",
-    "data/idxdb",
-    "node",
-    "node/log",
-    "node/msg",
-    "skyobject",
-    "skyobject/registry",
-    "skyobject/statutil"
-  ]
-  revision = "d37028513af1d14208d82b5a0dd57cec7722c1cb"
-
-[[projects]]
-  name = "github.com/skycoin/net"
-  packages = [
-    "client",
-    "conn",
-    "factory",
-    "msg",
-    "server",
-    "skycoin-messenger/factory",
-    "util"
-  ]
-  revision = "4bcee2eb0c36a33dd22757247c83ab7e78c50834"
+  revision = "69b3a8ad1f5f2c8bd855cb6506d18593064a346b"
+  version = "1.0.1"
 
 [[projects]]
   name = "github.com/skycoin/skycoin"
@@ -139,8 +63,18 @@
     "src/cipher/ripemd160",
     "src/cipher/secp256k1-go",
     "src/cipher/secp256k1-go/secp256k1-go2",
+    "src/coin",
+    "src/util/droplet",
+    "src/util/fee",
     "src/util/file",
-    "src/util/logging"
+    "src/util/iputil",
+    "src/util/logging",
+    "src/util/utc",
+    "src/visor",
+    "src/visor/blockdb",
+    "src/visor/bucket",
+    "src/visor/historydb",
+    "src/wallet"
   ]
   revision = "84098d9ef5cdfa86d325509cf200dd7e45b4a1b4"
   version = "v0.22.0"
@@ -161,7 +95,7 @@
     "pbkdf2",
     "ssh/terminal"
   ]
-  revision = "d6449816ce06963d9d136eee5a56fca5b0616e7e"
+  revision = "ab813273cd59e1333f7ae7bff5d027d4aadf528c"
 
 [[projects]]
   branch = "master"
@@ -170,7 +104,7 @@
     "unix",
     "windows"
   ]
-  revision = "f6f352972f061230a99fbf49d1eb8073ebdb36cb"
+  revision = "c11f84a56e43e20a78cee75a7c034031ecf57d1f"
 
 [[projects]]
   name = "gopkg.in/sirupsen/logrus.v1"
@@ -187,6 +121,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "a4ab1df75a6b7573c1d1212ff23fc4b040ff3e23eb1c8d9a9722e45a610e7d1e"
+  inputs-digest = "2209d12509cf38a28de65ea287de6cc5770403f5d0c29f7149ee14f9fc46f0bd"
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -30,11 +30,3 @@
 [[override]]
   name = "github.com/skycoin/skycoin"
   version = "0.22.0"
-
-[[override]]
-  name = "github.com/skycoin/net"
-  revision = "4bcee2eb0c36a33dd22757247c83ab7e78c50834"
-
-[[override]]
-  name = "github.com/skycoin/cxo"
-  revision = "d37028513af1d14208d82b5a0dd57cec7722c1cb"
