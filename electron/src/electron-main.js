@@ -99,13 +99,13 @@ function startKittyCash() {
 
   var args = [
     '--http-address=127.0.0.1:6148',
-    '--proxy-domain=staging-api.kittycash.com',
     '--gui=true',
     '--gui-dir=' + gui_dir
   ];
 
   if (isDev())
   {
+    args.unshift("--proxy-domain=staging-api.kittycash.com");
     args.unshift("../cmd/wallet/wallet.go");
     args.unshift("run");
   }
@@ -178,8 +178,7 @@ function createWindow(url) {
 
   webContents.on('new-window', function(event, url){
     event.preventDefault();
-    let open = require("open");
-    open(url);
+    require('electron').shell.openExternal(url);
   });
 
   // patch out eval

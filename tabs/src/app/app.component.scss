@@ -12,6 +12,11 @@
 	right: 0;
 	overflow: hidden;
 	z-index:1;
+	max-width: 90% !important;
+}
+
+.nav-bar {
+	box-shadow: #F4F4F4 4px 4px 4px;
 }
 
 .container-inner {

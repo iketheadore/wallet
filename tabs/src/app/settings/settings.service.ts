@@ -45,6 +45,9 @@ export class SettingsService {
         }
         Promise.all(promises).then(wallets=> {
           resolve(wallets);
+        }, 
+        error => {
+          alert(error);
         })
       });
     });
@@ -71,17 +74,24 @@ export class SettingsService {
   private getWalletDetails(label: string): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       this.httpClient
-      .post(routes.get_wallet(), this.getQueryString({label: label}), this.getOptions()).subscribe((wallet:any) => {
-        if (wallet && wallet.entry_count && wallet.entry_count > 0)
-        {
-          resolve(wallet);
-        }        
-        else
-        {
-          reject("Wallet not found");
-        }
-      });
-    });
+      .post(routes.get_wallet(), this.getQueryString({label: label}), this.getOptions()).subscribe(
+
+        (wallet:any) => {
+          if (wallet && wallet.entry_count && wallet.entry_count > 0)
+          {
+            resolve(wallet);
+          }        
+          else
+          {
+            reject("Wallet not found");
+          }
+      }, (err: any) => {
+        //Don't have proper error codes, assuming locked wallet for now
+        alert("Warning: The wallet: " + label + " is locked.  It will not be included in the backup file.  If you wish to backup wallet: " + label + ", please unlock the wallet and run the backup again.");
+        resolve(false);
+      }
+    );
+  })
   }
 
   private getQueryString(parameters:any = null) {
