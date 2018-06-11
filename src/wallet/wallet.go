@@ -21,7 +21,7 @@ type (
 )
 
 var (
-	ErrInvalidPassword = errors.New("invalid password")
+	ErrInvalidPassword    = errors.New("invalid password")
 	ErrInvalidCredentials = errors.New("failed to read wallet file, maybe due to incorrect credentials")
 )
 
