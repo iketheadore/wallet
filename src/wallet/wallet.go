@@ -21,7 +21,8 @@ type (
 )
 
 var (
-	ErrInvalidPassword = errors.New("invalid password")
+	ErrInvalidPassword    = errors.New("invalid password")
+	ErrInvalidCredentials = errors.New("failed to read wallet file, maybe due to incorrect credentials")
 )
 
 const (
@@ -162,7 +163,8 @@ func LoadWallet(raw []byte, label, password string) (*Wallet, error) {
 		pHash := cipher.SumSHA256([]byte(password))
 		data, err = cipher.Chacha20Decrypt(data, pHash[:], prefix.Nonce())
 		if err != nil {
-			return nil, err
+			log.Errorf("failed to decrypt wallet file, error: %v", err)
+			return nil, ErrInvalidCredentials
 		}
 	} else {
 		password = ""
@@ -172,7 +174,7 @@ func LoadWallet(raw []byte, label, password string) (*Wallet, error) {
 	if err != nil {
 		return nil, err
 	} else if wallet == nil {
-		return nil, errors.New("failed to read wallet file, maybe due to incorrect credentials")
+		return nil, ErrInvalidCredentials
 	}
 
 	return &Wallet{

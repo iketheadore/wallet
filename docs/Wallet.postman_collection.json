@@ -173,7 +173,8 @@
 									"key": "password",
 									"value": "",
 									"description": "Password of wallet (if wallet is encrypted and locked).",
-									"type": "text"
+									"type": "text",
+									"disabled": true
 								},
 								{
 									"key": "aCount",
@@ -213,16 +214,15 @@
 							"urlencoded": [
 								{
 									"key": "label",
-									"value": "test_wallet",
+									"value": "evanlinjin",
 									"description": "",
 									"type": "text"
 								},
 								{
 									"key": "password",
-									"value": "",
+									"value": "samosa42",
 									"description": "",
-									"type": "text",
-									"disabled": true
+									"type": "text"
 								},
 								{
 									"key": "startIndex",
@@ -233,6 +233,12 @@
 								{
 									"key": "pageSize",
 									"value": "10",
+									"description": "",
+									"type": "text"
+								},
+								{
+									"key": "forceTotal",
+									"value": "20",
 									"description": "",
 									"type": "text"
 								}
