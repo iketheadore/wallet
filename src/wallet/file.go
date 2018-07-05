@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path"
 	"path/filepath"
 	"strings"
 
@@ -15,53 +14,17 @@ import (
 
 // This holds the root directory.
 var (
-	rootDir string
 	log     = logrus.New()
 )
 
-// SetRootDir sets the root directory.
-func SetRootDir(r string) error {
-	var err error
-	if rootDir, err = filepath.Abs(r); err != nil {
-		return err
-	}
-	if err = os.MkdirAll(rootDir, os.FileMode(0700)); err != nil {
-		return err
-	}
-	return nil
-}
-
-func ExtractLabel(filePath string) string {
-	base := path.Base(filePath)
-	return strings.TrimSuffix(base, string(FileExt))
-}
-
-func LabelPath(label string) string {
+// LabelPath obtains the path to the wallet file of the given label.
+func LabelPath(rootDir, label string) string {
 	return filepath.Join(rootDir, fmt.Sprintf("%s%s", label, FileExt))
-}
-
-func ListLabels() ([]string, error) {
-	list, e := ioutil.ReadDir(rootDir)
-	if e != nil {
-		return nil, e
-	}
-	var out []string
-	for _, info := range list {
-		if info.IsDir() {
-			continue
-		}
-		name := info.Name()
-		if strings.HasSuffix(name, string(FileExt)) == false {
-			continue
-		}
-		out = append(out, strings.TrimSuffix(name, string(FileExt)))
-	}
-	return out, nil
 }
 
 type LabelAction func(data []byte, label, fPath string, prefix Prefix) error
 
-func RangeLabels(action LabelAction) error {
+func RangeLabels(rootDir string, action LabelAction) error {
 	list, err := ioutil.ReadDir(rootDir)
 	if err != nil {
 		return err
@@ -75,7 +38,7 @@ func RangeLabels(action LabelAction) error {
 			continue
 		}
 		label := strings.TrimSuffix(name, string(FileExt))
-		fPath := LabelPath(label)
+		fPath := LabelPath(rootDir, label)
 
 		data, err := OpenAndReadAll(fPath)
 		if err != nil {
