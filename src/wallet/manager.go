@@ -156,6 +156,34 @@ func (m *Manager) DeleteWallet(label string) error {
 	return ErrWalletNotFound
 }
 
+// RenameWallet renames a wallet.
+func (m *Manager) RenameWallet(label, newLabel string) error {
+	defer m.lock()()
+
+	if _, ok := m.wallets[newLabel]; ok {
+		return ErrLabelAlreadyExists
+	}
+
+	fw, err := m.getWallet(label)
+	if err != nil {
+		return err
+	}
+
+	fw.Meta.Label = newLabel
+	if err := fw.Save(m.c.RootDir); err != nil {
+		return err
+	}
+
+	if m.remove(label) {
+		if err := os.Remove(LabelPath(m.c.RootDir, label)); err != nil {
+			return err
+		}
+	}
+
+	m.append(newLabel, fw)
+	return m.sort()
+}
+
 // DisplayWallet displays the wallet of specified label.
 // Password needs to be given if a wallet is still locked.
 // Addresses ensures that wallet has at least the number of address entries.
