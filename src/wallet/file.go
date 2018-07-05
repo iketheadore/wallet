@@ -14,7 +14,7 @@ import (
 
 // This holds the root directory.
 var (
-	log     = logrus.New()
+	log = logrus.New()
 )
 
 // LabelPath obtains the path to the wallet file of the given label.

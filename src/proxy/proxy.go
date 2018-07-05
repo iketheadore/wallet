@@ -7,8 +7,9 @@ import (
 	"net/url"
 	"time"
 
-	"github.com/kittycash/wallet/src/tools"
 	"gopkg.in/sirupsen/logrus.v1"
+
+	"github.com/kittycash/wallet/src/tools"
 )
 
 type Config struct {

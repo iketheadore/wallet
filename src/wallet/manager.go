@@ -3,9 +3,9 @@ package wallet
 import (
 	"errors"
 	"os"
+	"path/filepath"
 	"sort"
 	"sync"
-	"path/filepath"
 )
 
 var (

@@ -2,8 +2,9 @@ package wallet2
 
 import (
 	"errors"
-	"github.com/skycoin/skycoin/src/cipher"
 	"fmt"
+
+	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
@@ -59,4 +60,3 @@ func WalletFromRaw(b []byte) (w *Wallet, err error) {
 	err = encoder.DeserializeRaw(b, w)
 	return
 }
-
