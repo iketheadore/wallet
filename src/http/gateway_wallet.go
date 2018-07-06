@@ -15,6 +15,7 @@ func walletGateway(m *http.ServeMux, g *wallet.Manager) error {
 	Handle(m, "/v1/wallets/delete", "POST", deleteWallet(g))
 	Handle(m, "/v1/wallets/get", "POST", getWallet(g))
 	Handle(m, "/v1/wallets/get_paginated", "POST", getWalletPaginated(g))
+	Handle(m, "/v1/wallets/rename", "POST", renameWallet(g))
 	Handle(m, "/v1/wallets/seed", "POST", newSeed())
 	return nil
 }
@@ -224,6 +225,29 @@ func getWalletPaginated(g *wallet.Manager) HandlerFunc {
 			},
 		})
 		return err
+	}
+}
+
+func renameWallet(g *wallet.Manager) HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request, p *Path) error {
+
+		// Only allow 'Content-Type' of 'application/x-www-form-urlencoded'.
+		_, e := SwitchContType(w, r, ContTypeActions{
+			CtApplicationForm: func() (bool, error) {
+				var (
+					vLabel    = r.PostFormValue("label")
+					vNewLabel = r.PostFormValue("newLabel")
+				)
+
+				if e := g.RenameWallet(vLabel, vNewLabel); e != nil {
+					return false, sendJson(w, http.StatusBadRequest,
+						fmt.Sprintf("Error: %s", e.Error()))
+				}
+
+				return true, sendJson(w, http.StatusOK, true)
+			},
+		})
+		return e
 	}
 }
 

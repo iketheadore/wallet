@@ -178,7 +178,7 @@
 								},
 								{
 									"key": "aCount",
-									"value": "20",
+									"value": "5",
 									"description": "number of addresses to show (at least).",
 									"type": "text",
 									"disabled": true
@@ -253,6 +253,47 @@
 								"v1",
 								"wallets",
 								"get_paginated"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Rename",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "label",
+									"value": "bla",
+									"description": "The original label",
+									"type": "text"
+								},
+								{
+									"key": "newLabel",
+									"value": "test_wallet",
+									"description": "The changed label name",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{wallet_domain}}/v1/wallets/rename",
+							"host": [
+								"{{wallet_domain}}"
+							],
+							"path": [
+								"v1",
+								"wallets",
+								"rename"
 							]
 						}
 					},
@@ -354,6 +395,100 @@
 								"v1",
 								"tools",
 								"sign_transfer_params"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Proxy",
+			"description": "",
+			"item": [
+				{
+					"name": "Kitty Count",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{wallet_domain}}/v1/kitty_count",
+							"host": [
+								"{{wallet_domain}}"
+							],
+							"path": [
+								"v1",
+								"kitty_count"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Kitty of ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{wallet_domain}}/v1/kitty/0",
+							"host": [
+								"{{wallet_domain}}"
+							],
+							"path": [
+								"v1",
+								"kitty",
+								"0"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Kitties",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {},
+						"url": {
+							"raw": "{{wallet_domain}}/v1/kitties?offset=0&page_size=10",
+							"host": [
+								"{{wallet_domain}}"
+							],
+							"path": [
+								"v1",
+								"kitties"
+							],
+							"query": [
+								{
+									"key": "filter_price",
+									"value": "0,123456,btc",
+									"description": "RANGE: If set, filters kitties of price in given range. \"{min},{max},{coin}\"",
+									"disabled": true
+								},
+								{
+									"key": "filter_date",
+									"value": "30,12345",
+									"description": "RANGE: same as price_btc but for sky.",
+									"disabled": true
+								},
+								{
+									"key": "order",
+									"value": "",
+									"description": "LIST: The way we order the results. Possible values: \"kitty_id\", \"name\", \"price_btc\", \"price_sky\", \"-kitty_id\", \"-name\", \"-price_btc\", \"-price_sky\".",
+									"disabled": true
+								},
+								{
+									"key": "offset",
+									"value": "0",
+									"description": "INT: Offset for results."
+								},
+								{
+									"key": "page_size",
+									"value": "10",
+									"description": "INT: Results per page."
+								}
 							]
 						}
 					},

@@ -156,10 +156,9 @@ func action(ctx *cli.Context) error {
 	}
 
 	// Prepare wallet.
-	if err := wallet.SetRootDir(walletDir); err != nil {
-		return err
-	}
-	walletManager, err := wallet.NewManager()
+	walletManager, err := wallet.NewManager(&wallet.ManagerConfig{
+		RootDir: walletDir,
+	})
 	if err != nil {
 		return err
 	}

@@ -40,7 +40,7 @@ const (
 	<<< TYPES >>>
 */
 
-// FloatingMeta represents the wallet meta that is not saved, but displayed in api.
+// FloatingMeta represents the wallet meta that is not saved, but displayed in api (and cached in memory).
 type FloatingMeta struct {
 	Version   uint64 `json:"version"`
 	Label     string `json:"label"`
@@ -108,6 +108,7 @@ func (w File) Serialize() []byte {
 	<<< CREATION >>>
 */
 
+// Options for wallet creation.
 type Options struct {
 	Label     string `json:"string"`
 	Seed      string `json:"seed"`
@@ -115,6 +116,7 @@ type Options struct {
 	Password  string `json:"password,omitempty"`
 }
 
+// Verify checks the validity of Options.
 func (o *Options) Verify() error {
 	if o.Label == "" {
 		return errors.New("invalid label")
@@ -128,6 +130,7 @@ func (o *Options) Verify() error {
 	return nil
 }
 
+// NewWallet creates a new wallet with options.
 func NewWallet(options *Options) (*Wallet, error) {
 	if err := options.Verify(); err != nil {
 		return nil, err
@@ -149,6 +152,7 @@ func NewWallet(options *Options) (*Wallet, error) {
 	}, nil
 }
 
+// LoadWallet loads a wallet from a wallet file.
 func LoadWallet(raw []byte, label, password string) (*Wallet, error) {
 	prefix, data, err := ExtractPrefix(raw)
 	if err != nil {
@@ -189,7 +193,8 @@ func LoadWallet(raw []byte, label, password string) (*Wallet, error) {
 	}, nil
 }
 
-func (w *Wallet) Save() error {
+// Save saves the wallet back to file.
+func (w *Wallet) Save(rootDir string) error {
 	version := w.Meta.Version
 
 	nonce := EmptyNonce()
@@ -210,7 +215,7 @@ func (w *Wallet) Save() error {
 	}
 
 	err := SaveBinary(
-		LabelPath(w.Meta.Label),
+		LabelPath(rootDir, w.Meta.Label),
 		append(prefix[:], data...),
 	)
 	if err != nil {

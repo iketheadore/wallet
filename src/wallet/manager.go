@@ -3,6 +3,7 @@ package wallet
 import (
 	"errors"
 	"os"
+	"path/filepath"
 	"sort"
 	"sync"
 )
@@ -13,16 +14,37 @@ var (
 	ErrLabelAlreadyExists = errors.New("label already exists")
 )
 
+type ManagerConfig struct {
+	RootDir string
+}
+
+func (mc *ManagerConfig) Process() error {
+	var err error
+	if mc.RootDir, err = filepath.Abs(mc.RootDir); err != nil {
+		return err
+	}
+	if err = os.MkdirAll(mc.RootDir, os.FileMode(0700)); err != nil {
+		return err
+	}
+	return nil
+}
+
 // Manager manages the wallet files.
 type Manager struct {
+	c       *ManagerConfig
 	mux     sync.Mutex
 	labels  []string
 	wallets map[string]*Wallet
 }
 
 // NewManager creates a new wallet manager.
-func NewManager() (*Manager, error) {
-	m := new(Manager)
+func NewManager(config *ManagerConfig) (*Manager, error) {
+	m := &Manager{
+		c: config,
+	}
+	if err := m.c.Process(); err != nil {
+		return nil, err
+	}
 	if err := m.Refresh(); err != nil {
 		return nil, err
 	}
@@ -36,7 +58,7 @@ func (m *Manager) Refresh() error {
 
 	m.labels = make([]string, 0)
 	m.wallets = make(map[string]*Wallet)
-	err := RangeLabels(func(raw []byte, label, fPath string, prefix Prefix) error {
+	err := RangeLabels(m.c.RootDir, func(raw []byte, label, fPath string, prefix Prefix) error {
 		if prefix.Version() != Version {
 			log.Warningf(
 				"wallet file `%s` is of version %v, while only version %v is supported",
@@ -117,7 +139,7 @@ func (m *Manager) NewWallet(opts *Options, addresses int) error {
 	if e := fw.EnsureEntries(addresses); e != nil {
 		return e
 	}
-	if e := fw.Save(); e != nil {
+	if e := fw.Save(m.c.RootDir); e != nil {
 		return e
 	}
 	m.append(opts.Label, fw)
@@ -129,9 +151,37 @@ func (m *Manager) DeleteWallet(label string) error {
 	defer m.lock()()
 
 	if m.remove(label) {
-		return os.Remove(LabelPath(label))
+		return os.Remove(LabelPath(m.c.RootDir, label))
 	}
 	return ErrWalletNotFound
+}
+
+// RenameWallet renames a wallet.
+func (m *Manager) RenameWallet(label, newLabel string) error {
+	defer m.lock()()
+
+	if _, ok := m.wallets[newLabel]; ok {
+		return ErrLabelAlreadyExists
+	}
+
+	fw, err := m.getWallet(label)
+	if err != nil {
+		return err
+	}
+
+	fw.Meta.Label = newLabel
+	if err := fw.Save(m.c.RootDir); err != nil {
+		return err
+	}
+
+	if m.remove(label) {
+		if err := os.Remove(LabelPath(m.c.RootDir, label)); err != nil {
+			return err
+		}
+	}
+
+	m.append(newLabel, fw)
+	return m.sort()
 }
 
 // DisplayWallet displays the wallet of specified label.
@@ -146,7 +196,7 @@ func (m *Manager) DisplayWallet(label, password string, addresses int) (*Floatin
 			return nil, err
 		}
 		if !w.Meta.Saved {
-			if err := w.Save(); err != nil {
+			if err := w.Save(m.c.RootDir); err != nil {
 				return nil, err
 			}
 		}
@@ -156,7 +206,7 @@ func (m *Manager) DisplayWallet(label, password string, addresses int) (*Floatin
 		return nil, ErrWalletNotFound
 
 	case ErrWalletLocked:
-		raw, err := OpenAndReadAll(LabelPath(label))
+		raw, err := OpenAndReadAll(LabelPath(m.c.RootDir, label))
 		if err != nil {
 			return nil, err
 		}
@@ -168,7 +218,7 @@ func (m *Manager) DisplayWallet(label, password string, addresses int) (*Floatin
 			return nil, err
 		}
 		if !w.Meta.Saved {
-			if err := w.Save(); err != nil {
+			if err := w.Save(m.c.RootDir); err != nil {
 				return nil, err
 			}
 		}
@@ -188,7 +238,7 @@ func (m *Manager) DisplayPaginatedWallet(label, password string, startIndex, pag
 				return nil, err
 			}
 			if !w.Meta.Saved {
-				if err := w.Save(); err != nil {
+				if err := w.Save(m.c.RootDir); err != nil {
 					return nil, err
 				}
 			}
@@ -204,7 +254,7 @@ func (m *Manager) DisplayPaginatedWallet(label, password string, startIndex, pag
 		return nil, ErrWalletNotFound
 
 	case ErrWalletLocked:
-		raw, err := OpenAndReadAll(LabelPath(label))
+		raw, err := OpenAndReadAll(LabelPath(m.c.RootDir, label))
 		if err != nil {
 			return nil, err
 		}
