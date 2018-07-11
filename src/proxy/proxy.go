@@ -7,6 +7,8 @@ import (
 	"net/url"
 	"time"
 
+	"gopkg.in/sirupsen/logrus.v1"
+
 	"github.com/kittycash/wallet/src/tools"
 )
 
@@ -39,7 +41,15 @@ func (p *Proxy) Call(req *http.Request) (*http.Response, error) {
 }
 
 func (p *Proxy) Redirect(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, p.c.TransformURL(r.URL), http.StatusMovedPermanently)
+	newURL := p.c.TransformURL(r.URL)
+
+	logrus.
+		WithField("method", p.Redirect).
+		WithField("old_url", r.URL.String()).
+		WithField("new_url", newURL).
+		Info()
+
+	http.Redirect(w, r, newURL, http.StatusMovedPermanently)
 }
 
 /*

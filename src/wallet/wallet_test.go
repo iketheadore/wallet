@@ -8,11 +8,13 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var testRootDir string
+
 func initTempDir(t *testing.T) func() {
 	dir, err := ioutil.TempDir("", "kittycash_test")
 	require.Empty(t, err)
 
-	require.Empty(t, SetRootDir(dir))
+	testRootDir = dir
 
 	return func() {
 		os.RemoveAll(dir)
@@ -24,11 +26,11 @@ func saveWallet(options *Options) error {
 	if err != nil {
 		return err
 	}
-	return fWallet.Save()
+	return fWallet.Save(testRootDir)
 }
 
 func loadWallet(label, pw string) (*Wallet, error) {
-	f, err := os.Open(LabelPath(label))
+	f, err := os.Open(LabelPath(testRootDir, label))
 	if err != nil {
 		return nil, err
 	}
