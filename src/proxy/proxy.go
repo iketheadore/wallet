@@ -49,7 +49,7 @@ func (p *Proxy) Redirect(w http.ResponseWriter, r *http.Request) {
 		WithField("new_url", newURL).
 		Info()
 
-	http.Redirect(w, r, newURL, http.StatusMovedPermanently)
+	http.Redirect(w, r, newURL, http.StatusPermanentRedirect)
 }
 
 /*

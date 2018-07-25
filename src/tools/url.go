@@ -11,8 +11,11 @@ func TransformURL(original *url.URL, newDomain string, useTLS bool) string {
 		newDomain = strings.TrimPrefix(newDomain, s)
 	}
 
-	out := path.Join(newDomain, original.EscapedPath()) +
-		"?" + original.Query().Encode()
+	out := path.Join(newDomain, original.EscapedPath())
+
+	if queries := original.Query().Encode(); queries != "" {
+		out = out + "?" + original.Query().Encode()
+	}
 
 	if useTLS {
 		return "https://" + out
