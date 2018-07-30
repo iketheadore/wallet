@@ -17,15 +17,15 @@ import (
 
 //Production override variables
 const (
-	DirChildWalletsProd   	 = "wallets"
-	DefaultProxyAddressProd  = "api.kittycash.io"
+	DirChildWalletsProd     = "wallets"
+	DefaultProxyAddressProd = "api.kittycash.io"
 )
 
 const (
-	DefaultHttpAddress    = "127.0.0.1:7908"
-	DefaultProxyAddress   = "staging-api.kittycash.io"
-	DirRoot               = ".kittycash"
-	DirChildWallets       = "staging-wallets"
+	DefaultHttpAddress  = "127.0.0.1:7908"
+	DefaultProxyAddress = "staging-api.kittycash.io"
+	DirRoot             = ".kittycash"
+	DirChildWallets     = "staging-wallets"
 )
 
 const (
@@ -40,7 +40,7 @@ const (
 	fTLS         = "tls"
 	fTLSCert     = "tls-cert"
 	fTLSKey      = "tls-key"
-	fProduction	 = "production"
+	fProduction  = "production"
 
 	fTest = "test"
 )
@@ -60,8 +60,8 @@ var (
 		Hooks:     make(logrus.LevelHooks),
 		Level:     logrus.DebugLevel,
 	}
-	homeDir   = file.UserHome()
-	
+	homeDir = file.UserHome()
+
 	staticDir = func() string {
 		if goPath := os.Getenv("GOPATH"); goPath != "" {
 			return filepath.Join(goPath, "src/github.com/kittycash/wallet/wallet/dist")
@@ -162,7 +162,7 @@ func action(ctx *cli.Context) error {
 	)
 
 	// If we are running in production, override all the other variables
-	if (production) {
+	if production {
 		log.Printf("Wallet is running in production")
 		walletDir = filepath.Join(homeDir, DirRoot, DirChildWalletsProd)
 		proxyDomain = DefaultProxyAddressProd
