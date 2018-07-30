@@ -100,14 +100,22 @@ function startKittyCash() {
   var args = [
     '--http-address=127.0.0.1:6148',
     '--gui=true',
-    '--gui-dir=' + gui_dir
+    '--gui-dir=' + gui_dir,
+    '--proxy-tls=true',
   ];
+
+  if (runInProduction())
+  {
+    args.push('--production');
+  }
 
   if (isDev())
   {
     // args.unshift("--proxy-domain=staging-api.kittycash.com");
     args.unshift("../cmd/wallet/wallet.go");
     args.unshift("run");
+
+    
   }
 
   kittycash = childProcess.spawn(exe, args);
@@ -305,6 +313,22 @@ app.on('will-quit', (evt) => {
 });
 
 
+function runInProduction() {
+
+  for (var i = 0; i < process.argv.length; i++)
+  {
+    var arg = process.argv[i];
+    if (arg == "--staging")
+    {
+      return false;
+    }
+  }
+  
+  if (isDev()){
+    return false;
+  }
+  return true;
+}
 function isDev() {
   return process.mainModule.filename.indexOf('app.asar') === -1;
 }

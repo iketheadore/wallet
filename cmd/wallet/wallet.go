@@ -15,11 +15,17 @@ import (
 	"github.com/kittycash/wallet/src/wallet"
 )
 
+//Production override variables
 const (
-	DefaultHttpAddress  = "127.0.0.1:7908"
-	DefaultProxyAddress = "api.kittycash.com"
-	DirRoot             = ".kittycash"
-	DirChildWallets     = "wallets"
+	DirChildWalletsProd   	 = "wallets"
+	DefaultProxyAddressProd  = "api.kittycash.io"
+)
+
+const (
+	DefaultHttpAddress    = "127.0.0.1:7908"
+	DefaultProxyAddress   = "staging-api.kittycash.io"
+	DirRoot               = ".kittycash"
+	DirChildWallets       = "staging-wallets"
 )
 
 const (
@@ -34,6 +40,7 @@ const (
 	fTLS         = "tls"
 	fTLSCert     = "tls-cert"
 	fTLSKey      = "tls-key"
+	fProduction	 = "production"
 
 	fTest = "test"
 )
@@ -54,6 +61,7 @@ var (
 		Level:     logrus.DebugLevel,
 	}
 	homeDir   = file.UserHome()
+	
 	staticDir = func() string {
 		if goPath := os.Getenv("GOPATH"); goPath != "" {
 			return filepath.Join(goPath, "src/github.com/kittycash/wallet/wallet/dist")
@@ -116,6 +124,13 @@ func init() {
 			Usage: "tls key file path",
 		},
 		/*
+			<<< PRODUCTION / STAGING >>>
+		*/
+		cli.BoolFlag{
+			Name:  Flag(fProduction),
+			Usage: "whether to enable production",
+		},
+		/*
 			<<< TEST MODE >>>
 		*/
 		cli.BoolFlag{
@@ -141,9 +156,19 @@ func action(ctx *cli.Context) error {
 		tls         = ctx.Bool(fTLS)
 		tlsCert     = ctx.String(fTLSCert)
 		tlsKey      = ctx.String(fTLSKey)
+		production  = ctx.Bool(fProduction)
 
 		test = ctx.Bool(fTest)
 	)
+
+	// If we are running in production, override all the other variables
+	if (production) {
+		log.Printf("Wallet is running in production")
+		walletDir = filepath.Join(homeDir, DirRoot, DirChildWalletsProd)
+		proxyDomain = DefaultProxyAddressProd
+	} else {
+		log.Printf("Wallet is running in staging")
+	}
 
 	// Test mode changes.
 	if test {
