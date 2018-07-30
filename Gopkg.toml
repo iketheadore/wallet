@@ -30,3 +30,7 @@
 [[override]]
   name = "github.com/skycoin/skycoin"
   version = "0.22.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/kittycash/kittiverse"

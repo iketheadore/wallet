@@ -20,13 +20,19 @@
   version = "v1.0.1"
 
 [[projects]]
-  branch = "develop"
+  branch = "master"
   name = "github.com/kittycash/kittiverse"
   packages = [
     "src/kitty",
     "src/utils"
   ]
-  revision = "94b2771942c15414e9913e420e5d4b7ee6cdb775"
+  revision = "1bcfbf995e89c0314917c8c7542b73a2c11bab9e"
+
+[[projects]]
+  name = "github.com/mattn/go-sqlite3"
+  packages = ["."]
+  revision = "25ecb14adfc7543176f7d85291ec7dba82c6f7e4"
+  version = "v1.9.0"
 
 [[projects]]
   name = "github.com/op/go-logging"
@@ -121,6 +127,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2209d12509cf38a28de65ea287de6cc5770403f5d0c29f7149ee14f9fc46f0bd"
+  inputs-digest = "27f087fee647fef32eccef936d6f1838ee62edd3428b89d5d914d7ddd0bfb5ba"
   solver-name = "gps-cdcl"
   solver-version = 1
