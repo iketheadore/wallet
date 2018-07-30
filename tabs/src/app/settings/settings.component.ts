@@ -13,6 +13,8 @@ export class SettingsComponent implements OnInit {
  
   restore_name: string;
   restore_seed: string;
+  wallets_list: Array<any> = [];
+  restore_wallets_list: any = false;
 
   constructor(private dialogRef:MatDialogRef<SettingsComponent>, 
               private renderer: Renderer2,
@@ -21,16 +23,79 @@ export class SettingsComponent implements OnInit {
 
  
   ngOnInit() {
+
+    this.refreshWalletList();
+   
   }
 
+  refreshWalletList() {
+    this.settingsService.getWalletList().then(wallets_list => {
+      this.wallets_list = wallets_list;
+    }).catch(function(err){
+      console.log(err);
+    });
+  }
   doClose() {
     this.dialogRef.close();
   }
 
+  unlockWallet(wallet: any)
+  {
+    let __this = this;
+    this.settingsService.getWalletDetails(wallet.label, wallet.password).then(function(success){
+      __this.refreshWalletList();
+    }).catch(function(err){
+       alert(err);
+    });
+  }
+
+  walletsToRestore() {
+
+    let success = false;
+    let missing_password = false;
+
+    for (let i = 0; i < this.restore_wallets_list.length; i++)
+    {
+      if (this.restore_wallets_list[i].restore)
+      {
+         success = true;
+      }
+    }
+
+    for (let i = 0; i < this.restore_wallets_list.length; i++)
+    {
+      if (this.restore_wallets_list[i].restore && this.restore_wallets_list[i].encrypted && (!this.restore_wallets_list[i].password || (this.restore_wallets_list[i].password && this.restore_wallets_list[i].password.length <= 0)))
+      {
+        return false;
+      }
+    }
+
+    return success;
+  }
+  walletsToBackup() {
+    for (let i = 0; i < this.wallets_list.length; i++)
+    {
+      if (this.wallets_list[i].backup)
+      {
+         return true;
+      }
+    }
+
+    return false;
+  }
   doBackup() {
 
+    let wallets = [];
+
+    for (let i = 0; i < this.wallets_list.length; i++)
+    {
+      if (this.wallets_list[i].backup)
+      {
+        wallets.push(this.wallets_list[i]);
+      }
+    }
     //Get the wallet data
-    this.settingsService.getBackupFile().then(wallets => {
+    this.settingsService.getBackupFile(wallets).then(wallets => {
       //Now prepare the data in our backup format.
 
       let data = [];
@@ -81,36 +146,9 @@ export class SettingsComponent implements OnInit {
 
            try {
              let backup = JSON.parse(reader.result);
-             let complete = 0;
 
-             if (backup)
-             {
-               for (let i = 0; i < backup.length; i++)
-               {
-                 let wallet = backup[i];
+             __this.restore_wallets_list = backup;
 
-                 let params = {
-                  label: wallet.label,
-                  seed: wallet.seed,
-                  aCount: wallet.aCount,
-                  encrypted: wallet.encrypted
-                };
-                __this.settingsService.restoreSeed(params).subscribe((result: any) => { 
-                  let refresh_event = new CustomEvent('refreshButtonClick', { cancelable: true, detail: {} });
-                  document.dispatchEvent(refresh_event);
-                  complete = complete + 1;
-                  if (complete == backup.length)
-                  {
-                     __this.dialogRef.close();
-                  }
-
-                });
-               }
-             }
-             else
-             {
-               alert("Invalid backup file");
-             }
            } catch(e) {
              alert("Invalid backup file.");
            }
@@ -126,12 +164,65 @@ export class SettingsComponent implements OnInit {
     
   }
 
+  restoreSelectedBackups()
+  {
+     let __this = this;
+     let complete = 0;
+
+     let wallets = [];
+
+    for (let i = 0; i < this.restore_wallets_list.length; i++)
+    {
+      if (this.restore_wallets_list[i].restore)
+      {
+        wallets.push(this.restore_wallets_list[i]);
+      }
+    }
+
+     if (wallets.length > 0)
+     {
+       for (let i = 0; i < wallets.length; i++)
+       {
+         let wallet = wallets[i];
+
+         let params = {
+          label: wallet.label,
+          seed: wallet.seed,
+          aCount: wallet.aCount,
+          encrypted: wallet.encrypted,
+          password: null
+        };
+
+        if (params.encrypted)
+        {
+          params.password = wallet.password;
+        }
+
+        __this.settingsService.restoreSeed(params).subscribe((result: any) => { 
+          let refresh_event = new CustomEvent('refreshButtonClick', { cancelable: true, detail: {} });
+          document.dispatchEvent(refresh_event);
+          complete = complete + 1;
+          if (complete == wallets.length)
+          {
+             __this.dialogRef.close();
+          }
+
+        });
+       }
+     }
+     else
+     {
+       alert("Invalid backup file");
+     }
+  }
+
   doRestore() {
     let params = {
       label: this.restore_name,
       seed: this.restore_seed,
       aCount: 1,
-      encrypted: false
+      encrypted: false,
+      password: null
     };
     this.settingsService.restoreSeed(params).subscribe((result: any) => { 
       let refresh_event = new CustomEvent('refreshButtonClick', { cancelable: true, detail: {} });

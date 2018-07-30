@@ -16,6 +16,7 @@ export interface WalletContext {
   seed: string;
   aCount: number;
   encrypted: boolean;
+  password: string;
 }
 
 @Injectable()
@@ -32,28 +33,25 @@ export class SettingsService {
       );
   }
 
-  getBackupFile(): Promise<any> {
+  getBackupFile(wallets): Promise<any> {
     return new Promise<any>((resolve, reject) => {
-      this.getWalletList().then(wallets => {
+      let promises = [];
 
-        let promises = [];
-
-        for (let i = 0; i < wallets.length; i++)
-        {
-          let wallet = wallets[i];
-          promises.push(this.getWalletDetails(wallet.label));
-        }
-        Promise.all(promises).then(wallets=> {
-          resolve(wallets);
-        }, 
-        error => {
-          alert(error);
-        })
-      });
+      for (let i = 0; i < wallets.length; i++)
+      {
+        let wallet = wallets[i];
+        promises.push(this.getWalletDetails(wallet.label, null));
+      }
+      Promise.all(promises).then(wallets=> {
+        resolve(wallets);
+      }, 
+      error => {
+        alert(error);
+      })
     });
   }
 
-  private getWalletList(): Promise<any> {
+  getWalletList(): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       this.httpClient
       .get(routes.list_wallets(), this.getOptions()).subscribe((wallets:any) => {
@@ -71,10 +69,10 @@ export class SettingsService {
     });
   }
 
-  private getWalletDetails(label: string): Promise<any> {
+  getWalletDetails(label: string, password: any): Promise<any> {
     return new Promise<any>((resolve, reject) => {
       this.httpClient
-      .post(routes.get_wallet(), this.getQueryString({label: label}), this.getOptions()).subscribe(
+      .post(routes.get_wallet(), this.getQueryString({label: label, password: password}), this.getOptions()).subscribe(
 
         (wallet:any) => {
           if (wallet && wallet.entry_count && wallet.entry_count > 0)

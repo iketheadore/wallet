@@ -48,6 +48,8 @@ func Handle(mux *http.ServeMux, pattern, method string, handler HandlerFunc) {
 				fmt.Sprintln(v...))
 		}
 
+		w.Header().Set("Access-Control-Allow-Origin", "*")
+
 		if r.Method != method {
 			err := errors.Errorf("invalid method type of '%s', expected '%s'",
 				r.Method, method)

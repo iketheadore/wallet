@@ -28,10 +28,9 @@ func TestWalletGateway(t *testing.T) {
 		require.NoError(t, err, "Remove temp wallet directory")
 	}()
 
-	err = wallet.SetRootDir(tempDir)
-	require.NoError(t, err, "Set wallet root directory")
-
-	manager, err := wallet.NewManager()
+	manager, err := wallet.NewManager(&wallet.ManagerConfig{
+		RootDir: tempDir,
+	})
 	require.NoError(t, err, "Should be able to create a wallet manager")
 
 	// Get an http server
