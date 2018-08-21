@@ -1,4 +1,4 @@
-import { Component, HostListener, ViewChild } from '@angular/core';
+import { Component, OnInit, HostListener, ViewChild } from '@angular/core';
 import { Http } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map'
@@ -6,6 +6,7 @@ import 'rxjs/add/operator/catch'
 import { ErrorScreenService } from './error_screen/error_screen.service';
 import { MatDialog } from '@angular/material';
 import { SettingsComponent } from './settings/settings.component';
+import { ScratchCardDialogComponent } from './scratchcard_dialog/scratchcard_dialog.component';
 import { WalletAppModule } from 'wallet-lib';
 
 @Component({
@@ -13,7 +14,7 @@ import { WalletAppModule } from 'wallet-lib';
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   version: string;
   releaseVersion: string;
   updateAvailable: boolean;
@@ -35,6 +36,10 @@ export class AppComponent {
     
     this.updateAvailable = false;
     this.retrieveReleaseVersion();
+  }
+
+
+  ngOnInit() {
   }
 
 
@@ -71,6 +76,21 @@ export class AppComponent {
       ev.preventDefault();
       // send the error to the error screen service
       this.errorScreenService.setError(ev.detail.message);
+  }
+
+  @HostListener('document:walletCreated', ['$event'])
+    onCreation(ev:any) {
+      ev.preventDefault();
+      let __this = this;
+      setTimeout(function(){
+        if (!localStorage.getItem('do_not_show_scratchcard'))
+        {  
+          localStorage.setItem('do_not_show_scratchcard', 'true');
+
+          __this.dialog.open(ScratchCardDialogComponent, { width: '700px' });
+        }
+      }, 1000);
+      
   }
 
   doRefresh() {

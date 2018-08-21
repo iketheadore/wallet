@@ -17,7 +17,7 @@ export class GameComponent implements OnInit {
   iframeHeight: number = 0;
 
   constructor(private scoreboardService: ScoreboardService, private renderer: Renderer2) { 
-  	this.gameUrl = environment.serverUrl + "/scoreboard/game";
+  	this.gameUrl = environment.walletUrl + "/scoreboard/game";
   }
 
  

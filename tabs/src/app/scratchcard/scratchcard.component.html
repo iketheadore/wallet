@@ -1,0 +1,51 @@
+<div class="container tab">
+  <div class="row">
+    <div class="col-12">
+      <p>Enter your wallet address: <a class="show-address-list-button" (click)="showSelector = !showSelector"><small><span *ngIf="!showSelector">Select address from wallet</span><span *ngIf="showSelector">Enter address manually</span></small></a></p>
+    </div>
+  </div>
+
+    <form class="row" [formGroup]="redeemCodeForm" novalidate>
+    <div class="col-12" *ngIf="showSelector">
+      <select class="form-control mx-auto"  formControlName="address">
+        <option *ngFor="let wallet of walletList" [ngValue]="wallet.address"> {{wallet.label}} - {{wallet.address}} </option>
+      </select>
+    </div>
+    <div class="col-12" *ngIf="!showSelector">
+        <input type="text" class="form-control mx-auto" placeholder="Wallet Address" formControlName="address">
+        <small [hidden]="redeemCodeForm.controls.address.valid || redeemCodeForm.controls.address.untouched"
+             class="text-danger">
+          Invalid Address.
+      </small>
+    </div>
+
+    <div class="col-12">
+      <p>Enter your code: <a href="javascript:void(0);" (click)="showCodeLocation = true;"><small>Where is my code?</small></a></p>
+      <div class="text-center my-2"  *ngIf="showCodeLocation">
+        <img class="img-fluid" src="assets/example.png">
+      </div>
+    </div>
+
+    <div class="col-12">
+        <input type="text" class="form-control mx-auto" placeholder="Code from card" formControlName="code" mask='AAAA-AAAA-AAAA-AAAA-AAAA' [dropSpecialCharacters]="false">
+        <small [hidden]="redeemCodeForm.controls.code.valid || redeemCodeForm.controls.code.untouched"
+             class="text-danger">
+          Invalid Code.
+      </small>
+    </div>
+
+    <div class="col-12">
+      <div class="recaptcha-container mx-auto pt-3">
+        <re-captcha formControlName="recaptcha" class="mx-auto"></re-captcha>
+      </div>
+    </div>
+
+    <div class="col-6 mt-3">
+      <button class="btn btn-lg btn-primary" [disabled]="redeemCodeForm.invalid" (click)="doSubmit()">Redeem Code</button>
+    </div>
+    <div class="col-6 mt-3" *ngIf="showClose">
+      <button class="btn btn-lg btn-primary" (click)="close()">I don't have a code</button>
+    </div>
+  </form>
+
+</div>

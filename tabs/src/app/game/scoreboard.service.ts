@@ -6,7 +6,7 @@ import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 const routes = {
-  scoreboard: (s: ScoreContext) => `${environment.serverUrl}/scoreboard/scores/${s.span}`
+  scoreboard: (s: ScoreContext) => `${environment.walletUrl}/scoreboard/scores/${s.span}`
 };
 
 export interface ScoreContext {
