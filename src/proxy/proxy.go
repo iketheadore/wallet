@@ -50,7 +50,7 @@ func (p *Proxy) Redirect(w http.ResponseWriter, r *http.Request) {
 		Info()
 
 	if r.Method == "POST" {
-	    http.Redirect(w, r, newURL, 307)
+		http.Redirect(w, r, newURL, 307)
 	} else {
 		http.Redirect(w, r, newURL, http.StatusMovedPermanently)
 	}
