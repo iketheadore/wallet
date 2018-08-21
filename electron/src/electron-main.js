@@ -325,7 +325,7 @@ function runInProduction() {
   }
   
   if (isDev()){
-    return false;
+    return true;
   }
   return true;
 }

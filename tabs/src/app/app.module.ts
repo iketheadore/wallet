@@ -10,11 +10,17 @@ import { ErrorScreenService } from "./error_screen/error_screen.service";
 import { ConnectionStatusComponent } from "./connection_status/connection_status.component";
 import { ConnectionStatusService } from "./connection_status/connection_status.service";
 import { SettingsComponent } from "./settings/settings.component";
+import { ScratchCardComponent } from "./scratchcard/scratchcard.component";
+import { ScratchCardDialogComponent } from "./scratchcard_dialog/scratchcard_dialog.component";
 import { AppComponent } from './app.component';
 import { SafePipe } from './game/safe.pipe';
 import { SettingsService } from "./settings/settings.service";
 import { MatDialogModule } from '@angular/material/dialog';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { RECAPTCHA_SETTINGS, RecaptchaModule, RecaptchaSettings } from 'ng-recaptcha';
+import { RecaptchaFormsModule } from 'ng-recaptcha/forms';
+import { environment } from '../environments/environment';
+import { NgxMaskModule } from 'ngx-mask'
 
 @NgModule({
   declarations: [
@@ -23,10 +29,13 @@ import { FormsModule } from '@angular/forms';
     ErrorScreenComponent,
     ConnectionStatusComponent,
     SettingsComponent,
+    ScratchCardComponent,
+    ScratchCardDialogComponent,
     SafePipe
   ],
   entryComponents: [
-    SettingsComponent
+    SettingsComponent,
+    ScratchCardDialogComponent
   ],
   imports: [
   	HttpClientModule,
@@ -34,13 +43,21 @@ import { FormsModule } from '@angular/forms';
     MarketplaceAppModule,
     WalletAppModule,
     MatDialogModule,
-    FormsModule
+    FormsModule,
+    ReactiveFormsModule,
+    RecaptchaModule.forRoot(),
+    RecaptchaFormsModule,
+    NgxMaskModule.forRoot()
   ],
   providers: [
   	ScoreboardService,
     ErrorScreenService,
     ConnectionStatusService,
-    SettingsService
+    SettingsService,
+    {
+      provide: RECAPTCHA_SETTINGS,
+      useValue: {siteKey: environment.recaptchaSiteKey} as RecaptchaSettings,
+    }
   ],
   bootstrap: [AppComponent]
 })

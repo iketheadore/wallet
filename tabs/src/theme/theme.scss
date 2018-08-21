@@ -95,3 +95,13 @@ h3 {
   color: $kittyred;
   text-align: center;
 }
+
+.btn-outline-primary[disabled]:hover {
+    background:transparent !important;
+}
+
+.btn-primary[disabled]:hover {
+    background:$kittyred !important;
+    color: white;
+}
+

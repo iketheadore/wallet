@@ -1,3 +1,4 @@
+
 <a class="btn-close-modal" (click)="doClose()">X</a>
 <div class="row">
 	<div class="col-12">
@@ -5,105 +6,118 @@
 	</div>
 </div>
 
-<div class="row mt-5">
-	<div class="col-3">
-		<label>Backup / Restore:</label>
-	</div>
-	<div class="col-9">
+<div class="settings-scroll">
+	<div class="row mt-5">
+		<div class="col-3">
+			<label>Backup / Restore:</label>
+		</div>
+		<div class="col-9">
 
-		<div *ngIf="restore_wallets_list">
-			<div class="row">
-				<div class="col-8">
-					<label>Select wallets to restore:</label>
-				</div>
-				<div class="col-4">
-					<a (click)="restore_wallets_list = false"><i class="fa fa-times"></i></a>
-				</div>
-			</div>
-			<div class="row" *ngFor="let wallet of restore_wallets_list; let i = index">
-				<div class="col-1">
-					<input type="checkbox" class="form-control" name="checkbox_{{ i }}" [(ngModel)]="wallet.restore" [disabled]="wallet.encrypted && wallet.locked">
-				</div>
-				<div class="col-4">
-					<input type="text" class="form-control" [(ngModel)]="wallet.label">
-				</div>
-				<div class="col-3">
-					<div class="input-group">
-						<label class="checkbox">
-						  <input type="checkbox" [(ngModel)]="wallet.encrypted"> Encrypt
-						</label>
+			<div *ngIf="restore_wallets_list">
+				<div class="row">
+					<div class="col-8">
+						<label>Select wallets to restore:</label>
+					</div>
+					<div class="col-4">
+						<a (click)="restore_wallets_list = false"><i class="fa fa-times"></i></a>
 					</div>
 				</div>
-				<div class="col-4">
-					<div *ngIf="wallet.encrypted">
+				<div class="row" *ngFor="let wallet of restore_wallets_list; let i = index">
+					<div class="col-1">
+						<input type="checkbox" class="form-control" name="checkbox_{{ i }}" [(ngModel)]="wallet.restore" [disabled]="wallet.encrypted && wallet.locked">
+					</div>
+					<div class="col-4">
+						<input type="text" class="form-control" [(ngModel)]="wallet.label">
+					</div>
+					<div class="col-3">
 						<div class="input-group">
-							<input type="password" class="form-control" placeholder="password" [(ngModel)]="wallet.password" required>
+							<label class="checkbox">
+							  <input type="checkbox" [(ngModel)]="wallet.encrypted"> Encrypt
+							</label>
 						</div>
 					</div>
-				</div>
-			</div>
-		</div>
-
-		<div *ngIf="!restore_wallets_list">
-			<div class="row">
-				<div class="col-12">
-					<label>Select wallets to backup:</label>
-				</div>
-			</div>
-			<div class="row" *ngFor="let wallet of wallets_list; let i = index">
-				<div class="col-1">
-					<input type="checkbox" class="form-control" name="checkbox_{{ i }}" [(ngModel)]="wallet.backup" [disabled]="wallet.encrypted && wallet.locked">
-				</div>
-				<div class="col-5">
-					<p>{{wallet.label}} <img *ngIf="wallet.encrypted" src="assets/svg/encrypted.svg"></p>
-				</div>
-				<div class="col-6">
-					<div *ngIf="wallet.encrypted && wallet.locked">
-						<div class="input-group">
-							<input type="password" class="form-control" placeholder="password" [(ngModel)]="wallet.password">
-							<div class="input-group-append">
-							    <button class="btn btn-outline-secondary" type="button" (click)="unlockWallet(wallet)">Unlock</button>
+					<div class="col-4">
+						<div *ngIf="wallet.encrypted">
+							<div class="input-group">
+								<input type="password" class="form-control" placeholder="password" [(ngModel)]="wallet.password" required>
 							</div>
 						</div>
 					</div>
 				</div>
 			</div>
-		</div>
 
-		<div class="row">
-			<div class="col-6">
-				<button class="btn btn-block btn-outline-primary" (click)="doBackup()" [disabled]="!walletsToBackup()">Backup Selected</button>
+			<div *ngIf="!restore_wallets_list">
+				<div class="row">
+					<div class="col-12">
+						<label>Select wallets to backup:</label>
+					</div>
+				</div>
+				<div class="row" *ngFor="let wallet of wallets_list; let i = index">
+					<div class="col-1">
+						<input type="checkbox" class="form-control" name="checkbox_{{ i }}" [(ngModel)]="wallet.backup" [disabled]="wallet.encrypted && wallet.locked">
+					</div>
+					<div class="col-5">
+						<p>{{wallet.label}} <img *ngIf="wallet.encrypted" src="assets/svg/encrypted.svg"></p>
+					</div>
+					<div class="col-6">
+						<div *ngIf="wallet.encrypted && wallet.locked">
+							<div class="input-group">
+								<input type="password" class="form-control" placeholder="password" [(ngModel)]="wallet.password">
+								<div class="input-group-append">
+								    <button class="btn btn-outline-secondary" type="button" (click)="unlockWallet(wallet)">Unlock</button>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
-			<div class="col-6">
-				<label class="btn btn-block btn-outline-primary" *ngIf="!restore_wallets_list">
-					Restore From File<input type="file" multiple="false" (change)="doRestoreBackup()" id="restoreBackupFile" style="display:none;">
-				</label>
-				<button class="btn btn-block btn-outline-primary" *ngIf="restore_wallets_list" (click)="restoreSelectedBackups()" [disabled]="!walletsToRestore()">Restore Selected</button>
+
+			<div class="row">
+				<div class="col-6">
+					<button class="btn btn-block btn-outline-primary" (click)="doBackup()" [disabled]="!walletsToBackup()">Backup Selected</button>
+				</div>
+				<div class="col-6">
+					<label class="btn btn-block btn-outline-primary" *ngIf="!restore_wallets_list">
+						Restore From File<input type="file" multiple="false" (change)="doRestoreBackup()" id="restoreBackupFile" style="display:none;">
+					</label>
+					<button class="btn btn-block btn-outline-primary" *ngIf="restore_wallets_list" (click)="restoreSelectedBackups()" [disabled]="!walletsToRestore()">Restore Selected</button>
+				</div>
 			</div>
 		</div>
 	</div>
-</div>
 
-<div class="row mt-2 mb-5">
-	<div class="col-3">
-		<label>Restore From Seed:</label>
+	<div class="row mt-2 mb-5">
+		<div class="col-3">
+			<label>Restore From Seed:</label>
+		</div>
+		<div class="col-9">
+			<input type="text" class="form-control" [(ngModel)]="restore_name" placeholder="Enter Wallet Name">
+			<div class="input-group">
+				<input type="text" class="form-control"  [(ngModel)]="restore_seed" placeholder="Enter Seed Here">
+				<span class="input-group-btn">
+			    	<button class="btn btn-primary" type="button" (click)="doRestore()">Restore</button>
+			    </span>
+			</div>
+		</div>
 	</div>
-	<div class="col-9">
-		<input type="text" class="form-control" [(ngModel)]="restore_name" placeholder="Enter Wallet Name">
-		<div class="input-group">
-			<input type="text" class="form-control"  [(ngModel)]="restore_seed" placeholder="Enter Seed Here">
-			<span class="input-group-btn">
-		    	<button class="btn btn-primary" type="button" (click)="doRestore()">Restore</button>
-		    </span>
+
+	<div class="row mt-2 mb-5">
+		<div class="col-3">
+			<label>Redeem Code:</label>
+		</div>
+		<div class="col-9">
+			<scratchcard></scratchcard>   
+		</div>
+	</div>
+
+	<div class="row mt-2 mb-5">
+		<div class="col-3">
+			<label>Color Frame:</label>
+		</div>
+		<div class="col-9">
+			<button class="btn btn-primary" type="button" (click)="toggleFrame()">Toggle Frame</button>   
 		</div>
 	</div>
 </div>
 
-<div class="row mt-2 mb-5">
-	<div class="col-3">
-		<label>Color Frame:</label>
-	</div>
-	<div class="col-9">
-		<button class="btn btn-primary" type="button" (click)="toggleFrame()">Toggle Frame</button>   
-	</div>
-</div>
+
