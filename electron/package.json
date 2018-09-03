@@ -3,7 +3,7 @@
     "productName": "KittyCash",
     "author": "KittyCash",
     "main": "src/electron-main.js",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "description": "Kittycash wallet",
     "license": "MIT",
     "build": {
@@ -74,7 +74,7 @@
         "start": "electron ."
     },
     "devDependencies": {
-        "electron": "^1.8.6",
+        "electron": "^2.0.8",
         "electron-builder": "^19.55.0"
     },
     "dependencies": {
