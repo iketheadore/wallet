@@ -77,7 +77,7 @@
 					<button class="btn btn-block btn-outline-primary" (click)="doBackup()" [disabled]="!walletsToBackup()">Backup Selected</button>
 				</div>
 				<div class="col-6">
-					<label class="btn btn-block btn-outline-primary" *ngIf="!restore_wallets_list">
+					<label class="btn btn-block btn-outline-primary" *ngIf="!restore_wallets_list" id="restore_from_file">
 						Restore From File<input type="file" multiple="false" (change)="doRestoreBackup()" id="restoreBackupFile" style="display:none;">
 					</label>
 					<button class="btn btn-block btn-outline-primary" *ngIf="restore_wallets_list" (click)="restoreSelectedBackups()" [disabled]="!walletsToRestore()">Restore Selected</button>

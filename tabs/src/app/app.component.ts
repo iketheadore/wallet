@@ -15,10 +15,84 @@ import { WalletAppModule } from 'wallet-lib';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
+
+
   version: string;
   releaseVersion: string;
   updateAvailable: boolean;
   currentTab = 'wallet';
+  settingsDialog: any;
+  tourSteps: any = [
+    {
+      content: "This is the <strong>play</strong> button.<br>It uses HTML!",
+      element: "play_button",
+      position: 'left',
+      background: 'yellow',
+      size: {
+        width: 200,
+        height: 50
+      },
+      padding: {
+        x: 0,
+        y: 10
+      },
+      pre_script: null
+    },
+    {
+      content: "This is a full screen dialog.  Again we can embed anything we like:<br><br><img class='img-fluid' src='https://i.ytimg.com/vi/E9U9xS4thxU/hqdefault.jpg'>",
+      element: null,
+      position: 'full',
+      background: 'yellow',
+      size: {
+        width: 500,
+        height: 500
+      },
+      padding: {
+        x: 0,
+        y: 0
+      },
+      pre_script: null
+    },
+    {
+      content: "This step can open and close a dialog or page with some simple code.",
+      element: "restore_from_file",
+      position: 'top',
+      background: 'purple',
+      size: {
+        width: 150,
+        height: 100
+      },
+      padding: {
+        x: 0,
+        y: 0
+      },
+      pre_script: 'this.doOpenSettings()',
+      post_script: 'this.doCloseSettings()'
+    },
+       {
+      content: "This is another full screen dialog that closed the previous window.<br><br><img class='img-fluid' src='https://boygeniusreport.files.wordpress.com/2015/06/funny-cat.jpg?quality=98&strip=all&w=782'>",
+      element: null,
+      position: 'full',
+      background: 'purple',
+      size: {
+        width: 500,
+        height: 500
+      },
+      padding: {
+        x: 0,
+        y: 0
+      },
+      pre_script: null
+    }
+  ];
+
+  tour: any =  {
+    show: false,
+    step: 0,
+    x: 100,
+    y: 0
+  }
+
 
   constructor(
     private http: Http,
@@ -36,10 +110,129 @@ export class AppComponent implements OnInit {
     
     this.updateAvailable = false;
     this.retrieveReleaseVersion();
+
   }
 
 
+  prevStep() {
+    if (this.tour.currentStep.post_script)
+    {
+      eval(this.tour.currentStep.post_script); 
+    }
+    this.tour.show = false;
+    this.tour.step = this.tour.step - 1;
+
+    this.renderTourStep();
+  }
+  nextStep() {
+    this.tour.show = false;
+    this.tour.step = this.tour.step + 1;
+
+    this.renderTourStep();
+  }
+  private renderTourStep()
+  {
+      if (this.tour.currentStep && this.tour.currentStep.post_script)
+      {
+        eval(this.tour.currentStep.post_script); 
+      }
+
+     //Get the step
+      this.tour.currentStep = this.tourSteps[this.tour.step];
+
+      if (this.tour.currentStep)
+      {
+
+        if (this.tour.currentStep.pre_script)
+        {
+          eval(this.tour.currentStep.pre_script);
+        }
+
+        let __this = this;
+
+        setTimeout(function(){
+          var elem = document.getElementById(__this.tour.currentStep.element);
+
+          if (elem && __this.tour.currentStep.position != "full")
+          {
+            var pos = __this.getPosition(elem);
+
+            if (pos)
+            {
+              var x = pos.x + __this.tour.currentStep.padding.x;
+              var y = pos.y + __this.tour.currentStep.padding.y;
+
+              switch(__this.tour.currentStep.position) {
+                  case 'bottom':
+                      y = y + elem.clientHeight;
+                      break;
+                  case 'top':
+                      y = y - elem.clientHeight - __this.tour.currentStep.size.height;
+                      break;
+                  case 'left': 
+                      x = x - elem.clientWidth - __this.tour.currentStep.size.width;
+                      break;
+                  case 'right':
+                      x = x + elem.clientWidth;
+
+                  default:
+                      //Do nothing I guess
+              }
+              __this.tour.x = x;
+              __this.tour.y = y;
+              __this.tour.show = true;
+            }
+          }
+          else
+          {
+            __this.tour.x = (window.innerWidth / 2) - (__this.tour.currentStep.size.width / 2);
+            __this.tour.y = (window.innerHeight / 2) - (__this.tour.currentStep.size.height / 2);
+            __this.tour.show = true;
+          }
+        }, 250);
+      }
+  }
+
+  startTour() {
+      this.tour.step = 0;
+      this.renderTourStep();
+  } 
+
+  closeTour() {
+    this.tour.step = 0;
+    this.tour.show = false;
+  }
+
+  getPosition(el) {
+    var xPos = 0;
+    var yPos = 0;
+
+    while (el) {
+      if (el.tagName == "BODY") {
+        // deal with browser quirks with body/window/document and page scroll
+        var xScroll = el.scrollLeft || document.documentElement.scrollLeft;
+        var yScroll = el.scrollTop || document.documentElement.scrollTop;
+
+        xPos += (el.offsetLeft - xScroll + el.clientLeft);
+        yPos += (el.offsetTop - yScroll + el.clientTop);
+      } else {
+        // for all other non-BODY elements
+        xPos += (el.offsetLeft - el.scrollLeft + el.clientLeft);
+        yPos += (el.offsetTop - el.scrollTop + el.clientTop);
+      }
+
+      el = el.offsetParent;
+    }
+
+    return {
+      x: xPos,
+      y: yPos
+    };
+   }
+
+
   ngOnInit() {
+
   }
 
 
@@ -99,7 +292,11 @@ export class AppComponent implements OnInit {
   }
 
   doOpenSettings(){
-    this.dialog.open(SettingsComponent, { width: '700px' });
+    this.settingsDialog = this.dialog.open(SettingsComponent, { width: '700px' });
+  }
+
+  doCloseSettings(){
+   this.settingsDialog.close();
   }
 
   toggleBar() {

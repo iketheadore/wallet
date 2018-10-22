@@ -16,9 +16,9 @@
               <a class="nav-link" (click)="currentTab = 'wallet'">Kittery</a>
             </li>
             <li class="nav-item" [ngClass]="{'active': currentTab == 'marketplace'}">
-              <a class="nav-link" disabled="disabled">Marketplace</a>
+              <a class="nav-link" (click)="currentTab = 'marketplace'">Marketplace</a>
             </li>
-            <li class="nav-item" [ngClass]="{'active': currentTab == 'play'}">
+            <li class="nav-item" [ngClass]="{'active': currentTab == 'play'}" id="play_button">
               <a class="nav-link" (click)="currentTab = 'play'">Play</a>
             </li>
           </ul>
@@ -40,6 +40,10 @@
     <div class="flex-row" style="overflow-x: hidden; overflow-y: scroll;">
          <div class="row" [ngSwitch]="currentTab">
           <div class="col-12" *ngSwitchCase="'wallet'">
+
+            <!-- start TOUR -->
+            <!-- <button name="button" (click)="startTour()"> START!</button> -->
+
             <app-wallet-root></app-wallet-root>
           </div>
           <div class="col-12" *ngSwitchCase="'marketplace'">
@@ -54,3 +58,13 @@
   </div>
 </div>
 <error-screen></error-screen>
+
+<div id="tour-element" [style.left.px]="tour.x" [style.top.px]="tour.y" [hidden]="!tour.show" style="position: absolute; z-index:99999;">
+  <div *ngIf="tour.currentStep" [style.width.px]="tour.currentStep.size.width" [style.height.px]="tour.currentStep.size.height" [style.background]="tour.currentStep.background" [innerHTML]="tour.currentStep.content"></div>
+  <div style="background: linear-gradient(to bottom, white, #fbfbfb); height: 100%; overflow: hidden;">
+    <button class="btn btn-primary float-left" (click)="prevStep()" *ngIf="tour.step > 0 && tour.step + 1 < tourSteps.length"><<</button>
+    <button class="btn btn-primary float-right" (click)="nextStep()" *ngIf="tour.step + 1 < tourSteps.length">>></button>
+    <button class="btn btn-primary btn-block" (click)="closeTour()" *ngIf="tour.step + 1 >= tourSteps.length">Finish</button>
+  </div>
+</div>
+

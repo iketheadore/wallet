@@ -23,7 +23,7 @@ require('electron-context-menu')({});
 
 global.eval = function() { throw new Error('bad!!'); }
 
-const defaultURL = 'http://127.0.0.1:6148/boxes';
+const defaultURL = 'http://127.0.0.1:6148/explore';
 
 //WARNING - Re-enable this after testing!  Need to figure out all the recaptcha urls
 // Force everything localhost, in case of a leak
