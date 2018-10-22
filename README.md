@@ -64,3 +64,13 @@ go run ${GOPATH}/src/github.com/kittycash/wallet/cmd/wallet/wallet.go \
 ## Endpoints documentation
 
 Refer to the [Postman](https://www.getpostman.com) collection located at [/docs/Wallet.postman_collection.json](/docs/Wallet.postman_collection.json) .
+
+## compiling wallet builds
+
+Most of the work to generate wallet builds happens from the `electron/build.sh` script.  All generated builds will go into the `electron/release` directory once the script has completed.
+
+The `tabs` app is the container that imports in the separate `marketplace` and `wallet` apps.  The tabs app contains settings, tutorial and the basic KittyCash game.  Running `npm run import-marketplace` will import in the `marketplace` and `wallet` apps from their github repos with the newest changes.  `build.sh` runs the `npm run import-marketplace` command so you should only need to do this is you are testing the `tabs` app individually.
+
+1. Bump the version number in `electron/package.json`
+2. Run the build script:
+`cd electron && ./build.sh`
