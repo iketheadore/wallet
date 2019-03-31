@@ -4,7 +4,7 @@
   "description": "KittyCash wallet",
   "dependencies": {
     "cat-names": "^1.0.2",
-    "electron": "^1.8.6",
+    "electron": "^2.0.18",
     "electron-builder": "^20.7.0",
     "electron-context-menu": "^0.9.1",
     "electron-debug": "^1.0.1",
