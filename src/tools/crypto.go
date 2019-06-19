@@ -3,17 +3,16 @@ package tools
 import (
 	"context"
 
-	"github.com/kittycash/kittiverse/src/kitty"
 	"github.com/pkg/errors"
 	"github.com/skycoin/skycoin/src/cipher"
 	"github.com/skycoin/skycoin/src/cipher/encoder"
 )
 
 type SignTransferParamsIn struct {
-	KittyID         kitty.ID // ID of kitty to transfer.
-	LastTransferSig string   // Signature of last kitty transfer (leave empty if not needed).
-	ToAddress       string   // Address to transfer kitty to (destination address).
-	SecretKey       string   // Secret key of current owner, used to sign the kitty away!
+	KittyID         uint64 // ID of kitty to transfer.
+	LastTransferSig string // Signature of last kitty transfer (leave empty if not needed).
+	ToAddress       string // Address to transfer kitty to (destination address).
+	SecretKey       string // Secret key of current owner, used to sign the kitty away!
 }
 
 type SignTransferParamsOut struct {
@@ -24,7 +23,7 @@ type SignTransferParamsOut struct {
 
 // TransferParams defines the parameters used in a initiate transfer signature
 type TransferParams struct {
-	KittyID               kitty.ID
+	KittyID               uint64
 	LastTransferSignature string
 	DestAddress           string
 }

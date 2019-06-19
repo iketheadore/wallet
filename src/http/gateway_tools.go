@@ -5,8 +5,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/kittycash/kittiverse/src/kitty"
-
 	"github.com/kittycash/wallet/src/tools"
 )
 
@@ -35,7 +33,7 @@ func signTransferParams() HandlerFunc {
 				}
 
 				out, err := tools.SignTransferParams(r.Context(), &tools.SignTransferParamsIn{
-					KittyID:         kitty.ID(kittyID),
+					KittyID:         kittyID,
 					LastTransferSig: vLastTransferSig,
 					ToAddress:       vToAddress,
 					SecretKey:       vSecretKey,

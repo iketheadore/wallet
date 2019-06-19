@@ -10,8 +10,8 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/sirupsen/logrus"
 	"github.com/skycoin/skycoin/src/util/iputil"
-	"gopkg.in/sirupsen/logrus.v1"
 )
 
 const (
