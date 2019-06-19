@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"time"
 
-	"gopkg.in/sirupsen/logrus.v1"
+	"github.com/sirupsen/logrus"
 
 	"github.com/kittycash/wallet/src/tools"
 )

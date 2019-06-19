@@ -5,7 +5,7 @@ import (
 	"os/signal"
 )
 
-// CatchInterrupt catches Ctrl+C behaviour.
+// CatchInterrupt catches Ctrl+C behavior.
 func CatchInterrupt() chan int {
 	quit := make(chan int)
 	go func(q chan<- int) {

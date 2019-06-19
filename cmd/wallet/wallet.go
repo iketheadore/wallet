@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/sirupsen/logrus"
 	"github.com/skycoin/skycoin/src/util/file"
-	"gopkg.in/sirupsen/logrus.v1"
 	"gopkg.in/urfave/cli.v1"
 
 	"github.com/kittycash/wallet/src/http"

@@ -9,7 +9,7 @@ import (
 
 	"errors"
 
-	"gopkg.in/sirupsen/logrus.v1"
+	"github.com/sirupsen/logrus"
 )
 
 // This holds the root directory.
