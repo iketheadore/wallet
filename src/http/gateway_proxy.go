@@ -3,7 +3,7 @@ package http
 import (
 	"net/http"
 
-	"github.com/kittycash/wallet/src/proxy"
+	"github.com/watercompany/kittycash-wallet/src/proxy"
 )
 
 func proxyGateway(m *http.ServeMux, p *proxy.Proxy) error {

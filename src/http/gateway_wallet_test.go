@@ -12,7 +12,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/kittycash/wallet/src/wallet"
+	"github.com/watercompany/kittycash-wallet/src/wallet"
 )
 
 var CTApplicationFormHeaders = map[string][]string{"Content-Type": {"application/x-www-form-urlencoded"}}

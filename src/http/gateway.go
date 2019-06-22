@@ -8,8 +8,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/kittycash/wallet/src/proxy"
-	"github.com/kittycash/wallet/src/wallet"
+	"github.com/watercompany/kittycash-wallet/src/proxy"
+	"github.com/watercompany/kittycash-wallet/src/wallet"
 )
 
 type Gateway struct {

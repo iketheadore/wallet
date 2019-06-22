@@ -9,10 +9,10 @@ import (
 	"github.com/skycoin/skycoin/src/util/file"
 	"gopkg.in/urfave/cli.v1"
 
-	"github.com/kittycash/wallet/src/http"
-	"github.com/kittycash/wallet/src/proxy"
-	"github.com/kittycash/wallet/src/util"
-	"github.com/kittycash/wallet/src/wallet"
+	"github.com/watercompany/kittycash-wallet/src/http"
+	"github.com/watercompany/kittycash-wallet/src/proxy"
+	"github.com/watercompany/kittycash-wallet/src/util"
+	"github.com/watercompany/kittycash-wallet/src/wallet"
 )
 
 //Production override variables
@@ -64,7 +64,7 @@ var (
 
 	staticDir = func() string {
 		if goPath := os.Getenv("GOPATH"); goPath != "" {
-			return filepath.Join(goPath, "src/github.com/kittycash/wallet/wallet/dist")
+			return filepath.Join(goPath, "src/github.com/watercompany/kittycash-wallet/wallet/dist")
 		}
 		return "./static/dist"
 	}()

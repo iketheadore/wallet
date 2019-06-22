@@ -9,7 +9,7 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/kittycash/wallet/src/tools"
+	"github.com/watercompany/kittycash-wallet/src/tools"
 )
 
 type Config struct {

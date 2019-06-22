@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/kittycash/wallet/src/wallet"
+	"github.com/watercompany/kittycash-wallet/src/wallet"
 )
 
 func walletGateway(m *http.ServeMux, g *wallet.Manager) error {

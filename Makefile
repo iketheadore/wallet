@@ -12,8 +12,8 @@ lint: ## Run linters. Use make install-linters first.
 check: lint test ## Run tests and linters
 
 format: ## Formats the code. Must have goimports installed (use make install-linters).
-	GO111MODULE=on goimports -w -local github.com/kittycash/wallet ./cmd
-	GO111MODULE=on goimports -w -local github.com/kittycash/wallet ./src
+	GO111MODULE=on goimports -w -local github.com/watercompany/kittycash-wallet ./cmd
+	GO111MODULE=on goimports -w -local github.com/watercompany/kittycash-wallet ./src
 
 install-linters: ## Install linters
 	GO111MODULE=on go get -u github.com/golangci/golangci-lint/cmd/golangci-lint

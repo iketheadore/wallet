@@ -21,12 +21,12 @@ COMMANDS:
      help, h  Shows a list of commands or help for one command
 
 GLOBAL OPTIONS:
-   --wallet-dir value    directory to store wallet files (default: "/Users/evanlinjin/.kittycash/wallets")
+   --wallet-dir value    directory to store wallet files (default: "$HOME/.watercompany/kittycash-wallets")
    --proxy-domain value  domain to proxy kitty-api requests to (default: "api.kittycash.com")
    --proxy-tls           whether to use TLS to communicate to kitty-api domain
    --http-address value  address to serve http server on (default: "127.0.0.1:7908")
    --gui                 whether to enable gui
-   --gui-dir value       directory to serve GUI from (default: "/Users/evanlinjin/go/src/github.com/kittycash/wallet/wallet/dist")
+   --gui-dir value       directory to serve GUI from (default: "$GOPATH/src/github.com/watercompany/kittycash-wallet/wallet/dist")
    --tls                 whether to enable tls
    --tls-cert value      tls certificate file path
    --tls-key value       tls key file path
@@ -40,12 +40,12 @@ GLOBAL OPTIONS:
 **Run the wallet backend.**
 
 ```
-go run ${GOPATH}/src/github.com/kittycash/wallet/cmd/wallet/wallet.go
+go run ${GOPATH}/src/github.com/watercompany/kittycash-wallet/cmd/wallet/wallet.go
 ```
 
 **Run the wallet frontend.**
 
-Refer to [/electron/README.md](/electron/README.md). 
+Refer to [/electron/README.md](/electron/README.md).
 
 ## Test wallet
 
@@ -54,7 +54,7 @@ Refer to [/electron/README.md](/electron/README.md).
 This is so that nothing gets written to disk. We have also set proxy domain to `staging-api.kittycash.com` instead of `api.kittycash.com`.
 
 ```
-go run ${GOPATH}/src/github.com/kittycash/wallet/cmd/wallet/wallet.go \
+go run ${GOPATH}/src/github.com/watercompany/kittycash-wallet/cmd/wallet/wallet.go \
 --test=true \
 --proxy-domain="staging-api.kittycash.com" \
 --proxy-tls=true \
