@@ -1,4 +1,4 @@
-module github.com/kittycash/wallet
+module github.com/watercompany/kittycash-wallet
 
 go 1.12
 
